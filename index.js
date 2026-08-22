@@ -45,6 +45,10 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
 // =======================
+// 🚫 キック回数保存
+const kickCount = {};
+
+// =======================
 // 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
@@ -107,7 +111,7 @@ client.once(Events.ClientReady, async () => {
     console.log(err);
   }
 
-  // スパム警告（重複防止）
+  // スパム警告
   try {
     const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
 
@@ -138,7 +142,7 @@ client.once(Events.ClientReady, async () => {
 });
 
 // =======================
-// スパム検知（即削除＋即キック）
+// スパム検知（即削除＋即キック＋回数カウント）
 client.on(Events.MessageCreate, async (message) => {
 
   if (message.author.bot) return;
@@ -150,10 +154,18 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (member.permissions.has("Administrator")) return;
 
+    // 削除
     await message.delete().catch(() => {});
-    await member.kick("スパム検知チャンネルに投稿");
 
-    console.log(`DELETE + KICK: ${message.author.tag}`);
+    // 回数追加
+    kickCount[message.author.id] = (kickCount[message.author.id] || 0) + 1;
+
+    const count = kickCount[message.author.id];
+
+    // キック
+    await member.kick(`スパム検知チャンネル (${count}回目)`);
+
+    console.log(`🚫 キック：${count}回 | ${message.author.tag}`);
 
   } catch (err) {
     console.log("エラー:", err);
