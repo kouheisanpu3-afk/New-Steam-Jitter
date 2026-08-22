@@ -32,8 +32,8 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-const ROLE_ID = "1540560312602988594"; // 認証ロール
-const ENGLISH_ROLE_ID = "1540560377866362950"; // ← Englishロール追加
+const VERIFY_ROLE_ID = "1540560312602988594"; // 認証ロール（日本語用）
+const ENGLISH_ROLE_ID = "1540560377866362950"; // Englishロール
 
 const CHANNEL_ID = "1540606154093367336";
 
@@ -85,100 +85,65 @@ client.once(Events.ClientReady, async () => {
 // ボタン & セレクト処理
 client.on(Events.InteractionCreate, async (interaction) => {
 
-  // 認証ボタン
-  if (interaction.isButton()) {
-    if (interaction.customId === "verify") {
+  if (!interaction.isStringSelectMenu()) return;
 
-      const select = new StringSelectMenuBuilder()
-        .setCustomId("select_lang")
-        .setPlaceholder("言語を選択 / Select Language")
-        .addOptions([
-          {
-            label: "日本語",
-            value: "jp",
-            emoji: "🇯🇵"
-          },
-          {
-            label: "English",
-            value: "en",
-            emoji: "🇺🇸"
-          }
-        ]);
+  const member = await interaction.guild.members.fetch(interaction.user.id);
 
-      const row = new ActionRowBuilder().addComponents(select);
+  // 🇯🇵 日本語 → 認証ロール付与
+  if (interaction.values[0] === "jp") {
 
-      return interaction.reply({
-        content: "言語を選択してください",
-        components: [row],
-        ephemeral: true
+    if (member.roles.cache.has(VERIFY_ROLE_ID)) {
+      return interaction.update({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0xff0000)
+            .setTitle("認証済み")
+            .setDescription("すでに認証済みです")
+        ],
+        components: []
       });
     }
+
+    await member.roles.add(VERIFY_ROLE_ID);
+
+    return interaction.update({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(0x00ff99)
+          .setTitle("認証完了")
+          .setDescription("認証が完了しました 👍")
+      ],
+      components: []
+    });
   }
 
-  // =======================
-  // セレクトメニュー
-  if (interaction.isStringSelectMenu()) {
+  // 🇺🇸 English → Englishロールのみ（認証ロールは付けない）
+  if (interaction.values[0] === "en") {
 
-    const member = await interaction.guild.members.fetch(interaction.user.id);
-
-    // 🇯🇵 日本語
-    if (interaction.values[0] === "jp") {
-
-      if (member.roles.cache.has(ROLE_ID)) {
-        return interaction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle("認証済み")
-              .setDescription("すでに認証済みです")
-          ],
-          components: []
-        });
-      }
-
-      await member.roles.add(ROLE_ID);
-
+    if (member.roles.cache.has(ENGLISH_ROLE_ID)) {
       return interaction.update({
         embeds: [
           new EmbedBuilder()
-            .setColor(0x00ff99)
-            .setTitle("認証完了")
-            .setDescription("認証が完了しました 👍")
+            .setColor(0xff0000)
+            .setTitle("Already Selected")
+            .setDescription("You already selected English.")
         ],
         components: []
       });
     }
 
-    // 🇺🇸 English
-    if (interaction.values[0] === "en") {
+    await member.roles.add(ENGLISH_ROLE_ID);
 
-      if (member.roles.cache.has(ROLE_ID)) {
-        return interaction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle("Already Verified")
-              .setDescription("You are already verified.")
-          ],
-          components: []
-        });
-      }
-
-      await member.roles.add(ROLE_ID);
-      await member.roles.add(ENGLISH_ROLE_ID); // ←ここ追加
-
-      return interaction.update({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(0x00ff99)
-            .setTitle("Verification Complete")
-            .setDescription("Verification completed 👍")
-        ],
-        components: []
-      });
-    }
+    return interaction.update({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(0x00ff99)
+          .setTitle("Selected")
+          .setDescription("English selected 👍")
+      ],
+      components: []
+    });
   }
 });
 
-// =======================
 client.login(TOKEN);
