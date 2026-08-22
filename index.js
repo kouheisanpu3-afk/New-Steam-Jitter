@@ -29,66 +29,63 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-// 🔥 あなたのID
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540566154093367336"; // ←ここ要確認
+const CHANNEL_ID = "1540606154093367336";
+
+// 🔥 利用規約チャンネル（追加）
+const RULES_CHANNEL_ID = "1540626614982025327";
 
 // 🔵 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
-  console.log("CHANNEL_ID:", CHANNEL_ID);
 
-  try {
-    const channel = await client.channels.fetch(CHANNEL_ID);
+  const channel = await client.channels.fetch(CHANNEL_ID);
 
-    if (!channel) {
-      console.log("❌ チャンネルが存在しない or 見えない");
-      return;
-    }
+  const messages = await channel.messages.fetch({ limit: 10 });
 
-    console.log("✅ チャンネル取得成功:", channel.name);
+  const exists = messages.some(msg =>
+    msg.author.id === client.user.id &&
+    msg.content.includes("Verification")
+  );
 
-    // 🔥 重複防止
-    const messages = await channel.messages.fetch({ limit: 10 });
+  if (exists) return;
 
-    const exists = messages.some(msg =>
-      msg.author.id === client.user.id &&
-      msg.content.includes("Verification")
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("verify")
+      .setLabel("VERIFY ACCESS")
+      .setStyle(ButtonStyle.Success)
+  );
+
+  // 🔗 Discordチャンネルリンク
+  const rulesLink = `<#${RULES_CHANNEL_ID}>`;
+
+  // 🇯🇵 日本語
+  const embedJP = new EmbedBuilder()
+    .setColor(0x0099ff)
+    .setDescription(
+      "🇯🇵 認証\n\n" +
+      "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
+      `${rulesLink} にある利用規約に同意したものとみなされます。\n`
     );
 
-    if (exists) return;
-
-    // 🔵 ボタン
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("verify")
-        .setLabel("VERIFY ACCESS")
-        .setStyle(ButtonStyle.Success)
+  // 🇺🇸 English
+  const embedEN = new EmbedBuilder()
+    .setColor(0x0099ff)
+    .setDescription(
+      "Verification\n\n" +
+      "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
+      `${rulesLink}.\n`
     );
 
-    // 🇯🇵 日本語
-    const embedJP = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setDescription(
-        "🇯🇵 認証\n\n" +
-        "下のボタンをクリックすると、認証が完了します。認証を完了すると利用規約に同意したものとみなされます。"
-      );
+  await channel.send({
+    embeds: [embedJP]
+  });
 
-    // 🇺🇸 English
-    const embedEN = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setDescription(
-        "Verification\n\n" +
-        "Click the button below to complete verification. By completing verification, you agree to the Terms of Service."
-      );
-
-    // 🔵 送信
-    await channel.send({ embeds: [embedJP] });
-    await channel.send({ embeds: [embedEN], components: [row] });
-
-  } catch (err) {
-    console.log("❌ チャンネル取得エラー:", err);
-  }
+  await channel.send({
+    embeds: [embedEN],
+    components: [row]
+  });
 });
 
 // 🔵 ボタン処理
@@ -96,33 +93,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
   if (interaction.customId === "verify") {
-    try {
-      const member = await interaction.guild.members.fetch(interaction.user.id);
+    const member = await interaction.guild.members.fetch(interaction.user.id);
 
-      if (member.roles.cache.has(ROLE_ID)) {
-        return interaction.reply({
-          content: "すでに認証済みです",
-          ephemeral: true
-        });
-      }
-
-      await member.roles.add(ROLE_ID);
-
-      await interaction.reply({
-        content: "認証完了しました 👍",
-        ephemeral: true
-      });
-
-      console.log(`${interaction.user.tag} を認証しました`);
-
-    } catch (err) {
-      console.log("❌ ロール付与エラー:", err);
-
-      interaction.reply({
-        content: "エラーが発生しました",
+    if (member.roles.cache.has(ROLE_ID)) {
+      return interaction.reply({
+        content: "すでに認証済みです",
         ephemeral: true
       });
     }
+
+    await member.roles.add(ROLE_ID);
+
+    await interaction.reply({
+      content: "認証完了しました 👍",
+      ephemeral: true
+    });
+
+    console.log(`${interaction.user.tag} を認証しました`);
   }
 });
 
