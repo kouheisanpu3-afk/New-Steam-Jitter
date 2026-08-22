@@ -91,7 +91,10 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
-    if (interaction.customId === "verify") {
+
+    // =======================
+    // Verify
+    if (interaction.customId === "verify" || interaction.customId === "change_lang") {
 
       const select = new StringSelectMenuBuilder()
         .setCustomId("select_lang")
