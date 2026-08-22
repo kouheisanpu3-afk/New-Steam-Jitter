@@ -80,7 +80,7 @@ client.once(Events.ClientReady, async () => {
       const embedJP = new EmbedBuilder()
         .setColor(0x0099ff)
         .setDescription(
-          "## 認証\n\n" +
+          "## 🚫 認証\n\n" +
           "このチャンネルにメッセージを送信しないでください\n\n" +
           "このチャンネルはスパムボットを検知するために使用されます。\n" +
           "メッセージを送信したユーザーは即座にキックされます。\n\n" +
@@ -90,7 +90,7 @@ client.once(Events.ClientReady, async () => {
       const embedEN = new EmbedBuilder()
         .setColor(0x0099ff)
         .setDescription(
-          "## Verification\n\n" +
+          "## 🚫 Verification\n\n" +
           "Do not send messages in this channel.\n\n" +
           "This channel is used to detect spam bots.\n" +
           "Users will be kicked immediately.\n\n" +
