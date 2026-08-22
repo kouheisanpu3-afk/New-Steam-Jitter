@@ -95,7 +95,7 @@ client.once(Events.ClientReady, async () => {
 });
 
 // =======================
-// 🔥 警告メッセージ（新規追加）
+// 警告メッセージ送信（1回だけ）
 client.once(Events.ClientReady, async () => {
   try {
     const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
@@ -123,16 +123,20 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.MessageCreate, async (message) => {
 
   if (message.author.bot) return;
+  if (!message.guild) return;
+
   if (message.channel.id !== WATCH_CHANNEL_ID) return;
 
   try {
     const member = await message.guild.members.fetch(message.author.id);
 
+    if (!member) return;
+
     if (member.permissions.has("Administrator")) return;
 
     await member.kick("スパム検知チャンネルに投稿");
 
-    console.log(`KICK: ${member.user.tag}`);
+    console.log(`KICK: ${message.author.tag}`);
 
   } catch (err) {
     console.log("キック失敗:", err);
