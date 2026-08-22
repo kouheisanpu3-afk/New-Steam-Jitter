@@ -95,51 +95,29 @@ client.once(Events.ClientReady, async () => {
 });
 
 // =======================
-// 警告メッセージ送信（1回だけ）
-client.once(Events.ClientReady, async () => {
-  try {
-    const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
-
-    const warnEmbed = new EmbedBuilder()
-      .setColor(0x808080)
-      .setTitle("注意")
-      .setDescription(
-        "このチャンネルにメッセージを送信しないでください\n\n" +
-        "このチャンネルはスパムボットを検知するために使用されます。\n" +
-        "メッセージを送信したユーザーは即座にキックされます。"
-      );
-
-    await warnChannel.send({
-      embeds: [warnEmbed]
-    });
-
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-// =======================
-// スパム検知 → 即キック
+// 🔥 スパム検知（即削除＋即キック）
 client.on(Events.MessageCreate, async (message) => {
 
   if (message.author.bot) return;
   if (!message.guild) return;
-
   if (message.channel.id !== WATCH_CHANNEL_ID) return;
 
   try {
-    const member = await message.guild.members.fetch(message.author.id);
 
-    if (!member) return;
+    const member = await message.guild.members.fetch(message.author.id);
 
     if (member.permissions.has("Administrator")) return;
 
+    // 🔥 即削除
+    await message.delete().catch(() => {});
+
+    // 🔥 即キック
     await member.kick("スパム検知チャンネルに投稿");
 
-    console.log(`KICK: ${message.author.tag}`);
+    console.log(`DELETE + KICK: ${message.author.tag}`);
 
   } catch (err) {
-    console.log("キック失敗:", err);
+    console.log("エラー:", err);
   }
 });
 
