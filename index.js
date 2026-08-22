@@ -34,79 +34,92 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
+// =======================
 const ROLE_ID = "1540560312602988594";
 const ENGLISH_ROLE_ID = "1540560377866362950";
 
 const CHANNEL_ID = "1540606154093367336";
-
 const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
-// =======================
-// スパム検知チャンネル
 const WATCH_CHANNEL_ID = "1540694105305124904";
+
+// =======================
+// 重複防止用キャッシュ
+let verifyMessageSent = false;
+let warnMessageSent = false;
 
 // =======================
 // 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
+  // =======================
+  // 認証メッセージ（重複防止）
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("verify")
-        .setLabel("認証/Verify")
-        .setStyle(ButtonStyle.Primary),
+    if (!verifyMessageSent) {
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify")
+          .setLabel("認証/Verify")
+          .setStyle(ButtonStyle.Primary),
 
-      new ButtonBuilder()
-        .setCustomId("change_lang")
-        .setLabel("言語を変更 / Change Language")
-        .setStyle(ButtonStyle.Secondary)
-    );
-
-    const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
-    const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
-
-    const embedJP = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setDescription(
-        "## 認証\n\n" +
-        "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
-        `${rulesText}に同意したものとみなされます。`
+        new ButtonBuilder()
+          .setCustomId("change_lang")
+          .setLabel("言語を変更 / Change Language")
+          .setStyle(ButtonStyle.Secondary)
       );
 
-    const embedEN = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setDescription(
-        "## Verification\n\n" +
-        `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
-      );
+      const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
+      const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
-    await channel.send({
-      embeds: [embedJP, embedEN],
-      components: [row]
-    });
+      const embedJP = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setDescription(
+          "## 認証\n\n" +
+          "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
+          `${rulesText}に同意したものとみなされます。`
+        );
+
+      const embedEN = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setDescription(
+          "## Verification\n\n" +
+          `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
+        );
+
+      await channel.send({
+        embeds: [embedJP, embedEN],
+        components: [row]
+      });
+
+      verifyMessageSent = true;
+    }
 
   } catch (err) {
     console.log(err);
   }
 
   // =======================
-  // スパム警告メッセージ送信
+  // スパム警告（重複防止）
   try {
     const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
 
-    const warnEmbed = new EmbedBuilder()
-      .setColor(0x808080)
-      .setDescription(
-        "## このチャンネルにメッセージを送信しないでください\n\n" +
-        "> このチャンネルはスパムボットを検知するために使用されます。\n" +
-        "> メッセージを送信したユーザーは即座にキックされます。"
-      );
+    if (!warnMessageSent) {
+      const warnEmbed = new EmbedBuilder()
+        .setColor(0x808080)
+        .setDescription(
+          "## このチャンネルにメッセージを送信しないでください\n\n" +
+          "> このチャンネルはスパムボットを検知するために使用されます。\n" +
+          "> メッセージを送信したユーザーは即座にキックされます。"
+        );
 
-    await warnChannel.send({ embeds: [warnEmbed] });
+      await warnChannel.send({ embeds: [warnEmbed] });
+
+      warnMessageSent = true;
+    }
 
   } catch (err) {
     console.log(err);
