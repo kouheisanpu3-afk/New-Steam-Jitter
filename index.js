@@ -83,7 +83,6 @@ client.once(Events.ClientReady, async () => {
 // ボタン & セレクト処理
 client.on(Events.InteractionCreate, async (interaction) => {
 
-  // ===================
   // 認証ボタン
   if (interaction.isButton()) {
     if (interaction.customId === "verify") {
@@ -114,45 +113,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
-  // ===================
   // セレクトメニュー
   if (interaction.isStringSelectMenu()) {
 
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
+    // ===================
     // 日本語
     if (interaction.values[0] === "jp") {
 
       if (member.roles.cache.has(ROLE_ID)) {
-        return interaction.reply({
+        return interaction.update({
           content: "すでに認証済みです",
-          ephemeral: true
+          components: []
         });
       }
 
       await member.roles.add(ROLE_ID);
 
-      return interaction.reply({
+      return interaction.update({
         content: "認証完了しました 👍",
-        ephemeral: true
+        components: []
       });
     }
 
+    // ===================
     // English
     if (interaction.values[0] === "en") {
 
       if (member.roles.cache.has(ROLE_ID)) {
-        return interaction.reply({
+        return interaction.update({
           content: "Already verified.",
-          ephemeral: true
+          components: []
         });
       }
 
       await member.roles.add(ROLE_ID);
 
-      return interaction.reply({
+      return interaction.update({
         content: "Verification completed 👍",
-        ephemeral: true
+        components: []
       });
     }
   }
