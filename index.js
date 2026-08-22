@@ -28,7 +28,7 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-const ROLE_ID = "1517426809749110824";
+const ROLE_ID = "1540560312602988594";
 const CHANNEL_ID = "1534880792529080371";
 
 // 🔵 起動時
