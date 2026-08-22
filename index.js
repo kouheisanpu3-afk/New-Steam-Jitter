@@ -64,7 +64,7 @@ client.once(Events.ClientReady, async () => {
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
-        "認証\n " +
+        "認証\n\u200B" +
         "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
         `${rulesText}に同意したものとみなされます。`
       );
