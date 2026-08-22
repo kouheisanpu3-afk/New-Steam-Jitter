@@ -94,18 +94,17 @@ client.once(Events.ClientReady, async () => {
   }
 
   // =======================
-  // 🔥 スパム警告メッセージ送信（追加）
+  // スパム警告メッセージ送信
   try {
     const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
 
     const warnEmbed = new EmbedBuilder()
-      .setColor(0x808080) // グレー
+      .setColor(0x808080)
       .setDescription(
         "## このチャンネルにメッセージを送信しないでください\n\n" +
         "> このチャンネルはスパムボットを検知するために使用されます。\n" +
         "> メッセージを送信したユーザーは即座にキックされます。"
-      )
-      .setTimestamp();
+      );
 
     await warnChannel.send({ embeds: [warnEmbed] });
 
@@ -115,7 +114,7 @@ client.once(Events.ClientReady, async () => {
 });
 
 // =======================
-// 🔥 スパム検知（即削除＋即キック）
+// スパム検知（即削除＋即キック）
 client.on(Events.MessageCreate, async (message) => {
 
   if (message.author.bot) return;
@@ -127,10 +126,7 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (member.permissions.has("Administrator")) return;
 
-    // 即削除
     await message.delete().catch(() => {});
-
-    // 即キック
     await member.kick("スパム検知チャンネルに投稿");
 
     console.log(`DELETE + KICK: ${message.author.tag}`);
