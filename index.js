@@ -33,8 +33,8 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 // ロールID
-const VERIFY_ROLE_ID = "1540560312602988594"; // 日本語認証ロール
-const ENGLISH_ROLE_ID = "1540560377866362950"; // Englishロール
+const VERIFY_ROLE_ID = "1540560312602988594"; 
+const ENGLISH_ROLE_ID = "1540560377866362950"; 
 
 // チャンネルID
 const CHANNEL_ID = "1540606154093367336";
@@ -60,19 +60,26 @@ client.once(Events.ClientReady, async () => {
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
     const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
+    // =======================
+    // 🇯🇵 日本語Embed（余白強化）
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "## 認証\n\n" +
-        "下のボタンをクリックすると認証が完了します。\n" +
-        `${rulesText} に同意したものとみなされます。`
+        "下のボタンをクリックすると認証が完了します。\n\n" +
+        "認証を完了すると以下に同意したものとみなされます。\n\n" +
+        `${rulesText}\n\n\n`
       );
 
+    // =======================
+    // 🇺🇸 EnglishEmbed（余白強化）
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "## Verification\n\n" +
-        `Click the button below to complete verification.\nBy continuing, you agree to the ${tosText}.`
+        "Click the button below to complete verification.\n\n" +
+        "By continuing, you agree to the Terms of Service.\n\n" +
+        `${tosText}\n\n\n`
       );
 
     await channel.send({ embeds: [embedJP] });
@@ -120,7 +127,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   // =======================
-  // セレクトメニュー以外は無視
+  // セレクトメニュー
   if (!interaction.isStringSelectMenu()) return;
 
   const member = await interaction.guild.members.fetch(interaction.user.id);
