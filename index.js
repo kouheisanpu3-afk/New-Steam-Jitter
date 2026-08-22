@@ -56,26 +56,31 @@ client.once(Events.ClientReady, async () => {
       .setStyle(ButtonStyle.Success)        
   );        
 
-  // 🔥 上下2分割風Embed
-  const embed = new EmbedBuilder()        
-    .setColor(0x00c8ff) // 水色ライン        
+  // 🔥 日本語Embed（上）
+  const embedJP = new EmbedBuilder()        
+    .setColor(0x00c8ff)        
     .setDescription(
-      "━━━━━━━━━━━━━━━━━━\n" +
-      "🇯🇵 日本語（認証）\n" +
-      "━━━━━━━━━━━━━━━━━━\n" +
-      "下のボタンをクリックすると認証が完了します。\n" +
-      "認証を完了すると利用規約に同意したものとみなされます。\n\n" +
+      "🇯🇵 **認証**\n\n" +
+      "下のボタンをクリックすると、認証が完了します。\n" +
+      "認証を完了すると利用規約に同意したものとみなされます。"
+    );        
 
-      "━━━━━━━━━━━━━━━━━━\n" +
-      "🇺🇸 Verification\n" +
-      "━━━━━━━━━━━━━━━━━━\n" +
+  // 🔥 English Embed（下）
+  const embedEN = new EmbedBuilder()        
+    .setColor(0x00c8ff)        
+    .setDescription(
+      "🇺🇸 **Verification**\n\n" +
       "Click the button below to complete verification.\n" +
       "By completing verification, you agree to the Terms of Service."
     );        
 
-  // 🔵 認証メッセージ送信        
+  // 🔵 認証メッセージ送信（2つ別送信）
   await channel.send({        
-    embeds: [embed],        
+    embeds: [embedJP]        
+  });        
+
+  await channel.send({        
+    embeds: [embedEN],        
     components: [row]        
   });        
 });        
