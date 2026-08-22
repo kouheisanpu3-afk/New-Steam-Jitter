@@ -30,7 +30,7 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540606154093367336"; // ←ここ要確認
+const CHANNEL_ID = "1540566154093367336";
 
 const RULES_CHANNEL_ID = "1540626614982025327";
 
@@ -46,7 +46,7 @@ client.once(Events.ClientReady, async () => {
       return;
     }
 
-    console.log("✅ チャンネル取得成功:", channel.name);
+    console.log("チャンネル取得成功:", channel.name);
 
     const messages = await channel.messages.fetch({ limit: 10 });
 
@@ -89,7 +89,7 @@ client.once(Events.ClientReady, async () => {
     console.log("❌ チャンネル取得エラー:");
     console.log(err);
 
-    console.log("\n🔥 チェック項目:");
+    console.log("\nチェック項目:");
     console.log("1. CHANNEL_IDが正しいか");
     console.log("2. Botがそのサーバーにいるか");
     console.log("3. Botに View Channel 権限があるか");
