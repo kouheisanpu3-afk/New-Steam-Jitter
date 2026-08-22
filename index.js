@@ -84,12 +84,13 @@ client.once(Events.ClientReady, async () => {
   }
 });
 
-// ボタン処理（追加：言語選択）
+// ボタン処理
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ① 最初のボタン
+  // 認証 → 言語選択へ
   if (interaction.customId === "verify") {
+
     const langRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("lang_jp")
@@ -103,13 +104,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
     );
 
     return interaction.reply({
-      content: "言語を選択してください / Please select language",
+      content: "言語を選択してください / Select Language",
       components: [langRow],
       ephemeral: true
     });
   }
 
-  // ② 日本語認証
+  // 日本語認証
   if (interaction.customId === "lang_jp") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
@@ -133,7 +134,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
-  // ③ English認証
+  // English認証
   if (interaction.customId === "lang_en") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
