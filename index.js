@@ -53,14 +53,13 @@ client.once(Events.ClientReady, async () => {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("verify")
-        .setLabel("VERIFY ACCESS")
+        .setLabel("認証/Verify") // ←ここだけ変更
         .setStyle(ButtonStyle.Success)
     );
 
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
     const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
-    // 🇯🇵（見出しで少し大きく）
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
@@ -69,7 +68,6 @@ client.once(Events.ClientReady, async () => {
         `${rulesText}に同意したものとみなされます。`
       );
 
-    // 🇺🇸（見出しで少し大きく）
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
