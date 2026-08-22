@@ -32,7 +32,9 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-const ROLE_ID = "1540560312602988594";
+const ROLE_ID = "1540560312602988594"; // 認証ロール
+const ENGLISH_ROLE_ID = "1540560377866362950"; // ← Englishロール追加
+
 const CHANNEL_ID = "1540606154093367336";
 
 const RULES_CHANNEL_ID = "1540626614982025327";
@@ -141,7 +143,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           new EmbedBuilder()
             .setColor(0x00ff99)
             .setTitle("認証完了")
-            .setDescription("認証が完了しました")
+            .setDescription("認証が完了しました 👍")
         ],
         components: []
       });
@@ -163,6 +165,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
 
       await member.roles.add(ROLE_ID);
+      await member.roles.add(ENGLISH_ROLE_ID); // ←ここ追加
 
       return interaction.update({
         embeds: [
