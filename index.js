@@ -53,8 +53,8 @@ client.once(Events.ClientReady, async () => {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("verify")
-        .setLabel("認証/Verify") // ←ここだけ変更
-        .setStyle(ButtonStyle.Success)
+        .setLabel("認証/Verify")
+        .setStyle(ButtonStyle.Primary) // ←ここだけ変更（薄紫系）
     );
 
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
