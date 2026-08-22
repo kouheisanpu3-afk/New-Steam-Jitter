@@ -92,6 +92,26 @@ client.once(Events.ClientReady, async () => {
   } catch (err) {
     console.log(err);
   }
+
+  // =======================
+  // 🔥 スパム警告メッセージ送信（追加）
+  try {
+    const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
+
+    const warnEmbed = new EmbedBuilder()
+      .setColor(0x808080) // グレー
+      .setDescription(
+        "## このチャンネルにメッセージを送信しないでください\n\n" +
+        "> このチャンネルはスパムボットを検知するために使用されます。\n" +
+        "> メッセージを送信したユーザーは即座にキックされます。"
+      )
+      .setTimestamp();
+
+    await warnChannel.send({ embeds: [warnEmbed] });
+
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 // =======================
@@ -103,15 +123,14 @@ client.on(Events.MessageCreate, async (message) => {
   if (message.channel.id !== WATCH_CHANNEL_ID) return;
 
   try {
-
     const member = await message.guild.members.fetch(message.author.id);
 
     if (member.permissions.has("Administrator")) return;
 
-    // 🔥 即削除
+    // 即削除
     await message.delete().catch(() => {});
 
-    // 🔥 即キック
+    // 即キック
     await member.kick("スパム検知チャンネルに投稿");
 
     console.log(`DELETE + KICK: ${message.author.tag}`);
