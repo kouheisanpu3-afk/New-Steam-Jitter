@@ -141,7 +141,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           new EmbedBuilder()
             .setColor(0x00ff99)
             .setTitle("認証完了")
-            .setDescription("認証が完了しました 👍")
+            .setDescription("認証が完了しました")
         ],
         components: []
       });
