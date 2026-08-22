@@ -59,7 +59,7 @@ client.once(Events.ClientReady, async () => {
       .setColor(0x0099ff)
       .setDescription(
         "## 認証\n\n" +
-        "下のボタンをクリックすると認証が完了します。\n" +
+        "下のボタンをクリックすると、認証が完了します。\n" +
         `${rulesText}に同意したものとみなされます。`
       );
 
@@ -83,32 +83,44 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ======================
-  // 認証 → 言語UI（縦）
+  // 認証 → 言語選択
   if (interaction.customId === "verify") {
 
-    const row1 = new ActionRowBuilder().addComponents(
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("open_lang")
+        .setLabel("言語を選択 / Select Language ▼")
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return interaction.reply({
+      content: "認証メニュー",
+      components: [row],
+      ephemeral: true
+    });
+  }
+
+  // 言語UI展開
+  if (interaction.customId === "open_lang") {
+
+    const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("lang_jp")
         .setLabel("日本語")
-        .setStyle(ButtonStyle.Success)
-    );
+        .setStyle(ButtonStyle.Success),
 
-    const row2 = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("lang_en")
         .setLabel("English")
         .setStyle(ButtonStyle.Primary)
     );
 
-    return interaction.reply({
+    return interaction.update({
       content: "```言語を選択してください / Select Language```",
-      components: [row1, row2],
-      ephemeral: true
+      components: [row]
     });
   }
 
-  // ======================
   // 日本語認証
   if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
@@ -128,7 +140,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ======================
   // English認証
   if (interaction.customId === "lang_en") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
