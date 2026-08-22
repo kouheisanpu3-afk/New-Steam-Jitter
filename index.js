@@ -48,40 +48,33 @@ client.once(Events.ClientReady, async () => {
 
   if (exists) return;       
 
-  // 🔵 ボタン作成（大きめ＆強調）
+  // 🔵 ボタン作成       
   const row = new ActionRowBuilder().addComponents(       
     new ButtonBuilder()       
       .setCustomId("verify")       
-      .setLabel("✔ VERIFY NOW")       
+      .setLabel("Verify")       
       .setStyle(ButtonStyle.Success)       
   );       
 
-  // 🔥 Embed（見た目強化・大きく見える）
+  // 🔥 Embed（国旗テキスト変更）
   const embed = new EmbedBuilder()       
     .setColor(0x00c8ff) // 水色ライン       
-    .setTitle("🚀  ENTER VERIFICATION SYSTEM  🚀")       
-    .setDescription("下のボタンを押して認証を完了してください / Complete verification below")       
     .addFields(       
       {       
-        name: "🇯🇵 【日本語】認証について",       
+        name: "🇯🇵 認証",       
         value:       
-          "━━━━━━━━━━━━━━━━━━\n" +       
-          "このボタンを押すことで認証が完了します。\n" +       
-          "認証後、利用規約への同意が自動で行われます。\n" +       
-          "━━━━━━━━━━━━━━━━━━",       
+          "下のボタンをクリックすると、認証が完了します。\n" +       
+          "認証を完了すると利用規約に同意したものとみなされます。",       
         inline: false       
       },       
       {       
-        name: "🇺🇸 【English】Verification Info",       
+        name: "🇺🇸 Verification",       
         value:       
-          "━━━━━━━━━━━━━━━━━━\n" +       
-          "Press the button below to complete verification.\n" +       
-          "By verifying, you agree to the Terms of Service.\n" +       
-          "━━━━━━━━━━━━━━━━━━",       
+          "Click the button below to complete verification.\n" +       
+          "By completing verification, you agree to the Terms of Service.",       
         inline: false       
       }       
-    )       
-    .setFooter({ text: "Verification System • Secure Access" });       
+    );       
 
   // 🔵 認証メッセージ送信       
   await channel.send({       
@@ -107,7 +100,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await member.roles.add(ROLE_ID);       
 
     await interaction.reply({       
-      content: "🎉 認証完了しました！ / Verification Complete!",       
+      content: "認証完了しました 👍",       
       ephemeral: true       
     });       
 
