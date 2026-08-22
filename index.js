@@ -28,8 +28,7 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540606154093367336";
-
+const CHANNEL_ID = "1540566154093367336";
 const RULES_CHANNEL_ID = "1540626614982025327";
 
 client.once(Events.ClientReady, async () => {
@@ -60,7 +59,7 @@ client.once(Events.ClientReady, async () => {
     .setDescription(
       "🇯🇵 認証\n\n" +
       "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
-      `${rulesLink} にある利用規約に同意したものとみなされます。\n`
+      `${rulesLink} にある利用規約に同意したものとみなされます。`
     );
 
   const embedEN = new EmbedBuilder()
@@ -68,12 +67,10 @@ client.once(Events.ClientReady, async () => {
     .setDescription(
       "Verification\n\n" +
       "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
-      `${rulesLink}.\n`
+      `${rulesLink}.`
     );
 
-  await channel.send({
-    embeds: [embedJP]
-  });
+  await channel.send({ embeds: [embedJP] });
 
   await channel.send({
     embeds: [embedEN],
