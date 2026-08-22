@@ -58,7 +58,30 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
+  // ① 認証 → 言語選択
   if (interaction.customId === "verify") {
+
+    const langRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("lang_jp")
+        .setLabel("日本語")
+        .setStyle(ButtonStyle.Success),
+
+      new ButtonBuilder()
+        .setCustomId("lang_en")
+        .setLabel("English")
+        .setStyle(ButtonStyle.Primary)
+    );
+
+    return interaction.reply({
+      content: "言語を選択してください / Select Language",
+      components: [langRow],
+      ephemeral: true
+    });
+  }
+
+  // ② 日本語認証
+  if (interaction.customId === "lang_jp") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
 
@@ -73,6 +96,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       return interaction.reply({
         content: "認証完了しました 👍",
+        ephemeral: true
+      });
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  // ③ English認証
+  if (interaction.customId === "lang_en") {
+    try {
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+
+      if (member.roles.cache.has(ROLE_ID)) {
+        return interaction.reply({
+          content: "Already verified.",
+          ephemeral: true
+        });
+      }
+
+      await member.roles.add(ROLE_ID);
+
+      return interaction.reply({
+        content: "Verification completed 👍",
         ephemeral: true
       });
 
