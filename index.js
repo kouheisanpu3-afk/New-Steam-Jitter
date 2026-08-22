@@ -60,15 +60,16 @@ client.once(Events.ClientReady, async () => {
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
     const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
-    // 🇯🇵 指定文そのまま反映
+    // 🇯🇵（ここだけ利用規約クリックで飛ぶ）
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "認証\n\n" +
-        "下のボタンをクリックすると、認証が完了します。認証を完了すると利用規約に同意したものとみなされます。"
+        "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
+        `${rulesText}に同意したものとみなされます。`
       );
 
-    // 🇺🇸 そのまま
+    // 🇺🇸
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
