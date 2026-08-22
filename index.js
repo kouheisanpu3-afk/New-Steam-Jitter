@@ -30,7 +30,7 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540566154093367336";
+const CHANNEL_ID = "1540566154093367336"; // ← 認証チャンネル
 
 // 🔥 利用規約チャンネル
 const RULES_CHANNEL_ID = "1540627413136973824";
@@ -38,54 +38,58 @@ const RULES_CHANNEL_ID = "1540627413136973824";
 // 🔵 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
+  console.log("CHANNEL_ID:", CHANNEL_ID);
 
-  const channel = await client.channels.fetch(CHANNEL_ID);
+  try {
+    const channel = await client.channels.fetch(CHANNEL_ID);
 
-  const messages = await channel.messages.fetch({ limit: 10 });
+    if (!channel) {
+      console.log("❌ チャンネルが存在しません（Botから見えない可能性）");
+      return;
+    }
 
-  const exists = messages.some(msg =>
-    msg.author.id === client.user.id &&
-    msg.content.includes("Verification")
-  );
+    console.log("✅ チャンネル取得成功:", channel.name);
 
-  if (exists) return;
+    const messages = await channel.messages.fetch({ limit: 10 });
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("verify")
-      .setLabel("VERIFY ACCESS")
-      .setStyle(ButtonStyle.Success)
-  );
-
-  // 🔗 チャンネルリンク
-  const rulesLink = `<#${RULES_CHANNEL_ID}>`;
-
-  // 🇯🇵 日本語
-  const embedJP = new EmbedBuilder()
-    .setColor(0x0099ff)
-    .setDescription(
-      "🇯🇵 認証\n\n" +
-      "下のボタンをクリックすると、認証が完了します。認証を完了すると " +
-      `${rulesLink} にある利用規約に同意したものとみなされます。`
+    const exists = messages.some(msg =>
+      msg.author.id === client.user.id &&
+      msg.content.includes("Verification")
     );
 
-  // 🇺🇸 English（Terms of Serviceをクリック可能に）
-  const embedEN = new EmbedBuilder()
-    .setColor(0x0099ff)
-    .setDescription(
-      "Verification\n\n" +
-      "Click the button below to complete verification. By completing verification, you agree to " +
-      `[Terms of Service](<#${RULES_CHANNEL_ID}>)`
+    if (exists) return;
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("verify")
+        .setLabel("VERIFY ACCESS")
+        .setStyle(ButtonStyle.Success)
     );
 
-  await channel.send({
-    embeds: [embedJP]
-  });
+    const rulesLink = `<#${RULES_CHANNEL_ID}>`;
 
-  await channel.send({
-    embeds: [embedEN],
-    components: [row]
-  });
+    const embedJP = new EmbedBuilder()
+      .setColor(0x0099ff)
+      .setDescription(
+        "🇯🇵 認証\n\n" +
+        "下のボタンをクリックすると認証が完了します。認証を完了すると " +
+        `${rulesLink} にある利用規約に同意したものとみなされます。`
+      );
+
+    const embedEN = new EmbedBuilder()
+      .setColor(0x0099ff)
+      .setDescription(
+        "Verification\n\n" +
+        "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
+        `${rulesLink}.`
+      );
+
+    await channel.send({ embeds: [embedJP] });
+    await channel.send({ embeds: [embedEN], components: [row] });
+
+  } catch (err) {
+    console.error("❌ チャンネル取得エラー:", err);
+  }
 });
 
 // 🔵 ボタン処理
