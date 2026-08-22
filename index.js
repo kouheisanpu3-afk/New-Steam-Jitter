@@ -83,7 +83,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択
+  // 認証 → 言語選択ボタン表示
   if (interaction.customId === "verify") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -100,33 +100,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // =======================
-  // ▼ ここが変更ポイント（展開UI）
+  // ❌ ここを無効化（押しても何も起きない）
   if (interaction.customId === "open_lang") {
-
-    const toggleRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("open_lang")
-        .setLabel("言語を選択 / Select Language ▼")
-        .setStyle(ButtonStyle.Secondary)
-    );
-
-    const langRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("lang_jp")
-        .setLabel("日本語")
-        .setStyle(ButtonStyle.Success),
-
-      new ButtonBuilder()
-        .setCustomId("lang_en")
-        .setLabel("English")
-        .setStyle(ButtonStyle.Primary)
-    );
-
-    return interaction.update({
-      content: "```言語を選択してください / Select Language```",
-      components: [toggleRow, langRow]
-    });
+    return; // ← これだけ
   }
 
   // 日本語認証
