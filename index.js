@@ -88,19 +88,32 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択（囲った版）
+  // 認証 → 言語選択（囲いのみ）
   if (interaction.customId === "verify") {
 
     const langEmbed = new EmbedBuilder()
-      .setColor(0x9b59b6)
-      .setDescription("## 言語を選択してください / Select Language");
+      .setDescription("```言語を選択してください / Select Language```");
+
+    const langRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("lang_jp")
+        .setLabel("日本語")
+        .setStyle(ButtonStyle.Success),
+
+      new ButtonBuilder()
+        .setCustomId("lang_en")
+        .setLabel("English")
+        .setStyle(ButtonStyle.Primary)
+    );
 
     return interaction.reply({
       embeds: [langEmbed],
+      components: [langRow],
       ephemeral: true
     });
   }
 
+  // 日本語
   if (interaction.customId === "lang_jp") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
@@ -124,6 +137,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
+  // English
   if (interaction.customId === "lang_en") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
