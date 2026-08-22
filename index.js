@@ -88,11 +88,15 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択（ボタンなし表示）
+  // 認証 → 言語選択（囲った版）
   if (interaction.customId === "verify") {
 
+    const langEmbed = new EmbedBuilder()
+      .setColor(0x9b59b6)
+      .setDescription("## 言語を選択してください / Select Language");
+
     return interaction.reply({
-      content: "言語を選択してください / Select Language",
+      embeds: [langEmbed],
       ephemeral: true
     });
   }
