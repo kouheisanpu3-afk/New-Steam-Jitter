@@ -5,7 +5,8 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  StringSelectMenuBuilder
 } = require('discord.js');
 
 const express = require("express");
@@ -38,7 +39,7 @@ const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
 // =======================
-// 起動時メッセージ
+// 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
@@ -79,68 +80,81 @@ client.once(Events.ClientReady, async () => {
 });
 
 // =======================
-// ボタン処理
+// ボタン & セレクト処理
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択ボタン表示
-  if (interaction.customId === "verify") {
+  // ===================
+  // 認証ボタン
+  if (interaction.isButton()) {
+    if (interaction.customId === "verify") {
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("open_lang")
-        .setLabel("言語を選択 / Select Language ▼")
-        .setStyle(ButtonStyle.Secondary)
-    );
+      const select = new StringSelectMenuBuilder()
+        .setCustomId("select_lang")
+        .setPlaceholder("言語を選択 / Select Language")
+        .addOptions([
+          {
+            label: "日本語",
+            value: "jp",
+            emoji: "🇯🇵"
+          },
+          {
+            label: "English",
+            value: "en",
+            emoji: "🇺🇸"
+          }
+        ]);
 
-    return interaction.reply({
-      content: "認証メニュー",
-      components: [row],
-      ephemeral: true
-    });
+      const row = new ActionRowBuilder().addComponents(select);
+
+      return interaction.reply({
+        content: "言語を選択してください",
+        components: [row],
+        ephemeral: true
+      });
+    }
   }
 
-  // ❌ ここを無効化（押しても何も起きない）
-  if (interaction.customId === "open_lang") {
-    return; // ← これだけ
-  }
+  // ===================
+  // セレクトメニュー
+  if (interaction.isStringSelectMenu()) {
 
-  // 日本語認証
-  if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    if (member.roles.cache.has(ROLE_ID)) {
+    // 日本語
+    if (interaction.values[0] === "jp") {
+
+      if (member.roles.cache.has(ROLE_ID)) {
+        return interaction.reply({
+          content: "すでに認証済みです",
+          ephemeral: true
+        });
+      }
+
+      await member.roles.add(ROLE_ID);
+
       return interaction.reply({
-        content: "すでに認証済みです",
+        content: "認証完了しました 👍",
         ephemeral: true
       });
     }
 
-    await member.roles.add(ROLE_ID);
+    // English
+    if (interaction.values[0] === "en") {
 
-    return interaction.reply({
-      content: "認証完了しました 👍",
-      ephemeral: true
-    });
-  }
+      if (member.roles.cache.has(ROLE_ID)) {
+        return interaction.reply({
+          content: "Already verified.",
+          ephemeral: true
+        });
+      }
 
-  // English認証
-  if (interaction.customId === "lang_en") {
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+      await member.roles.add(ROLE_ID);
 
-    if (member.roles.cache.has(ROLE_ID)) {
       return interaction.reply({
-        content: "Already verified.",
+        content: "Verification completed 👍",
         ephemeral: true
       });
     }
-
-    await member.roles.add(ROLE_ID);
-
-    return interaction.reply({
-      content: "Verification completed 👍",
-      ephemeral: true
-    });
   }
 });
 
