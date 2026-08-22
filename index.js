@@ -38,7 +38,7 @@ const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
 // =======================
-// 起動時メッセージ（日本語＋英語復活）
+// 起動時メッセージ
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
@@ -83,7 +83,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ① 認証 → そのまま言語UI表示（ここが変更）
+  // ① 認証 → そのまま言語一覧表示（ここが変更）
   if (interaction.customId === "verify") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -105,7 +105,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ② 日本語認証
+  // ② 日本語
   if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
@@ -124,7 +124,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ③ English認証
+  // ③ English
   if (interaction.customId === "lang_en") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
