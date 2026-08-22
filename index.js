@@ -63,14 +63,16 @@ client.once(Events.ClientReady, async () => {
         .setStyle(ButtonStyle.Success)
     );
 
+    // 👉 ここがポイント（クリックできるリンク）
     const rulesLink = `<#${RULES_CHANNEL_ID}>`;
 
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "🇯🇵 認証\n\n" +
-        "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
-        `${rulesLink} にある利用規約に同意したものとみなされます。`
+        "下のボタンをクリックすると、認証が完了します。認証を完了すると「" +
+        rulesLink +
+        "」にある利用規約に同意したものとみなされます。"
       );
 
     const embedEN = new EmbedBuilder()
@@ -78,7 +80,8 @@ client.once(Events.ClientReady, async () => {
       .setDescription(
         "Verification\n\n" +
         "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
-        `${rulesLink}.`
+        rulesLink +
+        "."
       );
 
     await channel.send({ embeds: [embedJP] });
