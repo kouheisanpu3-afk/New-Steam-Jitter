@@ -45,21 +45,25 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
 // =======================
-// 重複防止用キャッシュ
-let verifyMessageSent = false;
-let warnMessageSent = false;
-
-// =======================
 // 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
   // =======================
-  // 認証メッセージ（重複防止）
+  // 認証メッセージ（重複防止・再起動対応）
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
 
-    if (!verifyMessageSent) {
+    const messages = await channel.messages.fetch({ limit: 20 });
+
+    const alreadySent = messages.some(m =>
+      m.author.id === client.user.id &&
+      m.embeds.length > 0 &&
+      m.embeds[0].description?.includes("認証")
+    );
+
+    if (!alreadySent) {
+
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("verify")
@@ -94,8 +98,6 @@ client.once(Events.ClientReady, async () => {
         embeds: [embedJP, embedEN],
         components: [row]
       });
-
-      verifyMessageSent = true;
     }
 
   } catch (err) {
@@ -103,11 +105,20 @@ client.once(Events.ClientReady, async () => {
   }
 
   // =======================
-  // スパム警告（重複防止）
+  // スパム警告（再起動対応）
   try {
     const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
 
-    if (!warnMessageSent) {
+    const messages = await warnChannel.messages.fetch({ limit: 20 });
+
+    const alreadySent = messages.some(m =>
+      m.author.id === client.user.id &&
+      m.embeds.length > 0 &&
+      m.embeds[0].description?.includes("スパムボット")
+    );
+
+    if (!alreadySent) {
+
       const warnEmbed = new EmbedBuilder()
         .setColor(0x808080)
         .setDescription(
@@ -117,8 +128,6 @@ client.once(Events.ClientReady, async () => {
         );
 
       await warnChannel.send({ embeds: [warnEmbed] });
-
-      warnMessageSent = true;
     }
 
   } catch (err) {
