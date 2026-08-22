@@ -4,8 +4,7 @@ const {
   Events,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder
+  ButtonStyle
 } = require('discord.js');
 
 const express = require("express");
@@ -45,7 +44,9 @@ client.once(Events.ClientReady, async () => {
         .setStyle(ButtonStyle.Primary)
     );
 
-    await channel.send({ components: [row] });
+    await channel.send({
+      components: [row]
+    });
 
   } catch (err) {
     console.log("❌ チャンネル取得エラー:");
@@ -57,7 +58,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択表示
+  // ① 認証 → 言語選択
   if (interaction.customId === "verify") {
 
     const langRow = new ActionRowBuilder().addComponents(
@@ -73,42 +74,58 @@ client.on(Events.InteractionCreate, async (interaction) => {
     );
 
     return interaction.reply({
-      content: "言語を選択 / Select Language",
+      content: "言語を選択してください / Select Language",
       components: [langRow],
       ephemeral: true
     });
   }
 
-  // 日本語認証
+  // ② 日本語認証
   if (interaction.customId === "lang_jp") {
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+    try {
+      const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    if (member.roles.cache.has(ROLE_ID)) {
-      return interaction.reply({ content: "すでに認証済みです", ephemeral: true });
+      if (member.roles.cache.has(ROLE_ID)) {
+        return interaction.reply({
+          content: "すでに認証済みです",
+          ephemeral: true
+        });
+      }
+
+      await member.roles.add(ROLE_ID);
+
+      return interaction.reply({
+        content: "認証完了しました 👍",
+        ephemeral: true
+      });
+
+    } catch (err) {
+      console.log(err);
     }
-
-    await member.roles.add(ROLE_ID);
-
-    return interaction.reply({
-      content: "認証完了しました 👍",
-      ephemeral: true
-    });
   }
 
-  // English認証
+  // ③ English認証
   if (interaction.customId === "lang_en") {
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+    try {
+      const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    if (member.roles.cache.has(ROLE_ID)) {
-      return interaction.reply({ content: "Already verified.", ephemeral: true });
+      if (member.roles.cache.has(ROLE_ID)) {
+        return interaction.reply({
+          content: "Already verified.",
+          ephemeral: true
+        });
+      }
+
+      await member.roles.add(ROLE_ID);
+
+      return interaction.reply({
+        content: "Verification completed 👍",
+        ephemeral: true
+      });
+
+    } catch (err) {
+      console.log(err);
     }
-
-    await member.roles.add(ROLE_ID);
-
-    return interaction.reply({
-      content: "Verification completed 👍",
-      ephemeral: true
-    });
   }
 });
 
