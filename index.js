@@ -32,13 +32,15 @@ const TOKEN = process.env.TOKEN;
 const ROLE_ID = "1540560312602988594";
 const CHANNEL_ID = "1540606154093367336";
 
+// 🔥 利用規約チャンネル（追加）
+const RULES_CHANNEL_ID = "1540626614982025327";
+
 // 🔵 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
   const channel = await client.channels.fetch(CHANNEL_ID);
 
-  // 🔥 重複防止
   const messages = await channel.messages.fetch({ limit: 10 });
 
   const exists = messages.some(msg =>
@@ -48,7 +50,6 @@ client.once(Events.ClientReady, async () => {
 
   if (exists) return;
 
-  // 🔵 ボタン
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("verify")
@@ -56,23 +57,27 @@ client.once(Events.ClientReady, async () => {
       .setStyle(ButtonStyle.Success)
   );
 
-  // 🔥 日本語（少しコンパクト）
+  // 🔗 Discordチャンネルリンク
+  const rulesLink = `<#${RULES_CHANNEL_ID}>`;
+
+  // 🇯🇵 日本語
   const embedJP = new EmbedBuilder()
     .setColor(0x0099ff)
     .setDescription(
       "🇯🇵 認証\n\n" +
-      "下のボタンをクリックすると、認証が完了します。認証を完了すると利用規約に同意したものとみなされます。\n"
+      "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
+      `${rulesLink} にある利用規約に同意したものとみなされます。\n`
     );
 
-  // 🔥 English（少しコンパクト）
+  // 🇺🇸 English
   const embedEN = new EmbedBuilder()
     .setColor(0x0099ff)
     .setDescription(
       "Verification\n\n" +
-      "Click the button below to complete verification. By completing verification, you agree to the Terms of Service.\n"
+      "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
+      `${rulesLink}.\n`
     );
 
-  // 🔵 送信
   await channel.send({
     embeds: [embedJP]
   });
