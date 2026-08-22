@@ -59,7 +59,7 @@ client.once(Events.ClientReady, async () => {
       .setColor(0x0099ff)
       .setDescription(
         "## 認証\n\n" +
-        "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
+        "下のボタンをクリックすると認証できます。\n" +
         `${rulesText}に同意したものとみなされます。`
       );
 
@@ -67,7 +67,7 @@ client.once(Events.ClientReady, async () => {
       .setColor(0x0099ff)
       .setDescription(
         "## Verification\n\n" +
-        `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
+        `Click the button below to verify.\nYou agree to ${tosText}.`
       );
 
     await channel.send({ embeds: [embedJP] });
@@ -83,7 +83,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ① 認証 → そのまま言語一覧表示（ここが変更）
+  // ① 認証 → ここで直接言語UI表示（変更点）
   if (interaction.customId === "verify") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -98,14 +98,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
         .setStyle(ButtonStyle.Primary)
     );
 
+    const embed = new EmbedBuilder()
+      .setDescription("```言語を選択 / Select Language```");
+
     return interaction.reply({
-      content: "```言語を選択してください / Select Language```",
+      embeds: [embed],
       components: [row],
       ephemeral: true
     });
   }
 
-  // ② 日本語
+  // ② 日本語認証
   if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
@@ -124,7 +127,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ③ English
+  // ③ English認証
   if (interaction.customId === "lang_en") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
