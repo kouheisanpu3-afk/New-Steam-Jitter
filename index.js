@@ -132,7 +132,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await member.roles.add(ROLE_ID);
 
       return interaction.update({
-        content: "認証完了しました 👍",
+        content: "認証が完了しました",
         components: []
       });
     }
