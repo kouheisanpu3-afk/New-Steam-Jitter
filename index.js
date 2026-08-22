@@ -30,7 +30,7 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540606154093367336"; // ←修正済み
+const CHANNEL_ID = "1540566154093367336";
 const RULES_CHANNEL_ID = "1540626614982025327";
 
 client.once(Events.ClientReady, async () => {
