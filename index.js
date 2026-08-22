@@ -1,103 +1,105 @@
-const {   
-  Client,   
-  GatewayIntentBits,   
-  Events,   
-  ActionRowBuilder,   
-  ButtonBuilder,   
-  ButtonStyle   
-} = require('discord.js');  
+const {    
+  Client,    
+  GatewayIntentBits,    
+  Events,    
+  ActionRowBuilder,    
+  ButtonBuilder,    
+  ButtonStyle,  
+  EmbedBuilder  
+} = require('discord.js');   
 
-const express = require("express");  
+const express = require("express");   
 
-// 🔵 Render用Webサーバー  
-const app = express();  
-app.get("/", (req, res) => {  
-  res.send("Bot is alive!");  
-});  
-app.listen(3000, () => {  
-  console.log("Webサーバー起動");  
-});  
+// 🔵 Render用Webサーバー   
+const app = express();   
+app.get("/", (req, res) => {   
+  res.send("Bot is alive!");   
+});   
+app.listen(3000, () => {   
+  console.log("Webサーバー起動");   
+});   
 
-// 🔵 Bot設定  
-const client = new Client({  
-  intents: [  
-    GatewayIntentBits.Guilds,  
-    GatewayIntentBits.GuildMembers  
-  ]  
-});  
+// 🔵 Bot設定   
+const client = new Client({   
+  intents: [   
+    GatewayIntentBits.Guilds,   
+    GatewayIntentBits.GuildMembers   
+  ]   
+});   
 
-const TOKEN = process.env.TOKEN;  
+const TOKEN = process.env.TOKEN;   
 
-const ROLE_ID = "1540560312602988594";  
-const CHANNEL_ID = "1540606154093367336";  
+const ROLE_ID = "1540560312602988594";   
+const CHANNEL_ID = "1540606154093367336";   
 
-// 🔵 起動時  
-client.once(Events.ClientReady, async () => {  
-  console.log(`ログイン: ${client.user.tag}`);  
+// 🔵 起動時   
+client.once(Events.ClientReady, async () => {   
+  console.log(`ログイン: ${client.user.tag}`);   
 
-  const channel = await client.channels.fetch(CHANNEL_ID);  
+  const channel = await client.channels.fetch(CHANNEL_ID);   
 
-  // 🔥 重複防止チェック  
-  const messages = await channel.messages.fetch({ limit: 10 });  
+  // 🔥 重複防止チェック   
+  const messages = await channel.messages.fetch({ limit: 10 });   
 
-  const exists = messages.some(msg =>  
-    msg.author.id === client.user.id &&  
-    msg.content.includes("Verification")  
-  );  
+  const exists = messages.some(msg =>   
+    msg.author.id === client.user.id &&   
+    msg.content.includes("Verification")   
+  );   
 
-  if (exists) return;  
+  if (exists) return;   
 
-  // 🔵 ボタン作成  
-  const row = new ActionRowBuilder().addComponents(  
-    new ButtonBuilder()  
-      .setCustomId("verify")  
-      .setLabel("Verify")  
-      .setStyle(ButtonStyle.Success)  
-  );  
+  // 🔵 ボタン作成   
+  const row = new ActionRowBuilder().addComponents(   
+    new ButtonBuilder()   
+      .setCustomId("verify")   
+      .setLabel("Verify")   
+      .setStyle(ButtonStyle.Success)   
+  );   
 
-  // 🔵 認証メッセージ  
-  await channel.send({  
-    content:  
-      "━━━━━━━━━━━━━━━━━━\n" +  
-      "🔐 認証 / Verification\n" +  
-      "━━━━━━━━━━━━━━━━━━\n\n" +  
+  // 🔥 背景付き（Embed）
+  const embed = new EmbedBuilder()
+    .setColor(0x00ff99)
+    .setTitle("🔐 認証 / Verification")
+    .setDescription(
+      "**【日本語】**\n" +
+      "下のボタンをクリックすると、認証が完了します。\n" +
+      "認証を完了すると利用規約に同意したものとみなされます。\n\n" +
 
-      "【日本語】\n" +  
-      "下のボタンをクリックすると、認証が完了します。\n" +  
-      "認証を完了すると利用規約に同意したものとみなされます。\n\n" +  
+      "**【English】**\n" +
+      "Click the button below to complete verification.\n" +
+      "By completing verification, you agree to the Terms of Service."
+    );
 
-      "【English】\n" +  
-      "Click the button below to complete verification.\n" +  
-      "By completing verification, you agree to the Terms of Service.\n\n" +  
+  // 🔵 認証メッセージ送信   
+  await channel.send({   
+    embeds: [embed],
+    components: [row]   
+  });   
+});   
 
-      "━━━━━━━━━━━━━━━━━━",  
-    components: [row]  
-  });  
-});  
+// 🔵 ボタン押した時   
+client.on(Events.InteractionCreate, async (interaction) => {   
+  if (!interaction.isButton()) return;   
 
-// 🔵 ボタン押した時  
-client.on(Events.InteractionCreate, async (interaction) => {  
-  if (!interaction.isButton()) return;  
+  if (interaction.customId === "verify") {   
+    const member = await interaction.guild.members.fetch(interaction.user.id);   
 
-  if (interaction.customId === "verify") {  
-    const member = await interaction.guild.members.fetch(interaction.user.id);  
+    if (member.roles.cache.has(ROLE_ID)) {   
+      return interaction.reply({   
+        content: "すでに認証済みです",   
+        ephemeral: true   
+      });   
+    }   
 
-    if (member.roles.cache.has(ROLE_ID)) {  
-      return interaction.reply({  
-        content: "すでに認証済みです",  
-        ephemeral: true  
-      });  
-    }  
+    await member.roles.add(ROLE_ID);   
 
-    await member.roles.add(ROLE_ID);  
+    await interaction.reply({   
+      content: "認証完了しました 👍",   
+      ephemeral: true   
+    });   
 
-    await interaction.reply({  
-      content: "認証完了しました 👍",  
-      ephemeral: true  
-    });  
-
-    console.log(`${interaction.user.tag} を認証しました`);  
-  }  
-});  
+    console.log(`${interaction.user.tag} を認証しました`);   
+  }   
+});   
 
 client.login(TOKEN);
