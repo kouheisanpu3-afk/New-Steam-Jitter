@@ -43,7 +43,7 @@ const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
 // =======================
-// 🔥 スパム検知チャンネル
+// スパム検知チャンネル
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
 // =======================
@@ -95,7 +95,31 @@ client.once(Events.ClientReady, async () => {
 });
 
 // =======================
-// 🔥 スパム検知 → 即キック
+// 🔥 警告メッセージ（新規追加）
+client.once(Events.ClientReady, async () => {
+  try {
+    const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
+
+    const warnEmbed = new EmbedBuilder()
+      .setColor(0x808080)
+      .setTitle("注意")
+      .setDescription(
+        "このチャンネルにメッセージを送信しないでください\n\n" +
+        "このチャンネルはスパムボットを検知するために使用されます。\n" +
+        "メッセージを送信したユーザーは即座にキックされます。"
+      );
+
+    await warnChannel.send({
+      embeds: [warnEmbed]
+    });
+
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// =======================
+// スパム検知 → 即キック
 client.on(Events.MessageCreate, async (message) => {
 
   if (message.author.bot) return;
