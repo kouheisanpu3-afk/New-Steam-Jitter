@@ -88,7 +88,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択へ
+  // ① 認証ボタン → 言語選択
   if (interaction.customId === "verify") {
 
     const langRow = new ActionRowBuilder().addComponents(
@@ -110,7 +110,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // 日本語認証
+  // ② 日本語
   if (interaction.customId === "lang_jp") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
@@ -134,7 +134,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
-  // English認証
+  // ③ English
   if (interaction.customId === "lang_en") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
