@@ -58,7 +58,7 @@ client.once(Events.ClientReady, async () => {
 
   // 🔥 日本語（横長維持）
   const embedJP = new EmbedBuilder()
-    .setColor(0x00c8ff)
+    .setColor(0x0099ff) // ← 少し濃い水色（前より強め）
     .setDescription(
       "🇯🇵 認証\n" +
       "下のボタンをクリックすると、認証が完了します。認証を完了すると利用規約に同意したものとみなされます。"
@@ -66,7 +66,7 @@ client.once(Events.ClientReady, async () => {
 
   // 🔥 English（横長維持）
   const embedEN = new EmbedBuilder()
-    .setColor(0x00c8ff)
+    .setColor(0x0099ff) // ← 同じく濃い水色
     .setDescription(
       "Verification\n" +
       "Click the button below to complete verification. By completing verification, you agree to the Terms of Service."
