@@ -83,25 +83,8 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ① 認証 → 言語選択
+  // ① 認証 → そのまま言語UI表示（ここが変更）
   if (interaction.customId === "verify") {
-
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("open_lang")
-        .setLabel("言語を選択 / Select Language")
-        .setStyle(ButtonStyle.Secondary)
-    );
-
-    return interaction.reply({
-      content: "認証メニュー",
-      components: [row],
-      ephemeral: true
-    });
-  }
-
-  // ② 言語ボタンを開く
-  if (interaction.customId === "open_lang") {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -115,13 +98,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
         .setStyle(ButtonStyle.Primary)
     );
 
-    return interaction.update({
+    return interaction.reply({
       content: "```言語を選択してください / Select Language```",
-      components: [row]
+      components: [row],
+      ephemeral: true
     });
   }
 
-  // ③ 日本語認証
+  // ② 日本語認証
   if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
@@ -140,7 +124,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ④ English認証
+  // ③ English認証
   if (interaction.customId === "lang_en") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
