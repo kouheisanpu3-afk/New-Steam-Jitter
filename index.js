@@ -54,7 +54,7 @@ client.once(Events.ClientReady, async () => {
       new ButtonBuilder()
         .setCustomId("verify")
         .setLabel("認証/Verify")
-        .setStyle(ButtonStyle.Primary) // ←ここだけ変更（薄紫系）
+        .setStyle(ButtonStyle.Primary)
     );
 
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
@@ -84,11 +84,33 @@ client.once(Events.ClientReady, async () => {
   }
 });
 
-// ボタン処理
+// ボタン処理（追加：言語選択）
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
+  // ① 最初のボタン
   if (interaction.customId === "verify") {
+    const langRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("lang_jp")
+        .setLabel("日本語")
+        .setStyle(ButtonStyle.Success),
+
+      new ButtonBuilder()
+        .setCustomId("lang_en")
+        .setLabel("English")
+        .setStyle(ButtonStyle.Primary)
+    );
+
+    return interaction.reply({
+      content: "言語を選択してください / Please select language",
+      components: [langRow],
+      ephemeral: true
+    });
+  }
+
+  // ② 日本語認証
+  if (interaction.customId === "lang_jp") {
     try {
       const member = await interaction.guild.members.fetch(interaction.user.id);
 
@@ -101,22 +123,37 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       await member.roles.add(ROLE_ID);
 
-      await interaction.reply({
+      return interaction.reply({
         content: "認証完了しました 👍",
         ephemeral: true
       });
 
-      console.log(`${interaction.user.tag} を認証しました`);
-
     } catch (err) {
-      console.log("❌ ロール付与エラー:", err);
+      console.log(err);
+    }
+  }
 
-      if (!interaction.replied) {
-        interaction.reply({
-          content: "エラーが発生しました",
+  // ③ English認証
+  if (interaction.customId === "lang_en") {
+    try {
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+
+      if (member.roles.cache.has(ROLE_ID)) {
+        return interaction.reply({
+          content: "Already verified.",
           ephemeral: true
         });
       }
+
+      await member.roles.add(ROLE_ID);
+
+      return interaction.reply({
+        content: "Verification completed 👍",
+        ephemeral: true
+      });
+
+    } catch (err) {
+      console.log(err);
     }
   }
 });
