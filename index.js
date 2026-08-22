@@ -10,7 +10,6 @@ const {
 
 const express = require("express");
 
-// =======================
 // Webサーバー（Render用）
 const app = express();
 app.get("/", (req, res) => {
@@ -20,8 +19,7 @@ app.listen(3000, () => {
   console.log("Webサーバー起動");
 });
 
-// =======================
-// Bot作成
+// Bot
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -37,54 +35,48 @@ const CHANNEL_ID = "1540606154093367336";
 const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
-// =======================
-// 起動時メッセージ
+// 起動メッセージ
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
-  try {
-    const channel = await client.channels.fetch(CHANNEL_ID);
+  const channel = await client.channels.fetch(CHANNEL_ID);
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("verify")
-        .setLabel("認証/Verify")
-        .setStyle(ButtonStyle.Primary)
-    );
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("verify")
+      .setLabel("認証/Verify")
+      .setStyle(ButtonStyle.Primary)
+  );
 
-    const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
-    const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
-
-    const embedJP = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setDescription(
-        "## 認証\n\n" +
-        "下のボタンをクリックすると認証できます。\n" +
-        `${rulesText}に同意したものとみなされます。`
-      );
-
-    const embedEN = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setDescription(
-        "## Verification\n\n" +
-        `Click the button below to verify.\nYou agree to ${tosText}.`
-      );
-
-    await channel.send({ embeds: [embedJP] });
-    await channel.send({ embeds: [embedEN], components: [row] });
-
-  } catch (err) {
-    console.log(err);
-  }
+  await channel.send({
+    content: "認証ボタン",
+    components: [row]
+  });
 });
 
-// =======================
 // ボタン処理
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ① 認証 → ここで直接言語UI表示（変更点）
+  // ① 認証ボタン
   if (interaction.customId === "verify") {
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("open_lang")
+        .setLabel("言語を選択 / Select Language")
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return interaction.reply({
+      content: "認証メニュー",
+      components: [row],
+      ephemeral: true
+    });
+  }
+
+  // ② その場で展開（ここが重要）
+  if (interaction.customId === "open_lang") {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -98,25 +90,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
         .setStyle(ButtonStyle.Primary)
     );
 
-    const embed = new EmbedBuilder()
-      .setDescription("```言語を選択 / Select Language```");
-
-    return interaction.reply({
-      embeds: [embed],
-      components: [row],
-      ephemeral: true
+    return interaction.update({
+      content: "言語を選択してください / Select Language",
+      components: [row]
     });
   }
 
-  // ② 日本語認証
+  // 日本語認証
   if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
     if (member.roles.cache.has(ROLE_ID)) {
-      return interaction.reply({
-        content: "すでに認証済みです",
-        ephemeral: true
-      });
+      return interaction.reply({ content: "すでに認証済みです", ephemeral: true });
     }
 
     await member.roles.add(ROLE_ID);
@@ -127,15 +112,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ③ English認証
+  // English認証
   if (interaction.customId === "lang_en") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
     if (member.roles.cache.has(ROLE_ID)) {
-      return interaction.reply({
-        content: "Already verified.",
-        ephemeral: true
-      });
+      return interaction.reply({ content: "Already verified.", ephemeral: true });
     }
 
     await member.roles.add(ROLE_ID);
@@ -147,5 +129,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-// =======================
 client.login(TOKEN);
