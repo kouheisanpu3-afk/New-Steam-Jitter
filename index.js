@@ -29,11 +29,9 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
+// 🔥 あなたのID
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540566154093367336"; // ← 認証チャンネル
-
-// 🔥 利用規約チャンネル
-const RULES_CHANNEL_ID = "1540627413136973824";
+const CHANNEL_ID = "1540566154093367336"; // ←ここ要確認
 
 // 🔵 起動時
 client.once(Events.ClientReady, async () => {
@@ -44,12 +42,13 @@ client.once(Events.ClientReady, async () => {
     const channel = await client.channels.fetch(CHANNEL_ID);
 
     if (!channel) {
-      console.log("❌ チャンネルが存在しません（Botから見えない可能性）");
+      console.log("❌ チャンネルが存在しない or 見えない");
       return;
     }
 
     console.log("✅ チャンネル取得成功:", channel.name);
 
+    // 🔥 重複防止
     const messages = await channel.messages.fetch({ limit: 10 });
 
     const exists = messages.some(msg =>
@@ -59,6 +58,7 @@ client.once(Events.ClientReady, async () => {
 
     if (exists) return;
 
+    // 🔵 ボタン
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("verify")
@@ -66,29 +66,28 @@ client.once(Events.ClientReady, async () => {
         .setStyle(ButtonStyle.Success)
     );
 
-    const rulesLink = `<#${RULES_CHANNEL_ID}>`;
-
+    // 🇯🇵 日本語
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "🇯🇵 認証\n\n" +
-        "下のボタンをクリックすると認証が完了します。認証を完了すると " +
-        `${rulesLink} にある利用規約に同意したものとみなされます。`
+        "下のボタンをクリックすると、認証が完了します。認証を完了すると利用規約に同意したものとみなされます。"
       );
 
+    // 🇺🇸 English
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "Verification\n\n" +
-        "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
-        `${rulesLink}.`
+        "Click the button below to complete verification. By completing verification, you agree to the Terms of Service."
       );
 
+    // 🔵 送信
     await channel.send({ embeds: [embedJP] });
     await channel.send({ embeds: [embedEN], components: [row] });
 
   } catch (err) {
-    console.error("❌ チャンネル取得エラー:", err);
+    console.log("❌ チャンネル取得エラー:", err);
   }
 });
 
@@ -97,23 +96,33 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
   if (interaction.customId === "verify") {
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+    try {
+      const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    if (member.roles.cache.has(ROLE_ID)) {
-      return interaction.reply({
-        content: "すでに認証済みです",
+      if (member.roles.cache.has(ROLE_ID)) {
+        return interaction.reply({
+          content: "すでに認証済みです",
+          ephemeral: true
+        });
+      }
+
+      await member.roles.add(ROLE_ID);
+
+      await interaction.reply({
+        content: "認証完了しました 👍",
+        ephemeral: true
+      });
+
+      console.log(`${interaction.user.tag} を認証しました`);
+
+    } catch (err) {
+      console.log("❌ ロール付与エラー:", err);
+
+      interaction.reply({
+        content: "エラーが発生しました",
         ephemeral: true
       });
     }
-
-    await member.roles.add(ROLE_ID);
-
-    await interaction.reply({
-      content: "認証完了しました 👍",
-      ephemeral: true
-    });
-
-    console.log(`${interaction.user.tag} を認証しました`);
   }
 });
 
