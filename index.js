@@ -38,7 +38,7 @@ const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
 // =======================
-// 起動時メッセージ（日本語＋English復活）
+// 起動時メッセージ
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
@@ -83,7 +83,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ① 認証 → 言語選択
+  // 認証 → 言語選択
   if (interaction.customId === "verify") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -100,10 +100,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ② 言語ボタンを開く
+  // =======================
+  // ▼ ここが変更ポイント（展開UI）
   if (interaction.customId === "open_lang") {
 
-    const row = new ActionRowBuilder().addComponents(
+    const toggleRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("open_lang")
+        .setLabel("言語を選択 / Select Language ▼")
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    const langRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("lang_jp")
         .setLabel("日本語")
@@ -117,11 +125,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     return interaction.update({
       content: "```言語を選択してください / Select Language```",
-      components: [row]
+      components: [toggleRow, langRow]
     });
   }
 
-  // ③ 日本語認証
+  // 日本語認証
   if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
@@ -140,7 +148,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // ④ English認証
+  // English認証
   if (interaction.customId === "lang_en") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
