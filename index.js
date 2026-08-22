@@ -30,10 +30,10 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540606154093367336";
+const CHANNEL_ID = "1540566154093367336";
 
-// 🔥 利用規約チャンネル（追加）
-const RULES_CHANNEL_ID = "1540626614982025327";
+// 🔥 利用規約チャンネル
+const RULES_CHANNEL_ID = "1540627413136973824";
 
 // 🔵 起動時
 client.once(Events.ClientReady, async () => {
@@ -57,7 +57,7 @@ client.once(Events.ClientReady, async () => {
       .setStyle(ButtonStyle.Success)
   );
 
-  // 🔗 Discordチャンネルリンク
+  // 🔗 チャンネルリンク
   const rulesLink = `<#${RULES_CHANNEL_ID}>`;
 
   // 🇯🇵 日本語
@@ -65,17 +65,17 @@ client.once(Events.ClientReady, async () => {
     .setColor(0x0099ff)
     .setDescription(
       "🇯🇵 認証\n\n" +
-      "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
-      `${rulesLink} にある利用規約に同意したものとみなされます。\n`
+      "下のボタンをクリックすると、認証が完了します。認証を完了すると " +
+      `${rulesLink} にある利用規約に同意したものとみなされます。`
     );
 
-  // 🇺🇸 English
+  // 🇺🇸 English（Terms of Serviceをクリック可能に）
   const embedEN = new EmbedBuilder()
     .setColor(0x0099ff)
     .setDescription(
       "Verification\n\n" +
-      "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
-      `${rulesLink}.\n`
+      "Click the button below to complete verification. By completing verification, you agree to " +
+      `[Terms of Service](<#${RULES_CHANNEL_ID}>)`
     );
 
   await channel.send({
