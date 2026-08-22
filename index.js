@@ -32,8 +32,8 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-const ROLE_ID = "1540560312602988594"; // 日本語ロール
-const ENGLISH_ROLE_ID = "1540560377866362950"; // Englishロール
+const ROLE_ID = "1540560312602988594";
+const ENGLISH_ROLE_ID = "1540560377866362950";
 
 const CHANNEL_ID = "1540606154093367336";
 
@@ -78,8 +78,11 @@ client.once(Events.ClientReady, async () => {
         `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
       );
 
-    await channel.send({ embeds: [embedJP] });
-    await channel.send({ embeds: [embedEN], components: [row] });
+    // 🔥 ここだけ変更（1投稿に統合）
+    await channel.send({
+      embeds: [embedJP, embedEN],
+      components: [row]
+    });
 
   } catch (err) {
     console.log(err);
@@ -92,8 +95,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
 
-    // =======================
-    // Verify
     if (interaction.customId === "verify" || interaction.customId === "change_lang") {
 
       const select = new StringSelectMenuBuilder()
