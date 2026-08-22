@@ -49,8 +49,6 @@ const WATCH_CHANNEL_ID = "1540694105305124904";
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
-  // =======================
-  // 認証メッセージ（重複防止・再起動対応）
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
 
@@ -83,7 +81,9 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x0099ff)
         .setDescription(
           "## 認証\n\n" +
-          "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
+          "このチャンネルにメッセージを送信しないでください\n\n" +
+          "このチャンネルはスパムボットを検知するために使用されます。\n" +
+          "メッセージを送信したユーザーは即座にキックされます。\n\n" +
           `${rulesText}に同意したものとみなされます。`
         );
 
@@ -91,7 +91,10 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x0099ff)
         .setDescription(
           "## Verification\n\n" +
-          `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
+          "Do not send messages in this channel.\n\n" +
+          "This channel is used to detect spam bots.\n" +
+          "Users who send messages will be kicked immediately.\n\n" +
+          `By continuing, you agree to the ${tosText}.`
         );
 
       await channel.send({
@@ -104,8 +107,7 @@ client.once(Events.ClientReady, async () => {
     console.log(err);
   }
 
-  // =======================
-  // スパム警告（再起動対応）
+  // スパム警告（重複防止）
   try {
     const warnChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
 
@@ -123,8 +125,8 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x808080)
         .setDescription(
           "## このチャンネルにメッセージを送信しないでください\n\n" +
-          "> このチャンネルはスパムボットを検知するために使用されます。\n" +
-          "> メッセージを送信したユーザーは即座にキックされます。"
+          "このチャンネルはスパムボットを検知するために使用されます。\n" +
+          "メッセージを送信したユーザーは即座にキックされます。"
         );
 
       await warnChannel.send({ embeds: [warnEmbed] });
