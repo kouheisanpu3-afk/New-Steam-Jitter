@@ -38,7 +38,7 @@ const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
 // =======================
-// 起動時メッセージ
+// 起動時メッセージ（日本語＋English復活）
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
@@ -59,7 +59,7 @@ client.once(Events.ClientReady, async () => {
       .setColor(0x0099ff)
       .setDescription(
         "## 認証\n\n" +
-        "下のボタンをクリックすると、認証が完了します。\n" +
+        "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
         `${rulesText}に同意したものとみなされます。`
       );
 
@@ -67,7 +67,7 @@ client.once(Events.ClientReady, async () => {
       .setColor(0x0099ff)
       .setDescription(
         "## Verification\n\n" +
-        `Click the button below to complete verification.\nBy completing verification, you agree to the ${tosText}.`
+        `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
       );
 
     await channel.send({ embeds: [embedJP] });
@@ -83,7 +83,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択
+  // ① 認証 → 言語選択
   if (interaction.customId === "verify") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -100,7 +100,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // 言語UI展開
+  // ② 言語ボタンを開く
   if (interaction.customId === "open_lang") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -121,7 +121,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // 日本語認証
+  // ③ 日本語認証
   if (interaction.customId === "lang_jp") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
@@ -140,7 +140,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // English認証
+  // ④ English認証
   if (interaction.customId === "lang_en") {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
