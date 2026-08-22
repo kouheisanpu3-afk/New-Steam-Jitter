@@ -38,7 +38,7 @@ const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
 // =======================
-// 起動時メッセージ（日本語＋English復活）
+// 起動時メッセージ（横長背景復活）
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
@@ -52,27 +52,31 @@ client.once(Events.ClientReady, async () => {
         .setStyle(ButtonStyle.Primary)
     );
 
-    const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
-    const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
+    const rulesText = `https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID}`;
+    const tosText = `https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID}`;
 
     // =======================
-    // 🇯🇵 日本語Embed（元に戻した）
+    // 🇯🇵 日本語（横長背景＝codeblock）
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
-      .setTitle("認証")
       .setDescription(
-        "下のボタンをクリックすると、認証が完了します。\n" +
-        `認証を完了すると ${rulesText} に同意したものとみなされます。`
+`## 認証
+━━━━━━━━━━━━━━━━━━━━━━
+下のボタンをクリックすると認証が完了します。
+認証を完了すると利用規約に同意したものとみなされます。
+(${rulesText})`
       );
 
     // =======================
-    // 🇺🇸 EnglishEmbed（元に戻した）
+    // 🇺🇸 English（横長背景＝codeblock）
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
-      .setTitle("Verification")
       .setDescription(
-        "Click the button below to complete verification.\n" +
-        `By completing verification, you agree to the ${tosText}.`
+`## Verification
+━━━━━━━━━━━━━━━━━━━━━━
+Click the button below to complete verification.
+By completing verification, you agree to the Terms of Service.
+(${tosText})`
       );
 
     await channel.send({ embeds: [embedJP] });
@@ -88,7 +92,7 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // 認証 → 言語選択
+  // 認証メニュー
   if (interaction.customId === "verify") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -105,7 +109,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  // 言語UI
+  // 言語UI（そのまま表示）
   if (interaction.customId === "open_lang") {
 
     const row = new ActionRowBuilder().addComponents(
@@ -121,7 +125,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
     );
 
     return interaction.update({
-      content: "```言語を選択してください / Select Language```",
+      content:
+`━━━━━━━━━━━━━━━━━━━━━━
+言語を選択してください / Select Language
+━━━━━━━━━━━━━━━━━━━━━━`,
       components: [row]
     });
   }
