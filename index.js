@@ -60,21 +60,23 @@ client.once(Events.ClientReady, async () => {
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
     const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
-    // 🇯🇵（縦幅ちょい削減）
+    // 🇯🇵（中間バランス）
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "認証\n" +
-        "下のボタンをクリックすると、認証が完了します。認証を完了すると" +
+        "下のボタンをクリックすると、認証が完了します。\n" +
+        "認証を完了すると" +
         `${rulesText}に同意したものとみなされます。`
       );
 
-    // 🇺🇸（少しコンパクト）
+    // 🇺🇸（中間バランス）
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "Verification\n" +
-        `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
+        "Click the button below to complete verification.\n" +
+        `By completing verification, you agree to the ${tosText}.`
       );
 
     await channel.send({ embeds: [embedJP] });
