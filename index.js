@@ -32,7 +32,6 @@ const TOKEN = process.env.TOKEN;
 const ROLE_ID = "1540560312602988594";
 const CHANNEL_ID = "1540606154093367336";
 
-// 📌 それぞれのリンク先チャンネル
 const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
@@ -58,22 +57,26 @@ client.once(Events.ClientReady, async () => {
         .setStyle(ButtonStyle.Success)
     );
 
-    // 👉 クリックできるテキストリンク
+    // クリックリンク
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
     const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
+    // 🔥 日本語（英語と完全同レイアウトに統一）
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
-        "🇯🇵 認証\n\n" +
-        `下のボタンをクリックすると認証が完了します。\n認証を完了すると ${rulesText} に同意したものとみなされます。`
+        "🇯🇵 Verification\n\n" +
+        "Click the button below to complete verification.\n" +
+        `By completing verification, you agree to the ${rulesText}.`
       );
 
+    // 🔥 English
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "Verification\n\n" +
-        `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
+        "Click the button below to complete verification.\n" +
+        `By completing verification, you agree to the ${tosText}.`
       );
 
     await channel.send({ embeds: [embedJP] });
