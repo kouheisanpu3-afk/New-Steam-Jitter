@@ -10,7 +10,6 @@ const {
 
 const express = require("express");
 
-// 🔵 Render用Webサーバー
 const app = express();
 app.get("/", (req, res) => {
   res.send("Bot is alive!");
@@ -19,7 +18,6 @@ app.listen(3000, () => {
   console.log("Webサーバー起動");
 });
 
-// 🔵 Bot設定
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -32,10 +30,8 @@ const TOKEN = process.env.TOKEN;
 const ROLE_ID = "1540560312602988594";
 const CHANNEL_ID = "1540606154093367336";
 
-// 🔥 利用規約チャンネル（追加）
 const RULES_CHANNEL_ID = "1540626614982025327";
 
-// 🔵 起動時
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
@@ -57,10 +53,8 @@ client.once(Events.ClientReady, async () => {
       .setStyle(ButtonStyle.Success)
   );
 
-  // 🔗 Discordチャンネルリンク
   const rulesLink = `<#${RULES_CHANNEL_ID}>`;
 
-  // 🇯🇵 日本語
   const embedJP = new EmbedBuilder()
     .setColor(0x0099ff)
     .setDescription(
@@ -69,7 +63,6 @@ client.once(Events.ClientReady, async () => {
       `${rulesLink} にある利用規約に同意したものとみなされます。\n`
     );
 
-  // 🇺🇸 English
   const embedEN = new EmbedBuilder()
     .setColor(0x0099ff)
     .setDescription(
@@ -88,7 +81,6 @@ client.once(Events.ClientReady, async () => {
   });
 });
 
-// 🔵 ボタン処理
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
