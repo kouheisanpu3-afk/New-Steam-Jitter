@@ -88,11 +88,10 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  // ここ変更👇
   if (interaction.customId === "verify") {
 
     return interaction.reply({
-      content: "言語を選択 / Select Language",
+      content: "```\n言語を選択 / Select Language\n```",
       ephemeral: true
     });
   }
