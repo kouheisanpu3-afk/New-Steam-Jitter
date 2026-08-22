@@ -26,7 +26,9 @@ app.listen(3000, () => {
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ]
 });
 
@@ -39,6 +41,10 @@ const CHANNEL_ID = "1540606154093367336";
 
 const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
+
+// =======================
+// 🔥 スパム検知チャンネル
+const WATCH_CHANNEL_ID = "1540694105305124904";
 
 // =======================
 // 起動時
@@ -78,7 +84,6 @@ client.once(Events.ClientReady, async () => {
         `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
       );
 
-    // 🔥 ここだけ変更（1投稿に統合）
     await channel.send({
       embeds: [embedJP, embedEN],
       components: [row]
@@ -86,6 +91,27 @@ client.once(Events.ClientReady, async () => {
 
   } catch (err) {
     console.log(err);
+  }
+});
+
+// =======================
+// 🔥 スパム検知 → 即キック
+client.on(Events.MessageCreate, async (message) => {
+
+  if (message.author.bot) return;
+  if (message.channel.id !== WATCH_CHANNEL_ID) return;
+
+  try {
+    const member = await message.guild.members.fetch(message.author.id);
+
+    if (member.permissions.has("Administrator")) return;
+
+    await member.kick("スパム検知チャンネルに投稿");
+
+    console.log(`KICK: ${member.user.tag}`);
+
+  } catch (err) {
+    console.log("キック失敗:", err);
   }
 });
 
