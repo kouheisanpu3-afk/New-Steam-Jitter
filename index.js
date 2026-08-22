@@ -32,8 +32,8 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-const ROLE_ID = "1540560312602988594"; // （未使用のまま残す）
-const ENGLISH_ROLE_ID = "1540560377866362950";
+const ROLE_ID = "1540560312602988594"; // 日本語ロール
+const ENGLISH_ROLE_ID = "1540560377866362950"; // Englishロール
 
 const CHANNEL_ID = "1540606154093367336";
 
@@ -85,7 +85,6 @@ client.once(Events.ClientReady, async () => {
 // ボタン & セレクト処理
 client.on(Events.InteractionCreate, async (interaction) => {
 
-  // 認証ボタン
   if (interaction.isButton()) {
     if (interaction.customId === "verify") {
 
@@ -115,43 +114,44 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
+  if (!interaction.isStringSelectMenu()) return;
+
+  const member = await interaction.guild.members.fetch(interaction.user.id);
+
   // =======================
-  // セレクトメニュー
-  if (interaction.isStringSelectMenu()) {
+  // 日本語 → 上書き
+  if (interaction.values[0] === "jp") {
 
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+    await member.roles.add(ROLE_ID);
+    await member.roles.remove(ENGLISH_ROLE_ID); // ←上書き削除
 
-    // 🇯🇵 日本語 → 日本語ロール付与
-    if (interaction.values[0] === "jp") {
+    return interaction.update({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(0x00ff99)
+          .setTitle("認証完了")
+          .setDescription("日本語ロールに切り替えました 👍")
+      ],
+      components: []
+    });
+  }
 
-      await member.roles.add(ROLE_ID);
+  // =======================
+  // English → 上書き
+  if (interaction.values[0] === "en") {
 
-      return interaction.update({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(0x00ff99)
-            .setTitle("認証完了")
-            .setDescription("日本語ロールを付与しました 👍")
-        ],
-        components: []
-      });
-    }
+    await member.roles.add(ENGLISH_ROLE_ID);
+    await member.roles.remove(ROLE_ID); // ←上書き削除
 
-    // 🇺🇸 English → Englishロール付与
-    if (interaction.values[0] === "en") {
-
-      await member.roles.add(ENGLISH_ROLE_ID);
-
-      return interaction.update({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(0x00ff99)
-            .setTitle("Verification Complete")
-            .setDescription("English role assigned 👍")
-        ],
-        components: []
-      });
-    }
+    return interaction.update({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(0x00ff99)
+          .setTitle("Verification Complete")
+          .setDescription("Switched to English role 👍")
+      ],
+      components: []
+    });
   }
 });
 
