@@ -33,19 +33,14 @@ const ROLE_ID = "1540560312602988594";
 const CHANNEL_ID = "1540606154093367336";
 const RULES_CHANNEL_ID = "1540626614982025327";
 
+// ★サーバーID（これだけは必須）
+const GUILD_ID = "YOUR_GUILD_ID_HERE";
+
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
-  console.log("CHANNEL_ID =", CHANNEL_ID);
 
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
-
-    if (!channel) {
-      console.log("❌ チャンネル取得失敗（null）");
-      return;
-    }
-
-    console.log("チャンネル取得成功:", channel.name);
 
     const messages = await channel.messages.fetch({ limit: 10 });
 
@@ -63,25 +58,22 @@ client.once(Events.ClientReady, async () => {
         .setStyle(ButtonStyle.Success)
     );
 
-    // 👉 ここがポイント（クリックできるリンク）
-    const rulesLink = `<#${RULES_CHANNEL_ID}>`;
+    // 👉 「利用規約」だけクリック可能リンク
+    const rulesText = `[利用規約](https://discord.com/channels/${GUILD_ID}/${RULES_CHANNEL_ID})`;
+    const rulesTextEN = `[Terms of Service](https://discord.com/channels/${GUILD_ID}/${RULES_CHANNEL_ID})`;
 
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "🇯🇵 認証\n\n" +
-        "下のボタンをクリックすると、認証が完了します。認証を完了すると「" +
-        rulesLink +
-        "」にある利用規約に同意したものとみなされます。"
+        `下のボタンをクリックすると、認証が完了します。認証を完了すると${rulesText}に同意したものとみなされます。`
       );
 
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setDescription(
         "Verification\n\n" +
-        "Click the button below to complete verification. By completing verification, you agree to the Terms of Service located in " +
-        rulesLink +
-        "."
+        `Click the button below to complete verification. By completing verification, you agree to the ${rulesTextEN}.`
       );
 
     await channel.send({ embeds: [embedJP] });
