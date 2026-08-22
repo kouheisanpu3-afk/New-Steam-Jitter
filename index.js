@@ -93,7 +93,7 @@ client.once(Events.ClientReady, async () => {
           "## Verification\n\n" +
           "Do not send messages in this channel.\n\n" +
           "This channel is used to detect spam bots.\n" +
-          "Users who send messages will be kicked immediately.\n\n" +
+          "Users will be kicked immediately.\n\n" +
           `By continuing, you agree to the ${tosText}.`
         );
 
