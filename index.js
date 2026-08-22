@@ -30,8 +30,7 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 const ROLE_ID = "1540560312602988594";
-const CHANNEL_ID = "1540566154093367336";
-
+const CHANNEL_ID = "1540606154093367336"; // ←修正済み
 const RULES_CHANNEL_ID = "1540626614982025327";
 
 client.once(Events.ClientReady, async () => {
@@ -42,7 +41,7 @@ client.once(Events.ClientReady, async () => {
     const channel = await client.channels.fetch(CHANNEL_ID);
 
     if (!channel) {
-      console.log("❌ チャンネルが取得できません（null）");
+      console.log("❌ チャンネル取得失敗（null）");
       return;
     }
 
@@ -88,12 +87,6 @@ client.once(Events.ClientReady, async () => {
   } catch (err) {
     console.log("❌ チャンネル取得エラー:");
     console.log(err);
-
-    console.log("\nチェック項目:");
-    console.log("1. CHANNEL_IDが正しいか");
-    console.log("2. Botがそのサーバーにいるか");
-    console.log("3. Botに View Channel 権限があるか");
-    console.log("4. チャンネルが削除されていないか");
   }
 });
 
@@ -124,10 +117,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } catch (err) {
       console.log("❌ ロール付与エラー:", err);
 
-      interaction.reply({
-        content: "エラーが発生しました",
-        ephemeral: true
-      });
+      if (!interaction.replied) {
+        interaction.reply({
+          content: "エラーが発生しました",
+          ephemeral: true
+        });
+      }
     }
   }
 });
