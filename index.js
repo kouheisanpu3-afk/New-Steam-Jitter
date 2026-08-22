@@ -38,7 +38,7 @@ client.once(Events.ClientReady, async () => {
 
   const channel = await client.channels.fetch(CHANNEL_ID);         
 
-  // 🔥 重複防止チェック         
+  // 🔥 重複防止         
   const messages = await channel.messages.fetch({ limit: 10 });         
 
   const exists = messages.some(msg =>         
@@ -48,33 +48,33 @@ client.once(Events.ClientReady, async () => {
 
   if (exists) return;         
 
-  // 🔵 ボタン作成         
+  // 🔵 ボタン         
   const row = new ActionRowBuilder().addComponents(         
     new ButtonBuilder()         
       .setCustomId("verify")         
-      .setLabel("VERIFY ACCESS")         
+      .setLabel("VERIFY")         
       .setStyle(ButtonStyle.Success)         
   );         
 
-  // 🔥 日本語（横長）
+  // 🔥 日本語（指定文言）
   const embedJP = new EmbedBuilder()         
     .setColor(0x00c8ff)         
     .setDescription(
-      "🇯🇵 **認証システム** ｜ VERIFY SYSTEM JAPAN\n" +
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
-      "このボタンを押すと認証が完了し、利用規約に同意したものとみなされます。"
+      "認証\n" +
+      "下のボタンをクリックすると、認証が完了します。\n" +
+      "認証を完了すると利用規約に同意したものとみなされます。"
     );         
 
-  // 🔥 English（横長）
+  // 🔥 English（指定文言）
   const embedEN = new EmbedBuilder()         
     .setColor(0x00c8ff)         
     .setDescription(
-      "🇺🇸 **VERIFICATION SYSTEM** ｜ JAPAN SERVER\n" +
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
-      "Click the button below to complete verification. By verifying, you agree to the Terms of Service."
+      "Verification\n" +
+      "Click the button below to complete verification.\n" +
+      "By completing verification, you agree to the Terms of Service."
     );         
 
-  // 🔵 送信（横長レイアウト維持）
+  // 🔵 送信         
   await channel.send({         
     embeds: [embedJP]         
   });         
