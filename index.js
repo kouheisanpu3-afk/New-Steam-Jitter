@@ -113,18 +113,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
+  // =======================
   // セレクトメニュー
   if (interaction.isStringSelectMenu()) {
 
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    // ===================
-    // 日本語
+    // 🇯🇵 日本語
     if (interaction.values[0] === "jp") {
 
       if (member.roles.cache.has(ROLE_ID)) {
         return interaction.update({
-          content: "すでに認証済みです",
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0xff0000)
+              .setTitle("認証済み")
+              .setDescription("すでに認証済みです")
+          ],
           components: []
         });
       }
@@ -132,18 +137,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await member.roles.add(ROLE_ID);
 
       return interaction.update({
-        content: "認証が完了しました",
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0x00ff99)
+            .setTitle("認証完了")
+            .setDescription("認証が完了しました 👍")
+        ],
         components: []
       });
     }
 
-    // ===================
-    // English
+    // 🇺🇸 English
     if (interaction.values[0] === "en") {
 
       if (member.roles.cache.has(ROLE_ID)) {
         return interaction.update({
-          content: "Already verified.",
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0xff0000)
+              .setTitle("Already Verified")
+              .setDescription("You are already verified.")
+          ],
           components: []
         });
       }
@@ -151,7 +165,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await member.roles.add(ROLE_ID);
 
       return interaction.update({
-        content: "Verification completed 👍",
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0x00ff99)
+            .setTitle("Verification Complete")
+            .setDescription("Verification completed 👍")
+        ],
         components: []
       });
     }
