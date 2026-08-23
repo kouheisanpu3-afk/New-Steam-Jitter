@@ -116,8 +116,8 @@ module.exports = (client) => {
         .setDescription(
 `チケットが作成されました
 
-👤 作成者: ${user.tag}
-🕒 作成日時: ${now.toLocaleString("ja-JP")}
+作成者: ${user.tag}
+作成日時: ${now.toLocaleString("ja-JP")}
 
 管理者が対応するまでお待ちください`
         ) 
