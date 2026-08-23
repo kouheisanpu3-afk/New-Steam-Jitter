@@ -1,331 +1,73 @@
-const {
-
-  Events,
-
-  EmbedBuilder,
-
-  ActionRowBuilder,
-
-  ButtonBuilder,
-
-  ButtonStyle,
-
-  PermissionsBitField,
-
-  ChannelType,
-
-  StringSelectMenuBuilder
-
+const { 
+  Client, 
+  GatewayIntentBits, 
+  Partials 
 } = require("discord.js");
 
-const TICKET_CHANNEL_ID = "1541001019880640573";
-const CATEGORY_ID = "1541000895167201300";
-const TERMS_CHANNEL_ID = "1540626614982025327";
+require("dotenv").config();
 
-module.exports = (client) => {
+const express = require("express");
+const app = express();
 
-  const creatingUsers = new Set();
-  const ticketState = new Map();
-  const activeTickets = new Set();
+// =======================
+// Webサーバー（Render用）
+app.get("/", (req, res) => {
+  res.send("Bot is alive!");
+});
 
-  let creatingGlobal = false;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Web server started on port", PORT);
+});
 
-  let ticketNumber = 1;
+// =======================
+// Discord Bot
+// =======================
 
-  client.once(Events.ClientReady, async () => {
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageReactions
+  ],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
+});
 
-    try {
+// =======================
+// モジュール読み込み
+// =======================
 
-      const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
-      if (!channel) return console.log("チケットチャンネル取得失敗");
+// チケット
+require("./ticket.js")(client);
 
-      const embed = new EmbedBuilder()
-        .setTitle("ご質問・お問い合わせチケット")
-        .setDescription(
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。`
-        )
-        .setColor(0x4aa3ff);
+// 認証（ある場合）
+try {
+  require("./auth.js")(client);
+} catch (e) {
+  console.log("auth.jsなし（スキップ）");
+}
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("ticket_create")
-          .setLabel("チケットを作成")
-          .setStyle(ButtonStyle.Primary),
+// キック（ある場合）
+try {
+  require("./kick.js")(client);
+} catch (e) {
+  console.log("kick.jsなし（スキップ）");
+}
 
-        new ButtonBuilder()
-          .setLabel("利用規約を確認")
-          .setStyle(ButtonStyle.Link)
-          .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
-      );
+// =======================
+// 起動ログ
+// =======================
 
-      const messages = await channel.messages.fetch({ limit: 10 });
+client.once("ready", () => {
+  console.log(`ログイン: ${client.user.tag}`);
+});
 
-      const exists = messages.some(
-        m => m.author.id === client.user.id && m.components.length > 0
-      );
+// =======================
+// ログイン
+// =======================
 
-      if (exists) return console.log("既にチケットパネルあり");
-
-      await channel.send({ embeds: [embed], components: [row] });
-
-      console.log("チケットパネル設置完了");
-
-    } catch (err) {
-      console.error("パネル設置エラー:", err);
-    }
-  });
-
-  client.on(Events.InteractionCreate, async (interaction) => {
-
-    try {
-
-      if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
-
-      // =========================
-      // チケット作成（完全防止）
-      // =========================
-      if (interaction.customId === "ticket_create") {
-
-        if (creatingGlobal) {
-          return interaction.reply({
-            content: "処理中です。少し待ってください。",
-            ephemeral: true
-          }).catch(() => {});
-        }
-
-        if (creatingUsers.has(interaction.user.id)) {
-          return interaction.reply({
-            content: "処理中です。少し待ってください。",
-            ephemeral: true
-          }).catch(() => {});
-        }
-
-        if (activeTickets.has(interaction.user.id)) {
-          return interaction.reply({
-            content: "すでにチケットが存在します。",
-            ephemeral: true
-          }).catch(() => {});
-        }
-
-        creatingGlobal = true;
-        creatingUsers.add(interaction.user.id);
-
-        await interaction.deferUpdate().catch(() => {});
-
-        try {
-
-          const guild = interaction.guild;
-          const user = interaction.user;
-          const uid = user.id; // ★固定化
-
-          const channel = await guild.channels.create({
-            name: `ticket-${user.username}`,
-            type: ChannelType.GuildText,
-            parent: CATEGORY_ID,
-            topic: uid,
-            permissionOverwrites: [
-              { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-              {
-                id: uid,
-                allow: [
-                  PermissionsBitField.Flags.ViewChannel,
-                  PermissionsBitField.Flags.SendMessages,
-                  PermissionsBitField.Flags.ReadMessageHistory
-                ]
-              },
-              {
-                id: client.user.id,
-                allow: [
-                  PermissionsBitField.Flags.ViewChannel,
-                  PermissionsBitField.Flags.SendMessages
-                ]
-              }
-            ]
-          });
-
-          activeTickets.add(uid);
-
-          const now = new Date().toLocaleString("ja-JP", {
-            timeZone: "Asia/Tokyo"
-          });
-
-          const embed = new EmbedBuilder()
-            .setAuthor({
-              name: user.username,
-              iconURL: user.displayAvatarURL()
-            })
-            .setDescription(
-`チケットが作成されました
-
-作成者: <@${uid}>
-作成日時: ${now}`
-            )
-            .setColor(0x57F287);
-
-          const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-              .setCustomId("ticket_close")
-              .setLabel("チケットを消去")
-              .setStyle(ButtonStyle.Danger),
-
-            new ButtonBuilder()
-              .setCustomId("ticket_resolved")
-              .setLabel("解決済みとしてマーク")
-              .setStyle(ButtonStyle.Success)
-          );
-
-          const selectInfo = new EmbedBuilder()
-            .setColor(0x4aa3ff)
-            .setDescription(
-`**ご質問・お問い合わせ内容の選択**
-下のボックスから選択してください。`
-            );
-
-          const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId("ticket_category")
-            .setPlaceholder("お問い合わせ内容を選択")
-            .addOptions([
-              {
-                label: "reWASD",
-                value: "rewasd",
-                description: "reWASD関連",
-                emoji: { id: "1541059202737512508", name: "reWASD" }
-              },
-              {
-                label: "Steamジッターマクロ",
-                value: "steam_jitter",
-                description: "Steam関連",
-                emoji: { id: "1541060018567254076", name: "pngwingcom" }
-              },
-              {
-                label: "その他",
-                value: "other",
-                description: "その他",
-                emoji: { id: "1541062193863327744", name: "chat" }
-              }
-            ]);
-
-          await channel.send({ embeds: [embed], components: [row] });
-          await channel.send({ embeds: [selectInfo], components: [new ActionRowBuilder().addComponents(selectMenu)] });
-
-        } finally {
-
-          const uid = interaction.user.id;
-
-          setTimeout(() => {
-            creatingUsers.delete(uid);
-            creatingGlobal = false;
-          }, 1200);
-        }
-      }
-
-      // =========================
-      // カテゴリ選択（水色固定）
-      // =========================
-      else if (interaction.customId === "ticket_category") {
-
-        const value = interaction.values[0];
-
-        let label = "不明";
-
-        if (value === "steam_jitter") label = "Steamジッターマクロ";
-        if (value === "rewasd") label = "reWASD";
-        if (value === "other") label = "その他";
-
-        ticketState.set(interaction.channel.id, { value, label });
-
-        const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
-          .setDescription(
-`**ご質問・お問い合わせ内容の選択**
-
-選択内容：${label}
-
-次にメンション設定を選択してください。`
-          );
-
-        const followSelect = new StringSelectMenuBuilder()
-          .setCustomId("ticket_ping_choice")
-          .setPlaceholder("メンションの要否")
-          .addOptions([
-            {
-              label: "対応時にメンションする",
-              value: "ping_yes"
-            },
-            {
-              label: "メンションしない",
-              value: "ping_no"
-            }
-          ]);
-
-        const backButton = new ButtonBuilder()
-          .setCustomId("ticket_back")
-          .setLabel("戻る")
-          .setStyle(ButtonStyle.Secondary);
-
-        return interaction.update({
-          embeds: [embed],
-          components: [
-            new ActionRowBuilder().addComponents(followSelect),
-            new ActionRowBuilder().addComponents(backButton)
-          ]
-        });
-      }
-
-      // =========================
-      // メンション選択
-      // =========================
-      else if (interaction.customId === "ticket_ping_choice") {
-
-        const state = ticketState.get(interaction.channel.id);
-        const isYes = interaction.values[0] === "ping_yes";
-
-        const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
-          .setDescription(
-`選択：${state?.label ?? "不明"}
-メンション：${isYes ? "あり" : "なし"}`
-          );
-
-        return interaction.update({
-          embeds: [embed],
-          components: []
-        });
-      }
-
-      // =========================
-      // 削除
-      // =========================
-      else if (interaction.customId === "ticket_close_confirm") {
-
-        setTimeout(() => {
-          interaction.channel.delete().catch(() => {});
-        }, 1000);
-      }
-
-      // =========================
-      // 解決済み
-      // =========================
-      else if (interaction.customId === "ticket_resolved") {
-
-        await interaction.channel.send({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle("解決済み")
-              .setColor(0x57F287)
-          ]
-        });
-      }
-
-    } catch (err) {
-      console.error(err);
-
-      if (interaction.replied || interaction.deferred) return;
-
-      interaction.reply({
-        content: "エラーが発生しました",
-        ephemeral: true
-      }).catch(() => {});
-    }
-  });
-};
+client.login(process.env.TOKEN).catch((err) => {
+  console.error("ログイン失敗:", err);
+});
