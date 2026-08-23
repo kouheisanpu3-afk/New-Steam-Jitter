@@ -190,7 +190,8 @@ module.exports = (client) => {
             {
               label: "reWASD",
               value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ"
+              description: "reWASDに関するご質問・お問い合わせ",
+              emoji: { id: "1541059202737512508", name: "reWASD" }
             },
             {
               label: "Steamジッターマクロ",
