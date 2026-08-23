@@ -8,14 +8,12 @@ const EMBED_COLOR = 0x5f6f82;
 // 日本語
 const JP_TEXT =
 `このチャンネルにメッセージを送信しないでください
-このチャンネルはスパムボットを検知するために使用されます。
-メッセージを送信したユーザーは即座にキックされます。`;
+このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。`;
 
 // 英語
 const EN_TEXT =
 `DO NOT SEND MESSAGES IN THIS CHANNEL
-This channel is used to detect spam bots.
-Any user who sends a message here will be kicked immediately.`;
+This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately.`;
 
 module.exports = (client) => {
 
@@ -40,21 +38,23 @@ module.exports = (client) => {
       }
 
       // =======================
-      // 🔥 上下“完全分割風”Embed
-      const embed = new EmbedBuilder()
-        .setColor(EMBED_COLOR)
-        .setTitle("⚠ WARNING / 注意")
-        .setDescription(
-`🇯🇵 **日本語**
-${JP_TEXT}
+      // 🇯🇵 日本語Embed（別背景）
+      const jpEmbed = new EmbedBuilder()
+        .setTitle("🇯🇵 注意 / WARNING")
+        .setDescription(JP_TEXT)
+        .setColor(EMBED_COLOR);
 
-━━━━━━━━━━━━━━━━━━
+      // =======================
+      // 🇺🇸 EnglishEmbed（別背景）
+      const enEmbed = new EmbedBuilder()
+        .setTitle("🇺🇸 WARNING / NOTICE")
+        .setDescription(EN_TEXT)
+        .setColor(EMBED_COLOR);
 
-🇺🇸 **English**
-${EN_TEXT}`
-        );
-
-      await channel.send({ embeds: [embed] });
+      // 同時送信（2つの別背景）
+      await channel.send({
+        embeds: [jpEmbed, enEmbed]
+      });
 
       console.log("警告メッセージを設置しました");
 
