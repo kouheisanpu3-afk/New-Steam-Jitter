@@ -47,9 +47,9 @@ const WATCH_CHANNEL_ID = "1540694105305124904";
 // キック回数保存
 const kickCount = {};
 
-// 🚫画像（指定URL）
+// 🚫安定表示用アイコン（超安定PNG）
 const NO_ENTRY_ICON =
-  "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
+  "https://emojicdn.elk.sh/%F0%9F%9A%AB.png";
 
 // =======================
 // 起動時
@@ -245,5 +245,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-// =======================
 client.login(TOKEN);
