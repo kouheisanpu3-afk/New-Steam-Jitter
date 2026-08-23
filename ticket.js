@@ -280,14 +280,14 @@ module.exports = (client) => {
         const isNo = !isYes;
 
         const embed = new EmbedBuilder()
-          .setColor(isNo ? 0xF1C40F : 0x4aa3ff) // ★変更（noで黄色）
+          .setColor(isNo ? 0xF1C40F : 0x4aa3ff)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
 選択内容：${state?.label ?? "不明"}
 メンション：${isYes ? "要する" : "要しない"}
 
-以下にご質問・お問い合わせ内容をご記入ください。`
+以下にご質問・お問い合わせをご記入ください。`
           );
 
         const changeButton = new ButtonBuilder()
@@ -303,7 +303,33 @@ module.exports = (client) => {
         });
       }
 
+      // ★ここ変更
       else if (interaction.customId === "ticket_close") {
+
+        const embed = new EmbedBuilder()
+          .setColor(0xF5B7B1) // 薄い赤
+          .setDescription("このチケットを消去しますか？");
+
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("ticket_close_confirm")
+            .setLabel("削除する")
+            .setStyle(ButtonStyle.Danger),
+
+          new ButtonBuilder()
+            .setCustomId("ticket_back")
+            .setLabel("キャンセル")
+            .setStyle(ButtonStyle.Secondary)
+        );
+
+        return interaction.reply({
+          embeds: [embed],
+          components: [row],
+          ephemeral: true
+        });
+      }
+
+      else if (interaction.customId === "ticket_close_confirm") {
 
         await interaction.reply({
           content: "チケットを削除します",
