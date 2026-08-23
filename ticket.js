@@ -91,7 +91,7 @@ module.exports = (client) => {
               new EmbedBuilder()
                 .setColor(0xE74C3C)
                 .setDescription(
-`既に作成されたチケットが存在します 
+`既に作成されたチケットが存在します  
 既存のチャンネルを使用してください。`
                 )
             ],
@@ -100,9 +100,11 @@ module.exports = (client) => {
         }
 
         const channel = await guild.channels.create({
-          name: `ticket-${user.username}`, // ←ここだけ変更
+          name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
-          parent: CATEGORY_ID,
+
+          // 🔥 カテゴリ外（サーバー最上部エリア）
+          parent: null,
 
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -126,6 +128,24 @@ module.exports = (client) => {
 
         ticketNumber++;
 
+        // 🔥 チケットを作成順で上→下に並べる
+        const channels = guild.channels.cache
+          .filter(c =>
+            c.type === ChannelType.GuildText &&
+            c.parentId === null &&
+            c.name.startsWith("ticket-")
+          )
+          .sort((a, b) => {
+            const aNum = a.createdTimestamp;
+            const bNum = b.createdTimestamp;
+            return aNum - bNum; // 古い→上、新しい→下
+          });
+
+        let pos = 0;
+        for (const ch of channels.values()) {
+          await ch.setPosition(pos++);
+        }
+
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
         });
@@ -136,9 +156,9 @@ module.exports = (client) => {
             iconURL: user.displayAvatarURL()
           })
           .setDescription(
-`チケットが作成されました 
+`チケットが作成されました  
 
-作成者: <@${user.id}> 
+作成者: <@${user.id}>  
 作成日時: ${now}`
           )
           .setColor(0x57F287);
@@ -158,7 +178,7 @@ module.exports = (client) => {
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`**ご質問・お問い合わせ内容の選択** 
+`**ご質問・お問い合わせ内容の選択**  
 下のボックスからご質問・お問い合わせ内容を選択してください。`
           );
 
