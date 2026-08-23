@@ -17,7 +17,7 @@ module.exports = (client) => {
 
   const creatingUsers = new Set();
 
-  // 🔥 チケット番号カウンター
+  // 🔥 連番
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -69,39 +69,42 @@ module.exports = (client) => {
     // チケット作成
     if (interaction.customId === "ticket_create") {
 
-      if (creatingUsers.has(interaction.user.id)) return;
+      // 🔥 1秒以内の連打完全防止
+      if (creatingUsers.has(interaction.user.id)) {
+        return interaction.reply({
+          content: "処理中です。少し待ってください。",
+          ephemeral: true
+        });
+      }
+
       creatingUsers.add(interaction.user.id);
 
       try {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 強制チェック（完全防止）
+        // 🔥 完全一致チェック（ここ重要）
         const existing = guild.channels.cache.find(
-          c => c.type === ChannelType.GuildText &&
-               c.name.includes(`ticket-`)
+          c =>
+            c.type === ChannelType.GuildText &&
+            c.name === `ticket-${user.id}`
         );
 
-        // ユーザーが既にチケット持ってるかチェック
-        const userExisting = guild.channels.cache.find(
-          c => c.name.includes(`-${user.id}`)
-        );
-
-        if (existing && userExisting) {
-          const embed = new EmbedBuilder()
-            .setColor(0xE74C3C)
-            .setDescription(
+        if (existing) {
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xE74C3C)
+                .setDescription(
 `既に作成されたチケットが存在します
 既存のチャンネルを使用してください。`
-            );
-
-          return interaction.reply({
-            embeds: [embed],
+                )
+            ],
             ephemeral: true
           });
         }
 
-        // 🔥 連番チャンネル名
+        // 🔥 連番チャンネル
         const channelName = `ticket-${ticketNumber}`;
         ticketNumber++;
 
@@ -183,7 +186,7 @@ module.exports = (client) => {
         await interaction.deleteReply().catch(() => {});
 
       } finally {
-        setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
+        setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
       }
     }
 
