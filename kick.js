@@ -7,7 +7,7 @@ const EMBED_COLOR = 0x5f6f82;
     
 // 🚫画像（指定URL）
 const NO_ENTRY_IMG = "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";        
-    
+
 // カスタム絵文字（車両通行止め）
 const PROHIBITED = "<:prohibited_1f6ab:1540994953893908500>";
         
@@ -24,7 +24,7 @@ This channel is used to detect spam bots. Any user who sends a message here will
 // =======================    
 // 🔢 キック回数カウント    
 let kickCount = 0;   
-   
+
 // =======================   
 // ボタン（日本語）   
 function createJPButton() {   
@@ -35,7 +35,7 @@ function createJPButton() {
       .setStyle(ButtonStyle.Secondary)   
   );   
 }   
-   
+
 // =======================   
 // ボタン（英語）   
 function createENButton() {   
@@ -46,7 +46,7 @@ function createENButton() {
       .setStyle(ButtonStyle.Secondary)   
   );   
 }   
-   
+
 module.exports = (client) => {              
               
   let jpMsgRef = null;   
@@ -105,7 +105,7 @@ module.exports = (client) => {
               
     try {              
       console.log(`⚠ WARNING: ${message.author.tag}`);              
-  
+   
       if (message.deletable) {   
         await message.delete().catch(() => {});   
       }   
