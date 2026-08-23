@@ -105,13 +105,31 @@ client.once(Events.ClientReady, async () => {
           `By continuing, you agree to the ${tosText}.`
         );
 
+      // 🔥ここにPrimaryボタン追加（重要）
+      const warningRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify")
+          .setLabel("認証/Verify")
+          .setStyle(ButtonStyle.Primary)
+      );
+
+      const warningRowEN = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify_en")
+          .setLabel("Verify")
+          .setStyle(ButtonStyle.Primary)
+      );
+
+      // 日本語
       await channel.send({
         embeds: [embedJP],
-        components: [row]
+        components: [warningRow]
       });
 
+      // 英語
       await channel.send({
-        embeds: [embedEN]
+        embeds: [embedEN],
+        components: [warningRowEN]
       });
     }
 
@@ -119,8 +137,6 @@ client.once(Events.ClientReady, async () => {
     console.log(err);
   }
 
-  // =======================
-  // WATCHチャンネル警告メッセージ
   try {
     const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
     const messages = await watchChannel.messages.fetch({ limit: 10 });
@@ -137,7 +153,7 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x6C8EA4)
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
-          "このチャンネルにメッセージを送信しないでください\n" +
+          "## このチャンネルにメッセージを送信しないでください\n" +
           "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
         );
 
@@ -145,7 +161,7 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x6C8EA4)
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
-          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+          "## DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
           "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
@@ -153,111 +169,10 @@ client.once(Events.ClientReady, async () => {
       await watchChannel.send({ embeds: [enEmbed] });
     }
 
-    // =======================
-    // 🔥修正：Embed削除（ボタンのみ）
-    const verifyRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("verify_dummy")
-        .setLabel("認証 / Verify")
-        .setStyle(ButtonStyle.Primary)
-    );
-
-    await watchChannel.send({
-      content: " ",
-      components: [verifyRow]
-    });
-
   } catch (err) {
     console.log(err);
   }
 });
 
 // =======================
-// スパム検知
-client.on(Events.MessageCreate, async (message) => {
-
-  if (message.author.bot) return;
-  if (!message.guild) return;
-  if (message.channel.id !== WATCH_CHANNEL_ID) return;
-
-  try {
-    const member = await message.guild.members.fetch(message.author.id);
-
-    if (member.permissions.has("Administrator")) return;
-
-    await message.delete().catch(() => {});
-
-    kickCount[message.author.id] = (kickCount[message.author.id] || 0) + 1;
-    const count = kickCount[message.author.id];
-
-    await member.kick(`スパム検知チャンネル (${count}回目)`);
-
-    console.log(`🚫 キック：${count}回 | ${message.author.tag}`);
-
-  } catch (err) {
-    console.log("エラー:", err);
-  }
-});
-
-// =======================
-// ボタン処理
-client.on(Events.InteractionCreate, async (interaction) => {
-
-  if (interaction.isButton()) {
-
-    if (interaction.customId === "verify" || interaction.customId === "change_lang") {
-
-      const select = new StringSelectMenuBuilder()
-        .setCustomId("select_lang")
-        .setPlaceholder("言語を選択 / Select Language")
-        .addOptions([
-          { label: "日本語", value: "jp", emoji: "🇯🇵" },
-          { label: "English", value: "en", emoji: "🇺🇸" }
-        ]);
-
-      const row = new ActionRowBuilder().addComponents(select);
-
-      return interaction.reply({
-        content: "言語を選択してください",
-        components: [row],
-        ephemeral: true
-      });
-    }
-  }
-
-  if (!interaction.isStringSelectMenu()) return;
-
-  const member = await interaction.guild.members.fetch(interaction.user.id);
-
-  if (interaction.values[0] === "jp") {
-    await member.roles.add(ROLE_ID);
-    await member.roles.remove(ENGLISH_ROLE_ID);
-
-    return interaction.update({
-      embeds: [
-        new EmbedBuilder()
-          .setColor(0x00ff99)
-          .setTitle("認証完了")
-          .setDescription("認証が完了しました")
-      ],
-      components: []
-    });
-  }
-
-  if (interaction.values[0] === "en") {
-    await member.roles.add(ENGLISH_ROLE_ID);
-    await member.roles.remove(ROLE_ID);
-
-    return interaction.update({
-      embeds: [
-        new EmbedBuilder()
-          .setColor(0x00ff99)
-          .setTitle("Verification Complete")
-          .setDescription("You have been verified.")
-      ],
-      components: []
-    });
-  }
-});
-
 client.login(TOKEN);
