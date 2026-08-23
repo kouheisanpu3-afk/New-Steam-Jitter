@@ -17,6 +17,9 @@ module.exports = (client) => {
 
   const creatingUsers = new Set();
 
+  // 🔥 チケット番号カウンター
+  let ticketNumber = 1;
+
   client.once(Events.ClientReady, async () => {
     try {
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
@@ -73,14 +76,20 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 🔥 強制チェック（完全防止）
         const existing = guild.channels.cache.find(
           c => c.type === ChannelType.GuildText &&
-               c.name === `ticket-${user.id}`
+               c.name.includes(`ticket-`)
         );
 
-        if (existing) {
+        // ユーザーが既にチケット持ってるかチェック
+        const userExisting = guild.channels.cache.find(
+          c => c.name.includes(`-${user.id}`)
+        );
+
+        if (existing && userExisting) {
           const embed = new EmbedBuilder()
-            .setColor(0xE74C3C) // 🔥 もう少し濃い赤
+            .setColor(0xE74C3C)
             .setDescription(
 `既に作成されたチケットが存在します
 既存のチャンネルを使用してください。`
@@ -92,8 +101,12 @@ module.exports = (client) => {
           });
         }
 
+        // 🔥 連番チャンネル名
+        const channelName = `ticket-${ticketNumber}`;
+        ticketNumber++;
+
         const channel = await guild.channels.create({
-          name: `ticket-${user.id}`,
+          name: channelName,
           type: ChannelType.GuildText,
           parent: CATEGORY_ID,
           permissionOverwrites: [
