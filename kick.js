@@ -28,7 +28,7 @@ function createJPButton() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("kick_button_jp")
-      .setLabel(`🚫 キック：${kickCount}回`)
+      .setLabel(`🚫 キック：${kickCount}`)
       .setStyle(ButtonStyle.Secondary)
   );
 }
@@ -39,7 +39,7 @@ function createENButton() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("kick_button_en")
-      .setLabel(`🚫 KICK：${kickCount}`)
+      .setLabel(`🚫 Kick：${kickCount}`)
       .setStyle(ButtonStyle.Secondary)
   );
 }
