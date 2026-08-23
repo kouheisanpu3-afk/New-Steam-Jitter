@@ -57,18 +57,20 @@ module.exports = (client) => {
         .setColor(0x3aa0ff)
         .setTitle("認証")
         .setDescription(
-          `下のボタンをクリックすると、認証が完了します。認証を完了すると${rulesText}に同意したものとみなされます。`
+          `下のボタンをクリックすると、認証が完了します。\n` +
+          `認証を完了すると${rulesText}に同意したものとみなされます。`
         );
 
       const embedEN = new EmbedBuilder()
         .setColor(0x3aa0ff)
         .setTitle("Verification")
         .setDescription(
-          `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
+          `Click the button below to complete verification.\n` +
+          `By completing verification, you agree to the ${tosText}.`
         );
 
-      await channel.send({ embeds: [embedJP] });
-      await channel.send({ embeds: [embedEN], components: [row] });
+      // ★ここが変更点（1つにまとめる）
+      await channel.send({ embeds: [embedJP, embedEN], components: [row] });
 
     } catch (err) {
       console.error("起動時エラー:", err);
