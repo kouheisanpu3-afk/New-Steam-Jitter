@@ -22,7 +22,7 @@ app.listen(3000, () => {
 });
 
 // =======================
-// BOT作成（←これが一番上じゃないとダメ）
+// BOT作成
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -111,6 +111,31 @@ client.once(Events.ClientReady, async () => {
   } catch (err) {
     console.log(err);
   }
+
+  // =======================
+  // WATCHチャンネル警告メッセージ（追加部分）
+  try {
+    const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
+
+    const messages = await watchChannel.messages.fetch({ limit: 10 });
+
+    const alreadySent = messages.some(m =>
+      m.author.id === client.user.id &&
+      m.content?.includes("DO NOT SEND MESSAGES")
+    );
+
+    if (!alreadySent) {
+      await watchChannel.send(
+        "このチャンネルにメッセージを送信しないでください\n" +
+        "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。\n\n" +
+        "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+        "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
+      );
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 // =======================
@@ -128,14 +153,11 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (member.permissions.has("Administrator")) return;
 
-    // 即削除
     await message.delete().catch(() => {});
 
-    // 回数カウント
     kickCount[message.author.id] = (kickCount[message.author.id] || 0) + 1;
     const count = kickCount[message.author.id];
 
-    // キック
     await member.kick(`スパム検知チャンネル (${count}回目)`);
 
     console.log(`🚫 キック：${count}回 | ${message.author.tag}`);
