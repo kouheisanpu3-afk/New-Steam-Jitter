@@ -126,7 +126,7 @@ module.exports = (client) => {
         ticketNumber++;
 
         // =========================
-        // 🔥 ここだけ修正（番号順で並べる）
+        // 🔥 ここだけ修正（番号順で並べる & 必ずチケットをカテゴリ最下部へ）
         const channels = guild.channels.cache
           .filter(c =>
             c.type === ChannelType.GuildText &&
@@ -143,6 +143,9 @@ module.exports = (client) => {
         for (const ch of channels.values()) {
           await ch.setPosition(pos++);
         }
+
+        // 🔥 新しく作ったチャンネルも確実に最後へ（＝一番下）
+        await channel.setPosition(channels.size);
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
