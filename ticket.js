@@ -100,7 +100,9 @@ module.exports = (client) => {
         const channel = await guild.channels.create({
           name: `ticket-${ticketNumber}`,
           type: ChannelType.GuildText,
-          parent: CATEGORY_ID,
+
+          // 🔥 どのカテゴリーよりも上に表示（最上部へ）
+          parent: null,
 
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -124,29 +126,8 @@ module.exports = (client) => {
 
         ticketNumber++;
 
-        // =========================
-        // 🔥 ここだけ修正（完全に一番上へ固定）
-        const categoryChannels = guild.channels.cache
-          .filter(c =>
-            c.type === ChannelType.GuildText &&
-            c.parentId === CATEGORY_ID &&
-            c.name.startsWith("ticket-")
-          )
-          .sort((a, b) => {
-            const aNum = parseInt(a.name.split("-")[1]) || 0;
-            const bNum = parseInt(b.name.split("-")[1]) || 0;
-            return aNum - bNum;
-          });
-
-        // 新しく作ったチャンネルを一番上へ
+        // 🔥 サーバー全体の一番上へ移動
         await channel.setPosition(0);
-
-        // 他のチケットも順番維持
-        let pos = 1;
-        for (const ch of categoryChannels.values()) {
-          if (ch.id === channel.id) continue;
-          await ch.setPosition(pos++);
-        }
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
