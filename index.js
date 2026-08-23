@@ -49,6 +49,18 @@ client.once(Events.ClientReady, async () => {
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
 
+    // ★追加：既にメッセージがあるか確認
+    const messages = await channel.messages.fetch({ limit: 10 });
+    const exists = messages.some(m =>
+      m.author.id === client.user.id &&
+      m.embeds.some(e => e.description?.includes("認証"))
+    );
+
+    if (exists) {
+      console.log("既に認証メッセージがあるため送信スキップ");
+      return;
+    }
+
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("verify")
