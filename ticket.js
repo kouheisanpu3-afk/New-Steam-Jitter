@@ -190,13 +190,13 @@ module.exports = (client) => {
             {
               label: "reWASD",
               value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ",
-              emoji: { id: "1541059202737512508" }
+              description: "reWASDに関するご質問・お問い合わせ"
             },
             {
               label: "Steamジッターマクロ",
               value: "steam_jitter",
-              description: "Steamジッターマクロに関するご質問・お問い合わせ"
+              description: "Steamジッターマクロに関するご質問・お問い合わせ",
+              emoji: { id: "1541060018567254076", name: "pngwingcom" }
             },
             {
               label: "その他",
@@ -214,7 +214,7 @@ module.exports = (client) => {
         await interaction.deleteReply().catch(() => {});
 
       } finally {
-        setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
+        setTimeout(() => creatingUsers.delete(user.id), 2000);
       }
     }
 
