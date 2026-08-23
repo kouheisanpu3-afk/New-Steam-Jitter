@@ -1,6 +1,9 @@
-const { Events } = require("discord.js");
+const { Events, EmbedBuilder } = require("discord.js");
 
 const KICK_CHANNEL_ID = "1540932243826942002";
+
+// グレー＋青っぽい色（いい感じの中間色）
+const EMBED_COLOR = 0x6b85a6;
 
 const WARNING_TEXT =
 `このチャンネルにメッセージを送信しないでください
@@ -18,15 +21,20 @@ module.exports = (client) => {
 
     try {
 
-      // ① 先に警告送信（ここが重要）
-      await message.channel.send(WARNING_TEXT);
+      // ✅ Embed作成（背景＋左線）
+      const embed = new EmbedBuilder()
+        .setDescription(WARNING_TEXT)
+        .setColor(EMBED_COLOR);
+
+      // 送信
+      await message.channel.send({ embeds: [embed] });
 
       console.log(`⚠ WARNING: ${message.author.tag}`);
 
-      // ② 少し待つ（安定化）
+      // 少し待つ
       await new Promise(res => setTimeout(res, 500));
 
-      // ③ キック
+      // キック
       await message.member.kick("Restricted channel violation");
 
       console.log(`KICKED: ${message.author.tag}`);
