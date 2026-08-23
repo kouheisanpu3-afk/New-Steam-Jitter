@@ -32,7 +32,10 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-const ROLE_ID = "1540560312602988594";
+// ★ここを2つに分けた
+const ROLE_ID_JP = "1540560312602988594";
+const ROLE_ID_EN = "1540560312602988594"; // ←ここはEnglish用ロールIDに変更してください
+
 const CHANNEL_ID = "1540606154093367336";
 
 const RULES_CHANNEL_ID = "1540626614982025327";
@@ -122,7 +125,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // 🇯🇵 日本語
     if (interaction.values[0] === "jp") {
 
-      if (member.roles.cache.has(ROLE_ID)) {
+      if (member.roles.cache.has(ROLE_ID_JP)) {
         return interaction.update({
           embeds: [
             new EmbedBuilder()
@@ -134,7 +137,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         });
       }
 
-      await member.roles.add(ROLE_ID);
+      await member.roles.add(ROLE_ID_JP);
 
       return interaction.update({
         embeds: [
@@ -150,7 +153,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // 🇺🇸 English
     if (interaction.values[0] === "en") {
 
-      if (member.roles.cache.has(ROLE_ID)) {
+      if (member.roles.cache.has(ROLE_ID_EN)) {
         return interaction.update({
           embeds: [
             new EmbedBuilder()
@@ -162,7 +165,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         });
       }
 
-      await member.roles.add(ROLE_ID);
+      await member.roles.add(ROLE_ID_EN);
 
       return interaction.update({
         embeds: [
