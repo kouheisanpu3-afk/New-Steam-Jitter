@@ -22,9 +22,10 @@ module.exports = (client) => {
         .setColor(0x6f8fa6)
         .setTitle("🚨 自動キック")
         .setDescription(
-          "スパム検知チャンネルに投稿したためキックされました\n\n" +
+          "このチャンネルにメッセージを送信しないでください\n" +
+          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。\n\n" +
           "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
-          "This channel is used to detect spam bots."
+          "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
       message.channel.send({ embeds: [embed] }).catch(() => {});
