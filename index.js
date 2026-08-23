@@ -88,7 +88,7 @@ client.once(Events.ClientReady, async () => {
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
           "## 認証\n\n" +
-          "## **このチャンネルにメッセージを送信しないでください**\n\n" +
+          "このチャンネルにメッセージを送信しないでください\n\n" +
           "このチャンネルはスパムボットを検知するために使用されます。\n" +
           "メッセージを送信したユーザーは即座にキックされます。\n\n" +
           `${rulesText}に同意したものとみなされます。`
@@ -99,15 +99,21 @@ client.once(Events.ClientReady, async () => {
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
           "## Verification\n\n" +
-          "## **DO NOT SEND MESSAGES IN THIS CHANNEL**\n\n" +
+          "DO NOT SEND MESSAGES IN THIS CHANNEL\n\n" +
           "This channel is used to detect spam bots.\n" +
           "Users will be kicked immediately.\n\n" +
           `By continuing, you agree to the ${tosText}.`
         );
 
+      // 🔥 日本語と英語を別メッセージに変更
       await channel.send({
-        embeds: [embedJP, embedEN],
+        embeds: [embedJP],
         components: [row]
+      });
+
+      await channel.send({
+        embeds: [embedEN],
+        components: []
       });
     }
 
@@ -145,8 +151,13 @@ client.once(Events.ClientReady, async () => {
           "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
+      // 🔥 ここも別メッセージ化
       await watchChannel.send({
-        embeds: [jpEmbed, enEmbed]
+        embeds: [jpEmbed]
+      });
+
+      await watchChannel.send({
+        embeds: [enEmbed]
       });
     }
 
