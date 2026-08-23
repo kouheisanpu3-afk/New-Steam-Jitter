@@ -38,20 +38,18 @@ module.exports = (client) => {
       }
 
       // =======================
-      // 🇯🇵 日本語Embed（別背景）
+      // 🇯🇵 日本語Embed（タイトルなし）
       const jpEmbed = new EmbedBuilder()
-        .setTitle("🇯🇵 注意 / WARNING")
         .setDescription(JP_TEXT)
         .setColor(EMBED_COLOR);
 
       // =======================
-      // 🇺🇸 EnglishEmbed（別背景）
+      // 🇺🇸 EnglishEmbed（タイトルなし）
       const enEmbed = new EmbedBuilder()
-        .setTitle("🇺🇸 WARNING / NOTICE")
         .setDescription(EN_TEXT)
         .setColor(EMBED_COLOR);
 
-      // 同時送信（2つの別背景）
+      // 同時送信（別背景）
       await channel.send({
         embeds: [jpEmbed, enEmbed]
       });
