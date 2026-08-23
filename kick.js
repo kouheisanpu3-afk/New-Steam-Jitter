@@ -1,9 +1,7 @@
 const { Events } = require("discord.js");
 
-// キック監視チャンネル
 const KICK_CHANNEL_ID = "1540932243826942002";
 
-// 警告メッセージ
 const WARNING_TEXT =
 `このチャンネルにメッセージを送信しないでください
 このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。
@@ -16,21 +14,25 @@ module.exports = (client) => {
   client.on(Events.MessageCreate, async (message) => {
     if (message.author.bot) return;
 
-    if (message.channel.id === KICK_CHANNEL_ID) {
+    if (message.channel.id !== KICK_CHANNEL_ID) return;
 
-      try {
-        // 🔥 ここで表示する（追加した部分）
-        await message.channel.send(WARNING_TEXT);
+    try {
 
-        console.log(`⚠ WARNING TRIGGERED: ${message.author.tag}`);
+      // ① 先に警告送信（ここが重要）
+      await message.channel.send(WARNING_TEXT);
 
-        await message.member.kick("Restricted channel violation");
+      console.log(`⚠ WARNING: ${message.author.tag}`);
 
-        console.log(`KICKED: ${message.author.tag}`);
+      // ② 少し待つ（安定化）
+      await new Promise(res => setTimeout(res, 500));
 
-      } catch (err) {
-        console.error("Kick error:", err);
-      }
+      // ③ キック
+      await message.member.kick("Restricted channel violation");
+
+      console.log(`KICKED: ${message.author.tag}`);
+
+    } catch (err) {
+      console.error("Kick error:", err);
     }
   });
 
