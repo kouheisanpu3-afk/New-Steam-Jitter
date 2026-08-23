@@ -52,7 +52,7 @@ module.exports = (client) => {
 
     if (!interaction.isButton()) return;
 
-    // 🎫作成
+    // 🎫 チケット作成
     if (interaction.customId === "ticket_create") {
 
       const guild = interaction.guild;
@@ -111,14 +111,17 @@ module.exports = (client) => {
 
       } catch (err) {
         console.error("チケット作成エラー:", err);
-        await interaction.reply({
-          content: "作成に失敗しました",
-          ephemeral: true
-        });
+
+        if (!interaction.replied) {
+          await interaction.reply({
+            content: "チケット作成に失敗しました",
+            ephemeral: true
+          });
+        }
       }
     }
 
-    // 🔒削除
+    // 🔒 チケット削除
     if (interaction.customId === "ticket_close") {
 
       const channel = interaction.channel;
