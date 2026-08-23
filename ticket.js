@@ -27,6 +27,10 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
+
+  // ★追加（完全二重防止用グローバルロック）
+  let creatingGlobal = false;
+
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -58,9 +62,10 @@ module.exports = (client) => {
 
       const messages = await channel.messages.fetch({ limit: 10 });
 
-      const exists = messages.some(m =>
-        m.author.id === client.user.id &&
-        m.components.length > 0
+      const exists = messages.some(
+        m =>
+          m.author.id === client.user.id &&
+          m.components.length > 0
       );
 
       if (exists) return console.log("既にチケットパネルあり");
@@ -81,9 +86,16 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成（完全防止版）
+      // チケット作成（完全二重防止修正版）
       // =========================
       if (interaction.customId === "ticket_create") {
+
+        if (creatingGlobal) {
+          return interaction.reply({
+            content: "処理中です。少し待ってください。",
+            ephemeral: true
+          }).catch(() => {});
+        }
 
         if (creatingUsers.has(interaction.user.id)) {
           return interaction.reply({
@@ -92,7 +104,6 @@ module.exports = (client) => {
           }).catch(() => {});
         }
 
-        // 既にチケットありチェック
         if (activeTickets.has(interaction.user.id)) {
           return interaction.reply({
             content: "すでにチケットが存在します。",
@@ -100,21 +111,10 @@ module.exports = (client) => {
           }).catch(() => {});
         }
 
-        // 既存チャンネルチェック（完全防止）
-        const existsChannel = interaction.guild.channels.cache.find(
-          c => c.parentId === CATEGORY_ID && c.topic === interaction.user.id
-        );
-
-        if (existsChannel) {
-          activeTickets.add(interaction.user.id);
-          return interaction.reply({
-            content: "既にチケットチャンネルが存在します。",
-            ephemeral: true
-          }).catch(() => {});
-        }
-
+        creatingGlobal = true;
         creatingUsers.add(interaction.user.id);
 
+        // ★変更なし（軽量化のまま）
         await interaction.deferUpdate().catch(() => {});
 
         try {
@@ -127,7 +127,7 @@ module.exports = (client) => {
             name: `ticket-${user.username}`,
             type: ChannelType.GuildText,
             parent: CATEGORY_ID,
-            topic: userId, // ★追加（重複防止キー）
+            topic: userId,
             permissionOverwrites: [
               { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
               {
@@ -216,12 +216,15 @@ module.exports = (client) => {
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         } finally {
-          setTimeout(() => creatingUsers.delete(userId), 3000);
+          setTimeout(() => {
+            creatingUsers.delete(userId);
+            creatingGlobal = false; // ★重要
+          }, 1500);
         }
       }
 
       // =========================
-      // カテゴリ選択（青に変更）
+      // カテゴリ選択（水色固定）
       // =========================
       else if (interaction.customId === "ticket_category") {
 
@@ -275,9 +278,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // メンション選択（青維持）
-      // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
@@ -307,20 +307,13 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // 削除
-      // =========================
       else if (interaction.customId === "ticket_close_confirm") {
 
         setTimeout(() => {
           interaction.channel.delete().catch(() => {});
         }, 1000);
-
       }
 
-      // =========================
-      // その他そのまま
-      // =========================
       else if (interaction.customId === "ticket_resolved") {
 
         const embed = new EmbedBuilder()
