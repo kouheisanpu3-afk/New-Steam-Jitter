@@ -145,24 +145,9 @@ module.exports = (client) => {
             .setCustomId("ticket_category")
             .setPlaceholder("お問い合わせ内容を選択")
             .addOptions([
-              {
-                label: "reWASD",
-                value: "rewasd",
-                description: "reWASDに関するご質問・お問い合わせ",
-                emoji: { id: "1541059202737512508", name: "reWASD" }
-              },
-              {
-                label: "Steamジッターマクロ",
-                value: "steam_jitter",
-                description: "Steamジッターマクロに関するご質問・お問い合わせ",
-                emoji: { id: "1541060018567254076", name: "pngwingcom" }
-              },
-              {
-                label: "その他",
-                value: "other",
-                description: "上記に当てはまらないご質問・お問い合わせ",
-                emoji: { id: "1541062193863327744", name: "chat" }
-              }
+              { label: "reWASD", value: "rewasd", description: "reWASDに関するご質問・お問い合わせ", emoji: { id: "1541059202737512508", name: "reWASD" } },
+              { label: "Steamジッターマクロ", value: "steam_jitter", description: "Steamジッターマクロに関するご質問・お問い合わせ", emoji: { id: "1541060018567254076", name: "pngwingcom" } },
+              { label: "その他", value: "other", description: "上記に当てはまらないご質問・お問い合わせ", emoji: { id: "1541062193863327744", name: "chat" } }
             ]);
 
           const selectRow = new ActionRowBuilder().addComponents(selectMenu);
@@ -205,16 +190,8 @@ module.exports = (client) => {
           .setCustomId("ticket_ping_choice")
           .setPlaceholder("メンションの要否")
           .addOptions([
-            {
-              label: "🔔対応時にメンションを要する",
-              value: "ping_yes",
-              description: "管理者が対応開始時にメンションします。"
-            },
-            {
-              label: "🔕対応時にメンションを要しない",
-              value: "ping_no",
-              description: "メンションは行いません。"
-            }
+            { label: "🔔対応時にメンションを要する", value: "ping_yes", description: "管理者が対応開始時にメンションします。" },
+            { label: "🔕対応時にメンションを要しない", value: "ping_no", description: "メンションは行いません。" }
           ]);
 
         const backButton = new ButtonBuilder()
@@ -232,7 +209,7 @@ module.exports = (client) => {
       }
 
       // ========================
-      // BACK BUTTON
+      // BACK
       // ========================
       else if (interaction.customId === "ticket_back") {
 
@@ -247,24 +224,9 @@ module.exports = (client) => {
           .setCustomId("ticket_category")
           .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
-            {
-              label: "reWASD",
-              value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ",
-              emoji: { id: "1541059202737512508", name: "reWASD" }
-            },
-            {
-              label: "Steamジッターマクロ",
-              value: "steam_jitter",
-              description: "Steamジッターマクロに関するご質問・お問い合わせ",
-              emoji: { id: "1541060018567254076", name: "pngwingcom" }
-            },
-            {
-              label: "その他",
-              value: "other",
-              description: "上記に当てはまらないご質問・お問い合わせ",
-              emoji: { id: "1541062193863327744", name: "chat" }
-            }
+            { label: "reWASD", value: "rewasd", description: "reWASDに関するご質問・お問い合わせ", emoji: { id: "1541059202737512508", name: "reWASD" } },
+            { label: "Steamジッターマクロ", value: "steam_jitter", description: "Steamジッターマクロに関するご質問・お問い合わせ", emoji: { id: "1541060018567254076", name: "pngwingcom" } },
+            { label: "その他", value: "other", description: "上記に当てはまらないご質問・お問い合わせ", emoji: { id: "1541062193863327744", name: "chat" } }
           ]);
 
         const row = new ActionRowBuilder().addComponents(selectMenu);
@@ -276,20 +238,28 @@ module.exports = (client) => {
       }
 
       // ========================
-      // PING → ここだけ変更
+      // PING → ここが追加変更
       // ========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const value = interaction.values[0];
 
+        let category = "不明";
+
+        if (interaction.message?.embeds?.[0]?.description?.includes("reWASD")) category = "reWASD";
+        if (interaction.message?.embeds?.[0]?.description?.includes("Steam")) category = "Steamジッターマクロ";
+        if (interaction.message?.embeds?.[0]?.description?.includes("その他")) category = "その他";
+
+        const isPing = value === "ping_yes";
+
         const embed = new EmbedBuilder()
-          .setColor(0xF1C40F)
+          .setColor(isPing ? 0xF1C40F : 0x57F287)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
-選択内容：（ここは直前状態維持）
+選択内容：${category}
 
-メンション：${value === "ping_yes" ? "要する" : "要しない"}
+メンション：${isPing ? "要する" : "要しない"}
 
 以下にご質問・お問い合わせ内容をご記入ください。`
           );
@@ -312,7 +282,6 @@ module.exports = (client) => {
       // CLOSE
       // ========================
       else if (interaction.customId === "ticket_close") {
-
         await interaction.reply({
           content: "チケットを削除します",
           ephemeral: true
@@ -327,7 +296,6 @@ module.exports = (client) => {
       // RESOLVED
       // ========================
       else if (interaction.customId === "ticket_resolved") {
-
         const embed = new EmbedBuilder()
           .setTitle("✅ 解決済み")
           .setDescription("このチケットは解決済みとしてマークされました")
