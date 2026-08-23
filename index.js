@@ -34,7 +34,7 @@ const TOKEN = process.env.TOKEN;
 
 // ★ここを2つに分けた
 const ROLE_ID_JP = "1540560312602988594";
-const ROLE_ID_EN = "1540560312602988594"; // ←ここはEnglish用ロールIDに変更してください
+const ROLE_ID_EN = "1540560377866362950"; // ←変更済み
 
 const CHANNEL_ID = "1540606154093367336";
 
