@@ -44,8 +44,8 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
-// 🔥ログ表示用チャンネル（ここだけ自分のIDに変える）
-const LOG_CHANNEL_ID = "ここにログチャンネルID"; // ←ここ未設定だと送れない
+// 🔥ログ表示用チャンネル（ここに指定済み）
+const LOG_CHANNEL_ID = "1540694105305124904";
 
 // キック回数保存
 const kickCount = {};
@@ -148,12 +148,10 @@ client.on(Events.MessageCreate, async (message) => {
     try {
       const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
 
-      if (logChannel && LOG_CHANNEL_ID !== "ここにログチャンネルID") {
+      if (logChannel) {
         await logChannel.send(
           `🚫 キック発生\nユーザー: ${message.author.tag}\n個人回数: ${count}\n総キック: ${totalKickCount}`
         );
-      } else {
-        console.log("⚠ ログチャンネルID未設定のため送信スキップ");
       }
 
     } catch (e) {
