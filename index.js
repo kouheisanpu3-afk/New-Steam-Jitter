@@ -134,7 +134,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           new EmbedBuilder()
             .setColor(0x00ff99)
             .setTitle("認証完了")
-            .setDescription("日本語ロールを付与しました 👍")
+            .setDescription("認証が完了しました")
         ],
         components: []
       });
@@ -152,7 +152,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           new EmbedBuilder()
             .setColor(0x00ff99)
             .setTitle("Verification Complete")
-            .setDescription("English role has been assigned 👍")
+            .setDescription("Verification completed")
         ],
         components: []
       });
