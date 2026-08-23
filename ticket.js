@@ -22,11 +22,10 @@ module.exports = (client) => {
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
-      // 🔥 ここを「一個前の文言」に戻した
       const embed = new EmbedBuilder()
         .setTitle("ご質問・お問い合わせチケット")
         .setDescription(
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。`
         )
         .setColor(0x4aa3ff);
 
@@ -134,7 +133,7 @@ module.exports = (client) => {
 
           new ButtonBuilder()
             .setCustomId("ticket_resolved")
-            .setLabel("解決済み")
+            .setLabel("このチケットを解決済みとしてマーク")
             .setStyle(ButtonStyle.Success)
         );
 
