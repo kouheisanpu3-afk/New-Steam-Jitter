@@ -78,7 +78,6 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 修正：そのユーザーがアクセスできるチケットがあるかで判定
         const existing = guild.channels.cache.find(c =>
           c.type === ChannelType.GuildText &&
           c.parentId === CATEGORY_ID &&
@@ -92,8 +91,8 @@ module.exports = (client) => {
               new EmbedBuilder()
                 .setColor(0xE74C3C)
                 .setDescription(
-`すでにチケットが存在します
-新しく作成するには現在のチケットを削除してください。`
+`既に作成されたチケットが存在します
+既存のチャンネルを使用してください。`
                 )
             ],
             ephemeral: true
