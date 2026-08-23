@@ -75,16 +75,17 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥既存チケットチェック（強化）
+        // 🔥完全重複防止（カテゴリ内検索）
         const existing = guild.channels.cache.find(
           c =>
-            c.name.includes(`ticket-${user.id}`) &&
-            c.type === ChannelType.GuildText
+            c.type === ChannelType.GuildText &&
+            c.parentId === CATEGORY_ID &&
+            c.name === `ticket-${user.username}`
         );
 
         if (existing) {
           return interaction.reply({
-            content: "すでにチケットがあります",
+            content: "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。",
             ephemeral: true
           });
         }
@@ -142,8 +143,6 @@ module.exports = (client) => {
             .setStyle(ButtonStyle.Success)
         );
 
-        // =========================
-        // セレクトUI（変更済み）
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
