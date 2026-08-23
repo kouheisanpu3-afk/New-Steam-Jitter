@@ -109,9 +109,18 @@ module.exports = (client) => {
         ] 
       }); 
  
+      const now = new Date(); 
+ 
       const embed = new EmbedBuilder() 
         .setTitle("🎫 チケット") 
-        .setDescription("管理者が対応するまでお待ちください") 
+        .setDescription(
+`チケットが作成されました
+
+👤 作成者: ${user.tag}
+🕒 作成日時: ${now.toLocaleString("ja-JP")}
+
+管理者が対応するまでお待ちください`
+        ) 
         .setColor(0x4aa3ff); 
  
       const row = new ActionRowBuilder().addComponents( 
