@@ -25,7 +25,8 @@ module.exports = (client) => {
       const embed = new EmbedBuilder()
         .setTitle("ご質問・お問い合わせチケット")
         .setDescription(
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。
+チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。`
         )
         .setColor(0x4aa3ff);
 
@@ -73,11 +74,13 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 既存チェック
         const existing = guild.channels.cache.find(
-          c => c.name === `ticket-${user.id}`
+          c => c.name.includes(`ticket-${user.id}`)
         );
 
         if (existing) {
+          // ❌ これだけは必要（通知）
           return interaction.reply({
             content: "すでにチケットがあります",
             ephemeral: true
@@ -133,7 +136,7 @@ module.exports = (client) => {
 
           new ButtonBuilder()
             .setCustomId("ticket_resolved")
-            .setLabel("チケットを解決済みとしてマーク")
+            .setLabel("解決済み")
             .setStyle(ButtonStyle.Success)
         );
 
@@ -148,24 +151,29 @@ module.exports = (client) => {
           .setCustomId("ticket_category")
           .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
-            { label: "一般質問", value: "general" },
-            { label: "不具合報告", value: "bug" },
-            { label: "その他", value: "other" }
+            {
+              label: "一般質問",
+              value: "general"
+            },
+            {
+              label: "不具合報告",
+              value: "bug"
+            },
+            {
+              label: "その他",
+              value: "other"
+            }
           ]);
 
         const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-        await channel.send({
-          embeds: [embed],
-          components: [row]
-        });
+        // 👇 メッセージ送信（通知なし）
+        await channel.send({ embeds: [embed], components: [row] });
+        await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        await channel.send({
-          embeds: [selectInfo],
-          components: [selectRow]
-        });
-
-        // ❌ interaction.reply 完全削除（ここが変更点）
+        // ❌ これで「チケットを作成しました」系は完全に消える
+        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+        await interaction.deleteReply().catch(() => {});
 
       } finally {
         setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
@@ -173,7 +181,7 @@ module.exports = (client) => {
     }
 
     // =========================
-    // 削除
+    // チケット削除
     else if (interaction.customId === "ticket_close") {
       await interaction.reply({
         content: "チケットを削除します",
