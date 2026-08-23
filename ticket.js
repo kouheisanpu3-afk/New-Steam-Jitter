@@ -211,11 +211,6 @@ module.exports = (client) => {
         .setDescription("このチケットは解決済みとしてマークされました")
         .setColor(0x57F287);
 
-      await interaction.reply({
-        content: "解決済みとしてマークしました",
-        ephemeral: true
-      });
-
       await interaction.channel.send({ embeds: [embed] });
     }
 
