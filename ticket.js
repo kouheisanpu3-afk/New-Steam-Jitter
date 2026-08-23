@@ -80,7 +80,7 @@ module.exports = (client) => {
 
         if (existing) {
           const embed = new EmbedBuilder()
-            .setColor(0xFFA500) // 🔥 薄いオレンジ
+            .setColor(0xFF6B6B) // 🔥 薄い赤色
             .setDescription(
 `既に作成されたチケットが存在します
 既存のチャンネルを使用してください。`
