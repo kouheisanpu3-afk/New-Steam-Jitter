@@ -91,7 +91,7 @@ module.exports = (client) => {
               new EmbedBuilder()
                 .setColor(0xE74C3C)
                 .setDescription(
-`既に作成されたチケットが存在します
+`既に作成されたチケットが存在します 
 既存のチャンネルを使用してください。`
                 )
             ],
@@ -100,7 +100,7 @@ module.exports = (client) => {
         }
 
         const channel = await guild.channels.create({
-          name: `ticket-${ticketNumber}`,
+          name: `ticket-${user.username}`, // ←ここだけ変更
           type: ChannelType.GuildText,
           parent: CATEGORY_ID,
 
@@ -136,9 +136,9 @@ module.exports = (client) => {
             iconURL: user.displayAvatarURL()
           })
           .setDescription(
-`チケットが作成されました
+`チケットが作成されました 
 
-作成者: <@${user.id}>
+作成者: <@${user.id}> 
 作成日時: ${now}`
           )
           .setColor(0x57F287);
@@ -158,7 +158,7 @@ module.exports = (client) => {
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`**ご質問・お問い合わせ内容の選択**
+`**ご質問・お問い合わせ内容の選択** 
 下のボックスからご質問・お問い合わせ内容を選択してください。`
           );
 
