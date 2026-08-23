@@ -62,6 +62,7 @@ module.exports = (client) => {
 
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+    // チケット作成
     if (interaction.customId === "ticket_create") {
 
       if (creatingUsers.has(interaction.user.id)) return;
@@ -144,7 +145,7 @@ module.exports = (client) => {
 
         const selectMenu = new StringSelectMenuBuilder()
           .setCustomId("ticket_category")
-          .setPlaceholder("お問い合わせ内容を選択") // ←ここ修正
+          .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
             { label: "一般質問", value: "general" },
             { label: "不具合報告", value: "bug" },
@@ -153,8 +154,8 @@ module.exports = (client) => {
 
         const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
+        // 🔥 メンション削除（ここが修正ポイント）
         await channel.send({
-          content: `<@${user.id}>`,
           embeds: [embed],
           components: [row]
         });
