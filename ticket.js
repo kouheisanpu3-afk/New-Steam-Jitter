@@ -202,7 +202,8 @@ module.exports = (client) => {
             {
               label: "その他",
               value: "other",
-              description: "上記に当てはまらないご質問・お問い合わせ"
+              description: "上記に当てはまらないご質問・お問い合わせ",
+              emoji: { id: "1541062193863327744", name: "chat" }
             }
           ]);
 
