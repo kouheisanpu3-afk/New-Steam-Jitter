@@ -33,13 +33,13 @@ module.exports = (client) => {
       const row = new ActionRowBuilder().addComponents( 
         new ButtonBuilder() 
           .setCustomId("ticket_create") 
-          .setLabel("🎫 チケット作成") 
+          .setLabel("チケットを作成") 
           .setStyle(ButtonStyle.Primary), 
  
         // ========================= 
         // 利用規約ボタン追加
         new ButtonBuilder() 
-          .setLabel("📜 利用規約") 
+          .setLabel("利用規約を確認") 
           .setStyle(ButtonStyle.Link) 
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`) 
       ); 
