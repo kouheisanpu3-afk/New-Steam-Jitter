@@ -78,7 +78,6 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 追加：サーバー内にチケットが1つでもあれば作成不可
         const globalExisting = guild.channels.cache.find(c =>
           c.type === ChannelType.GuildText &&
           c.parentId === CATEGORY_ID &&
@@ -191,7 +190,8 @@ module.exports = (client) => {
             {
               label: "reWASD",
               value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ"
+              description: "reWASDに関するご質問・お問い合わせ",
+              emoji: { id: "1541059202737512508" }
             },
             {
               label: "Steamジッターマクロ",
