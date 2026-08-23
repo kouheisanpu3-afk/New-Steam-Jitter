@@ -218,9 +218,6 @@ module.exports = (client) => {
       }
     }
 
-    // =========================
-    // 1段階目セレクト
-    // =========================
     else if (interaction.customId === "ticket_category") {
 
       const value = interaction.values[0];
@@ -231,9 +228,10 @@ module.exports = (client) => {
           .setColor(0x4aa3ff)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
-下のボックスからご質問・お問い合わせ内容を選択してください。
 
-選択内容：Steamジッターマクロ`
+選択内容：Steamジッターマクロ
+
+続けて下のボックスからメンションの要否を選択してください。`
           );
 
         const followSelect = new StringSelectMenuBuilder()
@@ -264,15 +262,10 @@ module.exports = (client) => {
       });
     }
 
-    // =========================
-    // 2段階目セレクト
-    // =========================
     else if (interaction.customId === "ticket_ping_choice") {
 
-      const value = interaction.values[0];
-
       return interaction.reply({
-        content: `メンション設定: ${value}`,
+        content: `メンション設定: ${interaction.values[0]}`,
         ephemeral: true
       });
     }
