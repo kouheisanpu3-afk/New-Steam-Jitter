@@ -83,9 +83,9 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x0099ff)
         .setDescription(
           "## 認証\n\n" +
-          "このチャンネルにメッセージを送信しないでください\n\n" +
-          "このチャンネルはスパムボットを検知するために使用されます。\n" +
-          "メッセージを送信したユーザーは即座にキックされます。\n\n" +
+          "🚫このチャンネルにメッセージを送信しないでください\n\n" +
+          "🚫このチャンネルはスパムボットを検知するために使用されます。\n" +
+          "🚫メッセージを送信したユーザーは即座にキックされます。\n\n" +
           `${rulesText}に同意したものとみなされます。`
         );
 
@@ -93,9 +93,9 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x0099ff)
         .setDescription(
           "## Verification\n\n" +
-          "Do not send messages in this channel.\n\n" +
-          "This channel is used to detect spam bots.\n" +
-          "Users will be kicked immediately.\n\n" +
+          "🚫Do not send messages in this channel.\n\n" +
+          "🚫This channel is used to detect spam bots.\n" +
+          "🚫Users will be kicked immediately.\n\n" +
           `By continuing, you agree to the ${tosText}.`
         );
 
@@ -126,15 +126,15 @@ client.once(Events.ClientReady, async () => {
       const jpEmbed = new EmbedBuilder()
         .setColor(0x6C8EA4)
         .setDescription(
-          "このチャンネルにメッセージを送信しないでください\n" +
-          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
+          "🚫このチャンネルにメッセージを送信しないでください\n" +
+          "🚫このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
         );
 
       const enEmbed = new EmbedBuilder()
         .setColor(0x6C8EA4)
         .setDescription(
-          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
-          "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
+          "🚫DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+          "🚫This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
       await watchChannel.send({
