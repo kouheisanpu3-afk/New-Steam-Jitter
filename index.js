@@ -1,32 +1,21 @@
 const { Client, GatewayIntentBits } = require("discord.js");
+const express = require("express");
 
-// =======================
-// Bot作成
-// =======================
+const auth = require("./auth");
+
+const app = express();
+app.get("/", (req, res) => res.send("Bot is alive!"));
+app.listen(process.env.PORT || 3000);
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent,
-  ],
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
 });
 
-// =======================
-// 各機能を読み込み
-// =======================
-require("./auth")(client);
-require("./kick")(client);
-require("./ticket")(client);
+auth(client);
 
-// =======================
-// 起動ログ
-// =======================
-client.once("ready", () => {
-  console.log(`Logged in as ${client.user.tag}`);
-});
-
-// =======================
-// ログイン（これ1つだけ！）
-// =======================
 client.login(process.env.TOKEN);
