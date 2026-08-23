@@ -1,6 +1,4 @@
 const {
-  Client,
-  GatewayIntentBits,
   Events,
   ActionRowBuilder,
   ButtonBuilder,
@@ -8,33 +6,6 @@ const {
   EmbedBuilder,
   StringSelectMenuBuilder
 } = require('discord.js');
-
-const express = require("express");
-
-// =======================
-// Webサーバー（Render用）
-const app = express();
-app.get("/", (req, res) => {
-  res.send("Bot is alive!");
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("Webサーバー起動:", PORT);
-});
-
-// =======================
-// Bot作成
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
-});
-
-const TOKEN = process.env.TOKEN;
 
 // =======================
 // ロール・ID
@@ -45,132 +16,131 @@ const CHANNEL_ID = "1540606154093367336";
 const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
-// =======================
-// 起動時メッセージ送信
-client.once(Events.ClientReady, async () => {
-  console.log(`ログイン: ${client.user.tag}`);
-
-  try {
-    const channel = await client.channels.fetch(CHANNEL_ID);
-
-    const messages = await channel.messages.fetch({ limit: 10 });
-
-    const exists = messages.some(m =>
-      m.author.id === client.user.id &&
-      m.embeds.length > 0 &&
-      m.embeds[0].description?.includes("認証")
-    );
-
-    if (exists) {
-      console.log("既に認証メッセージあり");
-      return;
-    }
-
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("verify")
-        .setLabel("認証/Verify")
-        .setStyle(ButtonStyle.Primary),
-
-      new ButtonBuilder()
-        .setCustomId("change_lang")
-        .setLabel("言語変更/Change Language")
-        .setStyle(ButtonStyle.Secondary)
-    );
-
-    const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
-    const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
-
-    const embedJP = new EmbedBuilder()
-      .setColor(0x6f8fa6)
-      .setTitle("認証")
-      .setDescription(
-        "下のボタンをクリックすると認証できます。\n" +
-        `認証すると${rulesText}に同意したものとみなされます。`
-      );
-
-    const embedEN = new EmbedBuilder()
-      .setColor(0x6f8fa6)
-      .setTitle("Verification")
-      .setDescription(
-        `Click the button below to verify.\nYou agree to ${tosText}.`
-      );
-
-    await channel.send({ embeds: [embedJP] });
-    await channel.send({ embeds: [embedEN], components: [row] });
-
-  } catch (err) {
-    console.error("起動時エラー:", err);
-  }
-});
-
-// =======================
-// インタラクション処理
-client.on(Events.InteractionCreate, async (interaction) => {
+module.exports = (client) => {
 
   // =======================
-  // ボタン
-  if (interaction.isButton()) {
+  // 起動時メッセージ送信
+  client.once(Events.ClientReady, async () => {
+    console.log(`ログイン: ${client.user.tag}`);
 
-    const select = new StringSelectMenuBuilder()
-      .setCustomId("select_lang")
-      .setPlaceholder("言語を選択 / Select Language")
-      .addOptions([
-        { label: "日本語", value: "jp", emoji: "🇯🇵" },
-        { label: "English", value: "en", emoji: "🇺🇸" }
-      ]);
+    try {
+      const channel = await client.channels.fetch(CHANNEL_ID);
 
-    const row = new ActionRowBuilder().addComponents(select);
+      const messages = await channel.messages.fetch({ limit: 10 });
 
-    if (interaction.customId === "verify" || interaction.customId === "change_lang") {
-      return interaction.reply({
-        content: "言語を選択してください",
-        components: [row],
-        ephemeral: true
-      });
+      const exists = messages.some(m =>
+        m.author.id === client.user.id &&
+        m.embeds.length > 0 &&
+        m.embeds[0].description?.includes("認証")
+      );
+
+      if (exists) {
+        console.log("既に認証メッセージあり");
+        return;
+      }
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify")
+          .setLabel("認証/Verify")
+          .setStyle(ButtonStyle.Primary),
+
+        new ButtonBuilder()
+          .setCustomId("change_lang")
+          .setLabel("言語変更/Change Language")
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
+      const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
+
+      const embedJP = new EmbedBuilder()
+        .setColor(0x6f8fa6)
+        .setTitle("認証")
+        .setDescription(
+          "下のボタンをクリックすると認証できます。\n" +
+          `認証すると${rulesText}に同意したものとみなされます。`
+        );
+
+      const embedEN = new EmbedBuilder()
+        .setColor(0x6f8fa6)
+        .setTitle("Verification")
+        .setDescription(
+          `Click the button below to verify.\nYou agree to ${tosText}.`
+        );
+
+      await channel.send({ embeds: [embedJP] });
+      await channel.send({ embeds: [embedEN], components: [row] });
+
+    } catch (err) {
+      console.error("起動時エラー:", err);
     }
-  }
+  });
 
   // =======================
-  // セレクト
-  if (interaction.isStringSelectMenu()) {
+  // インタラクション処理
+  client.on(Events.InteractionCreate, async (interaction) => {
 
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+    // =======================
+    // ボタン
+    if (interaction.isButton()) {
 
-    const value = interaction.values[0];
+      const select = new StringSelectMenuBuilder()
+        .setCustomId("select_lang")
+        .setPlaceholder("言語を選択 / Select Language")
+        .addOptions([
+          { label: "日本語", value: "jp", emoji: "🇯🇵" },
+          { label: "English", value: "en", emoji: "🇺🇸" }
+        ]);
 
-    if (value === "jp") {
-      await member.roles.remove(ROLE_ID_EN).catch(() => {});
-      await member.roles.add(ROLE_ID_JP);
+      const row = new ActionRowBuilder().addComponents(select);
 
-      return interaction.update({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(0x00ff99)
-            .setTitle("認証完了")
-            .setDescription("認証が完了しました")
-        ],
-        components: []
-      });
+      if (interaction.customId === "verify" || interaction.customId === "change_lang") {
+        return interaction.reply({
+          content: "言語を選択してください",
+          components: [row],
+          ephemeral: true
+        });
+      }
     }
 
-    if (value === "en") {
-      await member.roles.remove(ROLE_ID_JP).catch(() => {});
-      await member.roles.add(ROLE_ID_EN);
+    // =======================
+    // セレクト
+    if (interaction.isStringSelectMenu()) {
 
-      return interaction.update({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(0x00ff99)
-            .setTitle("Verification Complete")
-            .setDescription("Verification completed")
-        ],
-        components: []
-      });
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+
+      const value = interaction.values[0];
+
+      if (value === "jp") {
+        await member.roles.remove(ROLE_ID_EN).catch(() => {});
+        await member.roles.add(ROLE_ID_JP);
+
+        return interaction.update({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0x00ff99)
+              .setTitle("認証完了")
+              .setDescription("認証が完了しました")
+          ],
+          components: []
+        });
+      }
+
+      if (value === "en") {
+        await member.roles.remove(ROLE_ID_JP).catch(() => {});
+        await member.roles.add(ROLE_ID_EN);
+
+        return interaction.update({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0x00ff99)
+              .setTitle("Verification Complete")
+              .setDescription("Verification completed")
+          ],
+          components: []
+        });
+      }
     }
-  }
-});
-
-// =======================
-// 起動
-client.login(TOKEN);
+  });
+};
