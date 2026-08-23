@@ -66,9 +66,6 @@ client.once(Events.ClientReady, async () => {
       m.embeds[0].description?.includes("認証")
     );
 
-    // 総キック回数（表示用）
-    const totalKick = Object.values(kickCount).reduce((a, b) => a + b, 0);
-
     if (!alreadySent) {
 
       const row = new ActionRowBuilder().addComponents(
@@ -86,8 +83,6 @@ client.once(Events.ClientReady, async () => {
       const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
-      // =========================
-      // 日本語
       const embedJP = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
@@ -96,13 +91,9 @@ client.once(Events.ClientReady, async () => {
           "このチャンネルにメッセージを送信しないでください\n\n" +
           "このチャンネルはスパムボットを検知するために使用されます。\n" +
           "メッセージを送信したユーザーは即座にキックされます。\n\n" +
-          `${rulesText}に同意したものとみなされます。\n\n` +
-          `🚫 キック：${totalKick}回`
-        )
-        .setFooter({ text: "🚫 スパム検知システム" });
+          `${rulesText}に同意したものとみなされます。`
+        );
 
-      // =========================
-      // 英語
       const embedEN = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
@@ -111,10 +102,8 @@ client.once(Events.ClientReady, async () => {
           "DO NOT SEND MESSAGES IN THIS CHANNEL\n\n" +
           "This channel is used to detect spam bots.\n" +
           "Users will be kicked immediately.\n\n" +
-          `By continuing, you agree to the ${tosText}.\n\n` +
-          `🚫 Kicks: ${totalKick}`
-        )
-        .setFooter({ text: "🚫 Spam Detection System" });
+          `By continuing, you agree to the ${tosText}.`
+        );
 
       await channel.send({
         embeds: [embedJP],
@@ -125,6 +114,63 @@ client.once(Events.ClientReady, async () => {
         embeds: [embedEN]
       });
     }
+
+  } catch (err) {
+    console.log(err);
+  }
+
+  // =======================
+  // WATCHチャンネル警告メッセージ（元の機能そのまま）
+  try {
+    const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
+    const messages = await watchChannel.messages.fetch({ limit: 10 });
+
+    const alreadySent = messages.some(m =>
+      m.author.id === client.user.id &&
+      m.embeds.length > 0 &&
+      m.embeds[0].description?.includes("DO NOT SEND MESSAGES")
+    );
+
+    if (!alreadySent) {
+
+      const jpEmbed = new EmbedBuilder()
+        .setColor(0x6C8EA4)
+        .setThumbnail(NO_ENTRY_ICON)
+        .setDescription(
+          "このチャンネルにメッセージを送信しないでください\n" +
+          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
+        );
+
+      const enEmbed = new EmbedBuilder()
+        .setColor(0x6C8EA4)
+        .setThumbnail(NO_ENTRY_ICON)
+        .setDescription(
+          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+          "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
+        );
+
+      await watchChannel.send({ embeds: [jpEmbed] });
+      await watchChannel.send({ embeds: [enEmbed] });
+    }
+
+    // =======================
+    // 🔥追加：同じチャンネルに認証ボタンメッセージ（機能なし）
+    const verifyRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("verify_dummy")
+        .setLabel("認証 / Verify")
+        .setStyle(ButtonStyle.Primary)
+    );
+
+    const verifyEmbed = new EmbedBuilder()
+      .setColor(0x2b2d31)
+      .setThumbnail(NO_ENTRY_ICON)
+      .setDescription("認証ボタン（このチャンネル用・機能なし）");
+
+    await watchChannel.send({
+      embeds: [verifyEmbed],
+      components: [verifyRow]
+    });
 
   } catch (err) {
     console.log(err);
@@ -159,7 +205,7 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 // =======================
-// ボタン処理
+// ボタン処理（変更なし）
 client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
