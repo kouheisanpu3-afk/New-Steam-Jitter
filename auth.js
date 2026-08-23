@@ -64,7 +64,7 @@ module.exports = (client) => {
         .setColor(0x6f8fa6)
         .setTitle("Verification")
         .setDescription(
-          `Click the button below to complete verification. By completing verification, you agree to [Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID}).`
+          `Click the button below to complete verification. By completing verification, you agree to the Terms of Service.`
         );
 
       await channel.send({ embeds: [embedJP] });
