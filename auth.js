@@ -53,7 +53,7 @@ module.exports = (client) => {
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
       // =======================
-      const embedJP = new EmbedBuilder()
+      const embed = new EmbedBuilder()
         .setColor(0x3aa0ff)
         .setTitle("認証 / Verification")
         .setDescription(
@@ -61,7 +61,7 @@ module.exports = (client) => {
           `Verification\nClick the button below to complete verification. By completing verification, you agree to the ${tosText}.`
         );
 
-      await channel.send({ embeds: [embedJP], components: [row] });
+      await channel.send({ embeds: [embed], components: [row] });
 
     } catch (err) {
       console.error("起動時エラー:", err);
