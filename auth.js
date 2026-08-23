@@ -64,7 +64,7 @@ module.exports = (client) => {
         .setColor(0x6f8fa6)
         .setTitle("Verification")
         .setDescription(
-          `Click the button below to complete verification. By completing verification, you agree to the Terms of Service.`
+          `Click the button below to complete verification. By completing verification, you agree to ${tosText}.`
         );
 
       await channel.send({ embeds: [embedJP] });
