@@ -2,8 +2,8 @@ const { Events, EmbedBuilder } = require("discord.js");
 
 const KICK_CHANNEL_ID = "1540932243826942002";
 
-// グレー＋青
-const EMBED_COLOR = 0x6b85a6;
+// 🔧 グレー寄りブルー（青を少し抑えた）
+const EMBED_COLOR = 0x5f6f82;
 
 const WARNING_TEXT =
 `このチャンネルにメッセージを送信しないでください
@@ -22,10 +22,8 @@ module.exports = (client) => {
 
       if (!channel) return console.log("チャンネル取得失敗");
 
-      // 直近メッセージ取得
       const messages = await channel.messages.fetch({ limit: 10 });
 
-      // 既にBotのEmbedがあるか確認
       const alreadyExists = messages.some(msg =>
         msg.author.id === client.user.id &&
         msg.embeds.length > 0
@@ -36,7 +34,6 @@ module.exports = (client) => {
         return;
       }
 
-      // Embed作成
       const embed = new EmbedBuilder()
         .setDescription(WARNING_TEXT)
         .setColor(EMBED_COLOR);
