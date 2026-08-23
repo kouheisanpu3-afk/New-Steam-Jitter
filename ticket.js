@@ -63,8 +63,6 @@ module.exports = (client) => {
 
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-    // =========================
-    // チケット作成
     if (interaction.customId === "ticket_create") {
 
       if (creatingUsers.has(interaction.user.id)) {
@@ -102,7 +100,10 @@ module.exports = (client) => {
         const channel = await guild.channels.create({
           name: `ticket-${ticketNumber}`,
           type: ChannelType.GuildText,
-          parent: CATEGORY_ID,
+
+          // 🔥 カテゴリから外す（最上部にするため）
+          parent: null,
+
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
             {
@@ -125,7 +126,7 @@ module.exports = (client) => {
 
         ticketNumber++;
 
-        // 🔥 ここが追加：サーバーの一番上へ移動
+        // 🔥 サーバー最上部へ移動
         await channel.setPosition(0);
 
         const now = new Date().toLocaleString("ja-JP", {
