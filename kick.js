@@ -20,7 +20,7 @@ module.exports = (client) => {
 
       const embed = new EmbedBuilder()
         .setColor(0x6f8fa6)
-        .setTitle("🚨 自動キック")
+        .setTitle("")
         .setDescription(
           "このチャンネルにメッセージを送信しないでください\n" +
           "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。\n\n" +
