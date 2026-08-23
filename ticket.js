@@ -26,6 +26,7 @@ module.exports = (client) => {
 
   const creatingUsers = new Set();
   const ticketState = new Map();
+  const activeTickets = new Set(); // ★追加（チケット作成制御）
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -79,9 +80,16 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+      // ★追加：既にチケットある場合は作成不可
       if (interaction.customId === "ticket_create") {
 
-        // 🔥完全二重防止
+        if (activeTickets.has(interaction.user.id)) {
+          return interaction.reply({
+            content: "すでにチケットを作成しています。",
+            ephemeral: true
+          }).catch(() => {});
+        }
+
         if (creatingUsers.has(interaction.user.id)) {
           return interaction.reply({
             content: "処理中です。少し待ってください。",
@@ -91,7 +99,6 @@ module.exports = (client) => {
 
         creatingUsers.add(interaction.user.id);
 
-        // ★変更：考え中UI完全削除
         await interaction.deferUpdate().catch(() => {});
 
         try {
@@ -122,6 +129,8 @@ module.exports = (client) => {
               }
             ]
           });
+
+          activeTickets.add(user.id); // ★追加
 
           const now = new Date().toLocaleString("ja-JP", {
             timeZone: "Asia/Tokyo"
@@ -189,7 +198,7 @@ module.exports = (client) => {
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         } finally {
-          setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
+          setTimeout(() => creatingUsers.delete(user.id), 3000);
         }
       }
 
@@ -206,7 +215,7 @@ module.exports = (client) => {
         ticketState.set(interaction.channel.id, { value, label });
 
         const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
+          .setColor(0xF1C40F) // ★常に黄色
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
@@ -245,54 +254,13 @@ module.exports = (client) => {
         });
       }
 
-      else if (interaction.customId === "ticket_back") {
-
-        const selectInfo = new EmbedBuilder()
-          .setColor(0x4aa3ff)
-          .setDescription(
-`**ご質問・お問い合わせ内容の選択**
-下のボックスからご質問・お問い合わせ内容を選択してください。`
-          );
-
-        const selectMenu = new StringSelectMenuBuilder()
-          .setCustomId("ticket_category")
-          .setPlaceholder("お問い合わせ内容を選択")
-          .addOptions([
-            {
-              label: "reWASD",
-              value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ",
-              emoji: { id: "1541059202737512508", name: "reWASD" }
-            },
-            {
-              label: "Steamジッターマクロ",
-              value: "steam_jitter",
-              description: "Steamジッターマクロに関するご質問・お問い合わせ",
-              emoji: { id: "1541060018567254076", name: "pngwingcom" }
-            },
-            {
-              label: "その他",
-              value: "other",
-              description: "上記に当てはまらないご質問・お問い合わせ",
-              emoji: { id: "1541062193863327744", name: "chat" }
-            }
-          ]);
-
-        const row = new ActionRowBuilder().addComponents(selectMenu);
-
-        return interaction.update({
-          embeds: [selectInfo],
-          components: [row]
-        });
-      }
-
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
         const embed = new EmbedBuilder()
-          .setColor(isYes ? 0xF1C40F : 0x4aa3ff) // ★変更：要する→黄色
+          .setColor(0xF1C40F) // ★常に黄色
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
@@ -342,10 +310,9 @@ module.exports = (client) => {
 
       else if (interaction.customId === "ticket_close_confirm") {
 
-        setTimeout(() => {
-          interaction.channel.delete().catch(() => {});
-        }, 1000);
-
+        // ★キャンセル含め完全削除
+        await interaction.message?.delete?.().catch(() => {});
+        await interaction.channel.delete().catch(() => {});
       }
 
       else if (interaction.customId === "ticket_resolved") {
