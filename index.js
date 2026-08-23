@@ -83,6 +83,8 @@ client.once(Events.ClientReady, async () => {
       const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
+      // =========================
+      // 日本語（別メッセージ）
       const embedJP = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
@@ -94,6 +96,8 @@ client.once(Events.ClientReady, async () => {
           `${rulesText}に同意したものとみなされます。`
         );
 
+      // =========================
+      // 英語（別メッセージ）
       const embedEN = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
@@ -105,15 +109,14 @@ client.once(Events.ClientReady, async () => {
           `By continuing, you agree to the ${tosText}.`
         );
 
-      // 🔥 日本語と英語を別メッセージに変更
+      // 🔥完全に別投稿
       await channel.send({
         embeds: [embedJP],
         components: [row]
       });
 
       await channel.send({
-        embeds: [embedEN],
-        components: []
+        embeds: [embedEN]
       });
     }
 
@@ -139,7 +142,7 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x6C8EA4)
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
-          "## このチャンネルにメッセージを送信しないでください\n" +
+          "このチャンネルにメッセージを送信しないでください\n" +
           "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
         );
 
@@ -147,18 +150,13 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x6C8EA4)
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
-          "## DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
           "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
-      // 🔥 ここも別メッセージ化
-      await watchChannel.send({
-        embeds: [jpEmbed]
-      });
-
-      await watchChannel.send({
-        embeds: [enEmbed]
-      });
+      // 🔥別メッセージ化
+      await watchChannel.send({ embeds: [jpEmbed] });
+      await watchChannel.send({ embeds: [enEmbed] });
     }
 
   } catch (err) {
