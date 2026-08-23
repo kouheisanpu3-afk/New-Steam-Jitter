@@ -66,9 +66,6 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // ========================
-      // CREATE
-      // ========================
       if (interaction.customId === "ticket_create") {
 
         if (creatingUsers.has(interaction.user.id)) {
@@ -208,8 +205,16 @@ module.exports = (client) => {
           .setCustomId("ticket_ping_choice")
           .setPlaceholder("メンションの要否")
           .addOptions([
-            { label: "メンションする", value: "ping_yes" },
-            { label: "メンションしない", value: "ping_no" }
+            {
+              label: "🔔対応時にメンションを要する",
+              value: "ping_yes",
+              description: "管理者が対応開始時にメンションします。"
+            },
+            {
+              label: "🔕対応時にメンションを要しない",
+              value: "ping_no",
+              description: "メンションは行いません。"
+            }
           ]);
 
         const backButton = new ButtonBuilder()
