@@ -122,21 +122,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    // 🇯🇵 日本語
+    // 🇯🇵 日本語（上書き対応）
     if (interaction.values[0] === "jp") {
 
-      if (member.roles.cache.has(ROLE_ID_JP)) {
-        return interaction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle("認証済み")
-              .setDescription("すでに認証済みです")
-          ],
-          components: []
-        });
-      }
-
+      // ENロールを削除してJPを付与
+      await member.roles.remove(ROLE_ID_EN).catch(() => {});
       await member.roles.add(ROLE_ID_JP);
 
       return interaction.update({
@@ -144,28 +134,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
           new EmbedBuilder()
             .setColor(0x00ff99)
             .setTitle("認証完了")
-            .setDescription("認証が完了しました 👍")
+            .setDescription("日本語ロールを付与しました 👍")
         ],
         components: []
       });
     }
 
-    // 🇺🇸 English（★ここだけ動作確定でEnglishロールのみ付与）
+    // 🇺🇸 English（上書き対応）
     if (interaction.values[0] === "en") {
 
-      if (member.roles.cache.has(ROLE_ID_EN)) {
-        return interaction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle("Already Verified")
-              .setDescription("You are already verified.")
-          ],
-          components: []
-        });
-      }
-
-      // ★Englishだけ付与（JPは一切触らない）
+      // JPロールを削除してENを付与
+      await member.roles.remove(ROLE_ID_JP).catch(() => {});
       await member.roles.add(ROLE_ID_EN);
 
       return interaction.update({
@@ -173,7 +152,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           new EmbedBuilder()
             .setColor(0x00ff99)
             .setTitle("Verification Complete")
-            .setDescription("Verification completed 👍")
+            .setDescription("English role has been assigned 👍")
         ],
         components: []
       });
