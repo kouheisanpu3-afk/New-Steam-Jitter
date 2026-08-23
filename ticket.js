@@ -179,9 +179,6 @@ module.exports = (client) => {
         }
       }
 
-      // ========================
-      // CATEGORY
-      // ========================
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
@@ -192,7 +189,7 @@ module.exports = (client) => {
         if (value === "rewasd") label = "reWASD";
         if (value === "other") label = "その他";
 
-        ticketState.set(interaction.channel.id, { value, label }); // ★追加
+        ticketState.set(interaction.channel.id, { value, label });
 
         const embed = new EmbedBuilder()
           .setColor(0x4aa3ff)
@@ -234,9 +231,6 @@ module.exports = (client) => {
         });
       }
 
-      // ========================
-      // BACK BUTTON
-      // ========================
       else if (interaction.customId === "ticket_back") {
 
         const selectInfo = new EmbedBuilder()
@@ -278,25 +272,20 @@ module.exports = (client) => {
         });
       }
 
-      // ========================
-      // PING (★ここが変更メイン)
-      // ========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
-        if (!state) return interaction.reply({ content: "エラー: 状態が見つかりません", ephemeral: true });
-
         const isYes = interaction.values[0] === "ping_yes";
 
         const embed = new EmbedBuilder()
-          .setColor(isYes ? 0xF1C40F : 0x4aa3ff) // ★黄色ライン対応
+          .setColor(isYes ? 0xF1C40F : 0x4aa3ff)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
-選択内容：${state.label}
+選択内容：${state?.label ?? "不明"}
 メンション：${isYes ? "要する" : "要しない"}
 
-以下にご質問・お問い合わせ内容をご記入ください。`
+以下にご質問・お問い合わせをご記入ください。`
           );
 
         const changeButton = new ButtonBuilder()
@@ -312,9 +301,6 @@ module.exports = (client) => {
         });
       }
 
-      // ========================
-      // CLOSE
-      // ========================
       else if (interaction.customId === "ticket_close") {
 
         await interaction.reply({
@@ -327,13 +313,10 @@ module.exports = (client) => {
         }, 2000);
       }
 
-      // ========================
-      // RESOLVED
-      // ========================
       else if (interaction.customId === "ticket_resolved") {
 
         const embed = new EmbedBuilder()
-          .setTitle("✅ 解決済み")
+          .setTitle("このチケットを解決済みとしてマーク")
           .setDescription("このチケットは解決済みとしてマークされました")
           .setColor(0x57F287);
 
