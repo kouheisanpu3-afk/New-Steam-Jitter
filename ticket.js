@@ -90,7 +90,7 @@ module.exports = (client) => {
               new EmbedBuilder()
                 .setColor(0xE74C3C)
                 .setDescription(
-`既に作成されたチケットが存在します
+`既に作成されたチケットが存在します 
 既存のチャンネルを使用してください。`
                 )
             ],
@@ -111,7 +111,7 @@ module.exports = (client) => {
               new EmbedBuilder()
                 .setColor(0xE74C3C)
                 .setDescription(
-`既に作成されたチケットが存在します
+`既に作成されたチケットが存在します 
 既存のチャンネルを使用してください。`
                 )
             ],
@@ -222,35 +222,19 @@ module.exports = (client) => {
 
       const value = interaction.values[0];
 
-      if (value === "rewasd" || value === "other") {
+      let label = "";
+      if (value === "steam_jitter") label = "Steamジッターマクロ";
+      if (value === "rewasd") label = "reWASD";
+      if (value === "other") label = "その他";
 
-        const labelText =
-          value === "rewasd" ? "reWASD" : "その他";
-
-        const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
-          .setDescription(
-`**ご質問・お問い合わせ内容の選択**
-
-選択内容：${labelText}
-
-続けて下のボックスからメンションの要否を選択してください。`
-          );
-
-        return interaction.reply({
-          embeds: [embed],
-          ephemeral: true
-        });
-      }
-
-      if (value === "steam_jitter") {
+      if (value === "steam_jitter" || value === "rewasd" || value === "other") {
 
         const embed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
-選択内容：Steamジッターマクロ
+選択内容：${label}
 
 続けて下のボックスからメンションの要否を選択してください。`
           );
@@ -259,8 +243,14 @@ module.exports = (client) => {
           .setCustomId("ticket_ping_choice")
           .setPlaceholder("メンションの要否を選択")
           .addOptions([
-            { label: "メンションする", value: "ping_yes" },
-            { label: "メンションしない", value: "ping_no" }
+            {
+              label: "メンションする",
+              value: "ping_yes"
+            },
+            {
+              label: "メンションしない",
+              value: "ping_no"
+            }
           ]);
 
         const row = new ActionRowBuilder().addComponents(followSelect);
