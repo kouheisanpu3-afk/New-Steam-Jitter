@@ -54,14 +54,14 @@ module.exports = (client) => {
 
       // =======================
       const embedJP = new EmbedBuilder()
-        .setColor(0x2a8fd6)
+        .setColor(0x3aa0ff)
         .setTitle("認証")
         .setDescription(
           `下のボタンをクリックすると、認証が完了します。認証を完了すると${rulesText}に同意したものとみなされます。`
         );
 
       const embedEN = new EmbedBuilder()
-        .setColor(0x2a8fd6)
+        .setColor(0x3aa0ff)
         .setTitle("Verification")
         .setDescription(
           `Click the button below to complete verification. By completing verification, you agree to the ${tosText}.`
