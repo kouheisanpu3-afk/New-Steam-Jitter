@@ -1,16 +1,27 @@
 const {
+
   Events,
+
   EmbedBuilder,
+
   ActionRowBuilder,
+
   ButtonBuilder,
+
   ButtonStyle,
+
   PermissionsBitField,
+
   ChannelType,
+
   StringSelectMenuBuilder
+
 } = require("discord.js");
 
 const TICKET_CHANNEL_ID = "1541001019880640573";
+
 const CATEGORY_ID = "1541000895167201300";
+
 const TERMS_CHANNEL_ID = "1540626614982025327";
 
 module.exports = (client) => {
@@ -20,27 +31,43 @@ module.exports = (client) => {
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
+
     try {
+
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
+
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
       const embed = new EmbedBuilder()
+
         .setTitle("ご質問・お問い合わせチケット")
+
         .setDescription(
+
 `下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
+
         )
+
         .setColor(0x4aa3ff);
 
       const row = new ActionRowBuilder().addComponents(
+
         new ButtonBuilder()
+
           .setCustomId("ticket_create")
+
           .setLabel("チケットを作成")
+
           .setStyle(ButtonStyle.Primary),
 
         new ButtonBuilder()
+
           .setLabel("利用規約を確認")
+
           .setStyle(ButtonStyle.Link)
+
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
+
       );
 
       const messages = await channel.messages.fetch({ limit: 10 });
@@ -79,6 +106,7 @@ module.exports = (client) => {
         creatingUsers.add(interaction.user.id);
 
         try {
+
           const guild = interaction.guild;
           const user = interaction.user;
 
@@ -303,18 +331,17 @@ module.exports = (client) => {
         });
       }
 
-      // ★ここ変更
       else if (interaction.customId === "ticket_close") {
 
         const embed = new EmbedBuilder()
-          .setColor(0xF5B7B1) // 薄い赤
+          .setColor(0xE74C3C) // ← 以前より赤強め
           .setDescription("このチケットを消去しますか？");
 
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId("ticket_close_confirm")
-            .setLabel("削除する")
-            .setStyle(ButtonStyle.Danger),
+            .setLabel("OK") // 変更
+            .setStyle(ButtonStyle.Success), // 緑系（OKボタン）
 
           new ButtonBuilder()
             .setCustomId("ticket_back")
