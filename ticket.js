@@ -78,7 +78,6 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 1ユーザー1チケット制（存在チェック）
         const existing = guild.channels.cache.find(c =>
           c.type === ChannelType.GuildText &&
           c.parentId === CATEGORY_ID &&
@@ -168,9 +167,18 @@ module.exports = (client) => {
           .setCustomId("ticket_category")
           .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
-            { label: "一般質問", value: "general" },
-            { label: "不具合報告", value: "bug" },
-            { label: "その他", value: "other" }
+            {
+              label: "reWASDに関するご質問・お問い合わせ",
+              value: "rewasd"
+            },
+            {
+              label: "Steamジッターマクロに関するご質問・お問い合わせ",
+              value: "steam_jitter"
+            },
+            {
+              label: "その他（上記に当てはまらないご質問・お問い合わせ）",
+              value: "other"
+            }
           ]);
 
         const selectRow = new ActionRowBuilder().addComponents(selectMenu);
