@@ -101,8 +101,7 @@ module.exports = (client) => {
           name: `ticket-${ticketNumber}`,
           type: ChannelType.GuildText,
 
-          // 🔥 どのカテゴリーよりも上に表示（最上部へ）
-          parent: null,
+          parent: CATEGORY_ID,
 
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -126,8 +125,23 @@ module.exports = (client) => {
 
         ticketNumber++;
 
-        // 🔥 サーバー全体の一番上へ移動
-        await channel.setPosition(0);
+        // 🔥 数字が大きいほど下に並ぶように並び替え
+        const channels = guild.channels.cache
+          .filter(c =>
+            c.type === ChannelType.GuildText &&
+            c.parentId === CATEGORY_ID &&
+            c.name.startsWith("ticket-")
+          )
+          .sort((a, b) => {
+            const aNum = parseInt(a.name.split("-")[1]) || 0;
+            const bNum = parseInt(b.name.split("-")[1]) || 0;
+            return aNum - bNum; // 小さい順→上、大きい順→下
+          });
+
+        let pos = 0;
+        for (const ch of channels.values()) {
+          await ch.setPosition(pos++);
+        }
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
