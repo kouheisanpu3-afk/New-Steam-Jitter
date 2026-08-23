@@ -27,7 +27,7 @@ const TERMS_CHANNEL_ID = "1540626614982025327";
 module.exports = (client) => {
 
   const creatingUsers = new Set();
-  const ticketState = new Map(); // ★追加
+  const ticketState = new Map();
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -39,35 +39,22 @@ module.exports = (client) => {
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
       const embed = new EmbedBuilder()
-
         .setTitle("ご質問・お問い合わせチケット")
-
         .setDescription(
-
 `下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
-
         )
-
         .setColor(0x4aa3ff);
 
       const row = new ActionRowBuilder().addComponents(
-
         new ButtonBuilder()
-
           .setCustomId("ticket_create")
-
           .setLabel("チケットを作成")
-
           .setStyle(ButtonStyle.Primary),
 
         new ButtonBuilder()
-
           .setLabel("利用規約を確認")
-
           .setStyle(ButtonStyle.Link)
-
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
-
       );
 
       const messages = await channel.messages.fetch({ limit: 10 });
@@ -96,14 +83,18 @@ module.exports = (client) => {
 
       if (interaction.customId === "ticket_create") {
 
+        // 🔥完全二重防止（最重要）
         if (creatingUsers.has(interaction.user.id)) {
           return interaction.reply({
             content: "処理中です。少し待ってください。",
             ephemeral: true
-          });
+          }).catch(() => {});
         }
 
         creatingUsers.add(interaction.user.id);
+
+        // 🔥即ロック（Discord再送対策）
+        await interaction.deferReply({ ephemeral: true }).catch(() => {});
 
         try {
 
@@ -199,11 +190,10 @@ module.exports = (client) => {
           await channel.send({ embeds: [embed], components: [row] });
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-          await interaction.deferReply({ ephemeral: true }).catch(() => {});
           await interaction.deleteReply().catch(() => {});
 
         } finally {
-          setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
+          setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
         }
       }
 
@@ -305,10 +295,8 @@ module.exports = (client) => {
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
-        const isNo = !isYes;
-
         const embed = new EmbedBuilder()
-          .setColor(isNo ? 0xF1C40F : 0x4aa3ff)
+          .setColor(isYes ? 0x4aa3ff : 0xF1C40F)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
@@ -334,14 +322,14 @@ module.exports = (client) => {
       else if (interaction.customId === "ticket_close") {
 
         const embed = new EmbedBuilder()
-          .setColor(0xE74C3C) // ← 以前より赤強め
+          .setColor(0xE74C3C)
           .setDescription("このチケットを消去しますか？");
 
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId("ticket_close_confirm")
-            .setLabel("OK") // 変更
-            .setStyle(ButtonStyle.Success), // 緑系（OKボタン）
+            .setLabel("OK")
+            .setStyle(ButtonStyle.Success),
 
           new ButtonBuilder()
             .setCustomId("ticket_back")
@@ -358,14 +346,15 @@ module.exports = (client) => {
 
       else if (interaction.customId === "ticket_close_confirm") {
 
+        // 🔥メッセージ無しで即削除
         await interaction.reply({
-          content: "チケットを削除します",
+          content: "削除中...",
           ephemeral: true
-        });
+        }).catch(() => {});
 
         setTimeout(() => {
           interaction.channel.delete().catch(() => {});
-        }, 2000);
+        }, 1000);
       }
 
       else if (interaction.customId === "ticket_resolved") {
