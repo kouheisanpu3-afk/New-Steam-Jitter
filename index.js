@@ -53,7 +53,13 @@ client.once(Events.ClientReady, async () => {
       new ButtonBuilder()
         .setCustomId("verify")
         .setLabel("認証/Verify")
-        .setStyle(ButtonStyle.Primary)
+        .setStyle(ButtonStyle.Primary),
+
+      // ★追加ボタン
+      new ButtonBuilder()
+        .setCustomId("change_lang")
+        .setLabel("言語を変更/Change Language")
+        .setStyle(ButtonStyle.Secondary)
     );
 
     const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
@@ -125,7 +131,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // 🇯🇵 日本語（上書き対応）
     if (interaction.values[0] === "jp") {
 
-      // ENロールを削除してJPを付与
       await member.roles.remove(ROLE_ID_EN).catch(() => {});
       await member.roles.add(ROLE_ID_JP);
 
@@ -143,7 +148,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // 🇺🇸 English（上書き対応）
     if (interaction.values[0] === "en") {
 
-      // JPロールを削除してENを付与
       await member.roles.remove(ROLE_ID_JP).catch(() => {});
       await member.roles.add(ROLE_ID_EN);
 
