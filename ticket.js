@@ -78,6 +78,7 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 🔥 既存チケットがあれば新規作成禁止（1人1チケット）
         const existing = guild.channels.cache.find(
           c => c.type === ChannelType.GuildText &&
                c.name === `ticket-${user.id}`
@@ -89,8 +90,8 @@ module.exports = (client) => {
               new EmbedBuilder()
                 .setColor(0xE74C3C)
                 .setDescription(
-`既に作成されたチケットが存在します
-既存のチャンネルを使用してください。`
+`すでにチケットが存在します
+新しく作成するには現在のチケットを削除してください。`
                 )
             ],
             ephemeral: true
@@ -98,9 +99,8 @@ module.exports = (client) => {
         }
 
         const channel = await guild.channels.create({
-          name: `ticket-${ticketNumber}`,
+          name: `ticket-${user.id}`,
           type: ChannelType.GuildText,
-
           parent: CATEGORY_ID,
 
           permissionOverwrites: [
@@ -122,26 +122,6 @@ module.exports = (client) => {
             }
           ]
         });
-
-        ticketNumber++;
-
-        // 🔥 数字が大きいほど下に並ぶように並び替え
-        const channels = guild.channels.cache
-          .filter(c =>
-            c.type === ChannelType.GuildText &&
-            c.parentId === CATEGORY_ID &&
-            c.name.startsWith("ticket-")
-          )
-          .sort((a, b) => {
-            const aNum = parseInt(a.name.split("-")[1]) || 0;
-            const bNum = parseInt(b.name.split("-")[1]) || 0;
-            return aNum - bNum; // 小さい順→上、大きい順→下
-          });
-
-        let pos = 0;
-        for (const ch of channels.values()) {
-          await ch.setPosition(pos++);
-        }
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
