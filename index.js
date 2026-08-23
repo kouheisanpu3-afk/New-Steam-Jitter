@@ -44,10 +44,11 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
-// キック回数保存
+// キック回数
 const kickCount = {};
+let totalKickCount = 0;
 
-// 🚫画像（指定URL）
+// 🚫画像
 const NO_ENTRY_ICON =
   "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
 
@@ -58,106 +59,62 @@ client.once(Events.ClientReady, async () => {
 
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
-    const messages = await channel.messages.fetch({ limit: 20 });
 
-    const alreadySent = messages.some(m =>
-      m.author.id === client.user.id &&
-      m.embeds.length > 0 &&
-      m.embeds[0].description?.includes("認証")
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("verify")
+        .setLabel("認証/Verify")
+        .setStyle(ButtonStyle.Primary),
+
+      new ButtonBuilder()
+        .setCustomId("change_lang")
+        .setLabel("言語を変更 / Change Language")
+        .setStyle(ButtonStyle.Secondary)
     );
 
-    if (!alreadySent) {
+    const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
+    const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("verify")
-          .setLabel("認証/Verify")
-          .setStyle(ButtonStyle.Primary),
-
-        new ButtonBuilder()
-          .setCustomId("change_lang")
-          .setLabel("言語を変更 / Change Language")
-          .setStyle(ButtonStyle.Secondary)
-      );
-
-      const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
-      const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
-
-      // =========================
-      // 日本語（別メッセージ）
-      const embedJP = new EmbedBuilder()
-        .setColor(0x0099ff)
-        .setThumbnail(NO_ENTRY_ICON)
-        .setDescription(
-          "## 認証\n\n" +
-          "このチャンネルにメッセージを送信しないでください\n\n" +
-          "このチャンネルはスパムボットを検知するために使用されます。\n" +
-          "メッセージを送信したユーザーは即座にキックされます。\n\n" +
-          `${rulesText}に同意したものとみなされます。`
-        );
-
-      // =========================
-      // 英語（別メッセージ）
-      const embedEN = new EmbedBuilder()
-        .setColor(0x0099ff)
-        .setThumbnail(NO_ENTRY_ICON)
-        .setDescription(
-          "## Verification\n\n" +
-          "DO NOT SEND MESSAGES IN THIS CHANNEL\n\n" +
-          "This channel is used to detect spam bots.\n" +
-          "Users will be kicked immediately.\n\n" +
-          `By continuing, you agree to the ${tosText}.`
-        );
-
-      // 🔥完全に別投稿
-      await channel.send({
-        embeds: [embedJP],
-        components: [row]
+    // =========================
+    // 日本語（修正版）
+    const embedJP = new EmbedBuilder()
+      .setColor(0x0099ff)
+      .setThumbnail(NO_ENTRY_ICON)
+      .setDescription(
+        "## 認証\n\n" +
+        "このチャンネルにメッセージを送信しないでください\n\n" +
+        "このチャンネルはスパムボットを検知するために使用されます。\n" +
+        "メッセージを送信したユーザーは即座にキックされます。\n\n" +
+        `${rulesText}に同意したものとみなされます。`
+      )
+      .setFooter({
+        text: `🚫 キック：${totalKickCount}回`
       });
 
-      await channel.send({
-        embeds: [embedEN]
+    // =========================
+    // 英語（修正版）
+    const embedEN = new EmbedBuilder()
+      .setColor(0x0099ff)
+      .setThumbnail(NO_ENTRY_ICON)
+      .setDescription(
+        "## Verification\n\n" +
+        "DO NOT SEND MESSAGES IN THIS CHANNEL\n\n" +
+        "This channel is used to detect spam bots.\n" +
+        "Users will be kicked immediately.\n\n" +
+        `By continuing, you agree to the ${tosText}.`
+      )
+      .setFooter({
+        text: `🚫 Kicks: ${totalKickCount}`
       });
-    }
 
-  } catch (err) {
-    console.log(err);
-  }
+    await channel.send({
+      embeds: [embedJP],
+      components: [row]
+    });
 
-  // =======================
-  // WATCHチャンネル警告メッセージ
-  try {
-    const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
-    const messages = await watchChannel.messages.fetch({ limit: 10 });
-
-    const alreadySent = messages.some(m =>
-      m.author.id === client.user.id &&
-      m.embeds.length > 0 &&
-      m.embeds[0].description?.includes("DO NOT SEND MESSAGES")
-    );
-
-    if (!alreadySent) {
-
-      const jpEmbed = new EmbedBuilder()
-        .setColor(0x6C8EA4)
-        .setThumbnail(NO_ENTRY_ICON)
-        .setDescription(
-          "このチャンネルにメッセージを送信しないでください\n" +
-          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
-        );
-
-      const enEmbed = new EmbedBuilder()
-        .setColor(0x6C8EA4)
-        .setThumbnail(NO_ENTRY_ICON)
-        .setDescription(
-          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
-          "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
-        );
-
-      // 🔥別メッセージ化
-      await watchChannel.send({ embeds: [jpEmbed] });
-      await watchChannel.send({ embeds: [enEmbed] });
-    }
+    await channel.send({
+      embeds: [embedEN]
+    });
 
   } catch (err) {
     console.log(err);
@@ -167,8 +124,6 @@ client.once(Events.ClientReady, async () => {
 // =======================
 // スパム検知
 client.on(Events.MessageCreate, async (message) => {
-
-  console.log("📩検知:", message.channel.id, message.content);
 
   if (message.author.bot) return;
   if (!message.guild) return;
@@ -183,6 +138,8 @@ client.on(Events.MessageCreate, async (message) => {
 
     kickCount[message.author.id] = (kickCount[message.author.id] || 0) + 1;
     const count = kickCount[message.author.id];
+
+    totalKickCount++;
 
     await member.kick(`スパム検知チャンネル (${count}回目)`);
 
@@ -254,5 +211,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-// =======================
 client.login(TOKEN);
