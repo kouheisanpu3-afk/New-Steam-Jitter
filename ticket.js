@@ -126,7 +126,7 @@ module.exports = (client) => {
         ticketNumber++;
 
         // =========================
-        // 🔥 ここだけ追加（並び順修正）
+        // 🔥 ここだけ修正（番号順で並べる）
         const channels = guild.channels.cache
           .filter(c =>
             c.type === ChannelType.GuildText &&
