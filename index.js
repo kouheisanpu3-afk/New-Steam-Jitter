@@ -14,6 +14,7 @@ const client = new Client({
 // 機能読み込み
 require("./auth")(client);
 require("./kick")(client);
+require("./ticket")(client); // ←これが無かった原因
 
 // =======================
 // Webサーバー（Render用）
