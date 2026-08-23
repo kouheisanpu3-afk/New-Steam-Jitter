@@ -26,7 +26,7 @@ module.exports = (client) => {
       const embed = new EmbedBuilder()
         .setTitle("ご質問・お問い合わせチケット")
         .setDescription(
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。`
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
         )
         .setColor(0x4aa3ff);
 
@@ -63,8 +63,6 @@ module.exports = (client) => {
 
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-    // =========================
-    // チケット作成
     if (interaction.customId === "ticket_create") {
 
       if (creatingUsers.has(interaction.user.id)) {
@@ -80,11 +78,9 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 完全に「そのユーザー専用チケット」チェック
         const existing = guild.channels.cache.find(
-          c =>
-            c.type === ChannelType.GuildText &&
-            c.name.endsWith(`-${user.id}`)
+          c => c.type === ChannelType.GuildText &&
+               c.name === `ticket-${user.id}`
         );
 
         if (existing) {
@@ -101,12 +97,10 @@ module.exports = (client) => {
           });
         }
 
-        // 🔥 連番
-        const channelName = `ticket-${ticketNumber}`;
-
         const channel = await guild.channels.create({
-          name: channelName,
+          name: `ticket-${ticketNumber}`,
           type: ChannelType.GuildText,
+
           parent: CATEGORY_ID,
 
           permissionOverwrites: [
@@ -132,15 +126,22 @@ module.exports = (client) => {
         ticketNumber++;
 
         // =========================
-        // 🔥 重要：数字が大きいほど「下」に並ぶ
-        // → 全チャンネル取得して並び順再設定
+        // 🔥 ここだけ追加（並び順修正）
         const channels = guild.channels.cache
-          .filter(c => c.type === ChannelType.GuildText && c.parentId === CATEGORY_ID)
-          .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+          .filter(c =>
+            c.type === ChannelType.GuildText &&
+            c.parentId === CATEGORY_ID &&
+            c.name.startsWith("ticket-")
+          )
+          .sort((a, b) => {
+            const aNum = parseInt(a.name.split("-")[1]) || 0;
+            const bNum = parseInt(b.name.split("-")[1]) || 0;
+            return aNum - bNum;
+          });
 
-        let position = 0;
+        let pos = 0;
         for (const ch of channels.values()) {
-          await ch.setPosition(position++);
+          await ch.setPosition(pos++);
         }
 
         const now = new Date().toLocaleString("ja-JP", {
@@ -168,19 +169,20 @@ module.exports = (client) => {
 
           new ButtonBuilder()
             .setCustomId("ticket_resolved")
-            .setLabel("解決済み")
+            .setLabel("このチケットを解決済みとしてマーク")
             .setStyle(ButtonStyle.Success)
         );
 
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`**ご質問・お問い合わせ内容の選択**`
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。`
           );
 
         const selectMenu = new StringSelectMenuBuilder()
           .setCustomId("ticket_category")
-          .setPlaceholder("選択してください")
+          .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
             { label: "一般質問", value: "general" },
             { label: "不具合報告", value: "bug" },
@@ -192,7 +194,8 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        await interaction.reply({ content: "チケットを作成しました", ephemeral: true });
+        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+        await interaction.deleteReply().catch(() => {});
 
       } finally {
         setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
@@ -213,6 +216,7 @@ module.exports = (client) => {
     else if (interaction.customId === "ticket_resolved") {
       const embed = new EmbedBuilder()
         .setTitle("✅ 解決済み")
+        .setDescription("このチケットは解決済みとしてマークされました")
         .setColor(0x57F287);
 
       await interaction.reply({
