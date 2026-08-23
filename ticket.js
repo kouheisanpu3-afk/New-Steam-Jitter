@@ -122,9 +122,7 @@ module.exports = (client) => {
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
-
           parent: CATEGORY_ID,
-
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
             {
@@ -220,6 +218,65 @@ module.exports = (client) => {
       }
     }
 
+    // =========================
+    // 1段階目セレクト
+    // =========================
+    else if (interaction.customId === "ticket_category") {
+
+      const value = interaction.values[0];
+
+      if (value === "steam_jitter") {
+
+        const embed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。
+
+選択内容：Steamジッターマクロ`
+          );
+
+        const followSelect = new StringSelectMenuBuilder()
+          .setCustomId("ticket_ping_choice")
+          .setPlaceholder("メンションの要否を選択")
+          .addOptions([
+            {
+              label: "メンションする",
+              value: "ping_yes"
+            },
+            {
+              label: "メンションしない",
+              value: "ping_no"
+            }
+          ]);
+
+        const row = new ActionRowBuilder().addComponents(followSelect);
+
+        return interaction.update({
+          embeds: [embed],
+          components: [row]
+        });
+      }
+
+      return interaction.reply({
+        content: `選択: ${value}`,
+        ephemeral: true
+      });
+    }
+
+    // =========================
+    // 2段階目セレクト
+    // =========================
+    else if (interaction.customId === "ticket_ping_choice") {
+
+      const value = interaction.values[0];
+
+      return interaction.reply({
+        content: `メンション設定: ${value}`,
+        ephemeral: true
+      });
+    }
+
     else if (interaction.customId === "ticket_close") {
       await interaction.reply({
         content: "チケットを削除します",
@@ -238,13 +295,6 @@ module.exports = (client) => {
         .setColor(0x57F287);
 
       await interaction.channel.send({ embeds: [embed] });
-    }
-
-    else if (interaction.customId === "ticket_category") {
-      await interaction.reply({
-        content: `選択: ${interaction.values[0]}`,
-        ephemeral: true
-      });
     }
   });
 };
