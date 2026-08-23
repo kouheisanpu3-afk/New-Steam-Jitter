@@ -57,7 +57,7 @@ module.exports = (client) => {
         .setColor(0x6f8fa6)
         .setTitle("認証")
         .setDescription(
-          `下のボタンをクリックすると認証できます。認証すると${rulesText}に同意したものとみなされます。`
+          `認証\n下のボタンをクリックすると、認証が完了します。認証を完了すると利用規約に同意したものとみなされます。`
         );
 
       const embedEN = new EmbedBuilder()
