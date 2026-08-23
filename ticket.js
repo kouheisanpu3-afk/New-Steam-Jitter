@@ -14,7 +14,7 @@ const CATEGORY_ID = "1541000895167201300";
 module.exports = (client) => {
 
   // =========================
-  // パネル設置
+  // パネル設置（起動時1回）
   client.once(Events.ClientReady, async () => {
     try {
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
@@ -34,6 +34,18 @@ module.exports = (client) => {
           .setStyle(ButtonStyle.Primary)
       );
 
+      // 既にあるなら重複防止
+      const messages = await channel.messages.fetch({ limit: 10 });
+      const exists = messages.some(m =>
+        m.author.id === client.user.id &&
+        m.components.length > 0
+      );
+
+      if (exists) {
+        console.log("既にチケットパネルあり");
+        return;
+      }
+
       await channel.send({
         embeds: [embed],
         components: [row]
@@ -52,79 +64,79 @@ module.exports = (client) => {
 
     if (!interaction.isButton()) return;
 
-    // 🎫 チケット作成
+    // =========================
+    // チケット作成
     if (interaction.customId === "ticket_create") {
 
       const guild = interaction.guild;
       const user = interaction.user;
 
-      try {
-        const channel = await guild.channels.create({
-          name: `ticket-${user.username}`,
-          type: ChannelType.GuildText,
-          parent: CATEGORY_ID,
-          permissionOverwrites: [
-            {
-              id: guild.id,
-              deny: [PermissionsBitField.Flags.ViewChannel]
-            },
-            {
-              id: user.id,
-              allow: [
-                PermissionsBitField.Flags.ViewChannel,
-                PermissionsBitField.Flags.SendMessages,
-                PermissionsBitField.Flags.ReadMessageHistory
-              ]
-            },
-            {
-              id: client.user.id,
-              allow: [
-                PermissionsBitField.Flags.ViewChannel,
-                PermissionsBitField.Flags.SendMessages
-              ]
-            }
-          ]
-        });
+      // 既にチケットあるかチェック
+      const existing = guild.channels.cache.find(
+        c => c.name === `ticket-${user.id}`
+      );
 
-        const embed = new EmbedBuilder()
-          .setTitle("🎫 チケット")
-          .setDescription("管理者が対応するまでお待ちください")
-          .setColor(0x57F287);
-
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("ticket_close")
-            .setLabel("🔒 チケットを閉じる")
-            .setStyle(ButtonStyle.Danger)
-        );
-
-        await channel.send({
-          content: `<@${user.id}>`,
-          embeds: [embed],
-          components: [row]
-        });
-
-        await interaction.reply({
-          content: "チケットを作成しました",
+      if (existing) {
+        return interaction.reply({
+          content: "すでにチケットがあります",
           ephemeral: true
         });
-
-      } catch (err) {
-        console.error("チケット作成エラー:", err);
-
-        if (!interaction.replied) {
-          await interaction.reply({
-            content: "チケット作成に失敗しました",
-            ephemeral: true
-          });
-        }
       }
+
+      const channel = await guild.channels.create({
+        name: `ticket-${user.username}`,
+        type: ChannelType.GuildText,
+        parent: CATEGORY_ID,
+        permissionOverwrites: [
+          {
+            id: guild.id,
+            deny: [PermissionsBitField.Flags.ViewChannel]
+          },
+          {
+            id: user.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory
+            ]
+          },
+          {
+            id: client.user.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages
+            ]
+          }
+        ]
+      });
+
+      const embed = new EmbedBuilder()
+        .setTitle("🎫 チケット")
+        .setDescription("管理者が対応するまでお待ちください")
+        .setColor(0x57F287);
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ticket_close")
+          .setLabel("🔒 チケットを閉じる")
+          .setStyle(ButtonStyle.Danger)
+      );
+
+      await channel.send({
+        content: `<@${user.id}>`,
+        embeds: [embed],
+        components: [row]
+      });
+
+      return interaction.reply({
+        content: "チケットを作成しました",
+        ephemeral: true
+      });
     }
 
-    // 🔒 チケット削除
+    // =========================
+    // チケット削除
     if (interaction.customId === "ticket_close") {
-
-      const channel = interaction.channel;
 
       await interaction.reply({
         content: "チケットを削除します",
@@ -132,7 +144,7 @@ module.exports = (client) => {
       });
 
       setTimeout(() => {
-        channel.delete().catch(() => {});
+        interaction.channel.delete().catch(() => {});
       }, 2000);
     }
   });
