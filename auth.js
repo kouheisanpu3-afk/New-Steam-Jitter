@@ -53,7 +53,6 @@ module.exports = (client) => {
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
       // =======================
-      // 横長“最大化”（改行削除＋1行圧縮）
       const embedJP = new EmbedBuilder()
         .setColor(0x6f8fa6)
         .setTitle("認証")
@@ -65,7 +64,7 @@ module.exports = (client) => {
         .setColor(0x6f8fa6)
         .setTitle("Verification")
         .setDescription(
-          `Click the button below to complete verification. By completing verification, you agree to the Terms of Service.`
+          `Click the button below to complete verification. By completing verification, you agree to [Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID}).`
         );
 
       await channel.send({ embeds: [embedJP] });
