@@ -83,7 +83,6 @@ module.exports = (client) => {
 
       if (interaction.customId === "ticket_create") {
 
-        // 🔥完全二重防止（最重要）
         if (creatingUsers.has(interaction.user.id)) {
           return interaction.reply({
             content: "処理中です。少し待ってください。",
@@ -93,7 +92,6 @@ module.exports = (client) => {
 
         creatingUsers.add(interaction.user.id);
 
-        // 🔥即ロック（Discord再送対策）
         await interaction.deferReply({ ephemeral: true }).catch(() => {});
 
         try {
@@ -303,7 +301,7 @@ module.exports = (client) => {
 選択内容：${state?.label ?? "不明"}
 メンション：${isYes ? "要する" : "要しない"}
 
-以下にご質問・お問い合わせ内容をご記入ください。`
+以下にご質問・お問い合わせをご記入ください。`
           );
 
         const changeButton = new ButtonBuilder()
@@ -346,15 +344,11 @@ module.exports = (client) => {
 
       else if (interaction.customId === "ticket_close_confirm") {
 
-        // 🔥メッセージ無しで即削除
-        await interaction.reply({
-          content: "削除中...",
-          ephemeral: true
-        }).catch(() => {});
-
+        // ❌「削除中...」完全削除
         setTimeout(() => {
           interaction.channel.delete().catch(() => {});
         }, 1000);
+
       }
 
       else if (interaction.customId === "ticket_resolved") {
@@ -368,6 +362,7 @@ module.exports = (client) => {
       }
 
     } catch (err) {
+
       console.error("Interaction Error:", err);
 
       if (interaction.replied || interaction.deferred) return;
