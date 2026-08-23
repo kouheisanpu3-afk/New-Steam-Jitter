@@ -1,5 +1,7 @@
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
+// =======================
+// Bot作成
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -12,7 +14,7 @@ const client = new Client({
 });
 
 // =======================
-// 各モジュール読み込み
+// 各機能読み込み
 require("./auth")(client);
 require("./kick")(client);
 require("./ticket")(client);
@@ -23,4 +25,13 @@ client.once("ready", () => {
   console.log(`ログイン: ${client.user.tag}`);
 });
 
-client.login("YOUR_BOT_TOKEN");
+// =======================
+// 🔥 Render対応ログイン（ここが重要）
+const TOKEN = process.env.TOKEN;
+
+if (!TOKEN) {
+  console.error("❌ TOKENが設定されていません（Renderの環境変数を確認）");
+  process.exit(1);
+}
+
+client.login(TOKEN);
