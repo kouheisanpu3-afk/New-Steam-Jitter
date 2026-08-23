@@ -109,10 +109,13 @@ module.exports = (client) => {
         ] 
       }); 
  
-      const now = new Date(); 
+      // ✅ 日本時間で正しく表示
+      const now = new Date().toLocaleString("ja-JP", {
+        timeZone: "Asia/Tokyo"
+      }); 
  
       const embed = new EmbedBuilder() 
-        .setTitle("🎫 チケット") 
+        .setTitle("チケット") 
         .setAuthor({ 
           name: `${user.username}`, 
           iconURL: user.displayAvatarURL({ dynamic: true }) 
@@ -121,9 +124,7 @@ module.exports = (client) => {
 `チケットが作成されました
 
 作成者: <@${user.id}>
-作成日時: ${now.toLocaleString("ja-JP")}
-
-管理者が対応するまでお待ちください`
+作成日時: ${now}`
         ) 
         .setColor(0x4aa3ff); 
  
