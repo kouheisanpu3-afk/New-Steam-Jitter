@@ -2,15 +2,20 @@ const { Events, EmbedBuilder } = require("discord.js");
 
 const KICK_CHANNEL_ID = "1540932243826942002";
 
-// 🔧 グレー寄りブルー（青を少し抑えた）
+// グレー寄りブルー
 const EMBED_COLOR = 0x5f6f82;
 
-const WARNING_TEXT =
+// 日本語
+const JP_TEXT =
 `このチャンネルにメッセージを送信しないでください
-このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。
+このチャンネルはスパムボットを検知するために使用されます。
+メッセージを送信したユーザーは即座にキックされます。`;
 
-DO NOT SEND MESSAGES IN THIS CHANNEL
-This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately.`;
+// 英語
+const EN_TEXT =
+`DO NOT SEND MESSAGES IN THIS CHANNEL
+This channel is used to detect spam bots.
+Any user who sends a message here will be kicked immediately.`;
 
 module.exports = (client) => {
 
@@ -34,9 +39,21 @@ module.exports = (client) => {
         return;
       }
 
+      // ✅ Embed（上下分割）
       const embed = new EmbedBuilder()
-        .setDescription(WARNING_TEXT)
-        .setColor(EMBED_COLOR);
+        .setColor(EMBED_COLOR)
+        .addFields(
+          {
+            name: "🇯🇵 日本語",
+            value: JP_TEXT,
+            inline: false
+          },
+          {
+            name: "🇺🇸 English",
+            value: EN_TEXT,
+            inline: false
+          }
+        );
 
       await channel.send({ embeds: [embed] });
 
