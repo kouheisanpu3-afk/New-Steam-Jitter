@@ -52,11 +52,8 @@ const kickCount = {};
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
-  // =======================
-  // 認証メッセージ（重複防止）
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
-
     const messages = await channel.messages.fetch({ limit: 20 });
 
     const alreadySent = messages.some(m =>
@@ -113,24 +110,30 @@ client.once(Events.ClientReady, async () => {
   }
 
   // =======================
-  // WATCHチャンネル警告メッセージ（追加部分）
+  // WATCHチャンネル警告メッセージ（←ここだけ変更）
   try {
     const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
-
     const messages = await watchChannel.messages.fetch({ limit: 10 });
 
     const alreadySent = messages.some(m =>
       m.author.id === client.user.id &&
-      m.content?.includes("DO NOT SEND MESSAGES")
+      m.embeds.length > 0 &&
+      m.embeds[0].description?.includes("DO NOT SEND MESSAGES")
     );
 
     if (!alreadySent) {
-      await watchChannel.send(
-        "このチャンネルにメッセージを送信しないでください\n" +
-        "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。\n\n" +
-        "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
-        "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
-      );
+      const warningEmbed = new EmbedBuilder()
+        .setColor(0xB0B0B0) // 薄いグレー
+        .setDescription(
+          "このチャンネルにメッセージを送信しないでください\n" +
+          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。\n\n" +
+          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+          "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
+        );
+
+      await watchChannel.send({
+        embeds: [warningEmbed]
+      });
     }
 
   } catch (err) {
@@ -139,7 +142,7 @@ client.once(Events.ClientReady, async () => {
 });
 
 // =======================
-// スパム検知（即削除＋キック回数付き）
+// スパム検知
 client.on(Events.MessageCreate, async (message) => {
 
   console.log("📩検知:", message.channel.id, message.content);
@@ -168,7 +171,7 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 // =======================
-// ボタン・セレクト処理
+// ボタン処理
 client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
@@ -179,16 +182,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
         .setCustomId("select_lang")
         .setPlaceholder("言語を選択 / Select Language")
         .addOptions([
-          {
-            label: "日本語",
-            value: "jp",
-            emoji: "🇯🇵"
-          },
-          {
-            label: "English",
-            value: "en",
-            emoji: "🇺🇸"
-          }
+          { label: "日本語", value: "jp", emoji: "🇯🇵" },
+          { label: "English", value: "en", emoji: "🇺🇸" }
         ]);
 
       const row = new ActionRowBuilder().addComponents(select);
@@ -206,7 +201,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const member = await interaction.guild.members.fetch(interaction.user.id);
 
   if (interaction.values[0] === "jp") {
-
     await member.roles.add(ROLE_ID);
     await member.roles.remove(ENGLISH_ROLE_ID);
 
@@ -222,7 +216,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   if (interaction.values[0] === "en") {
-
     await member.roles.add(ENGLISH_ROLE_ID);
     await member.roles.remove(ROLE_ID);
 
