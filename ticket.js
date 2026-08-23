@@ -26,7 +26,8 @@ module.exports = (client) => {
       const embed = new EmbedBuilder() 
         .setTitle("ご質問・お問い合わせチケット") 
         .setDescription( 
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると利用規約に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。` 
+`ご質問・お問い合わせチケット
+下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると利用規約に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。` 
         ) 
         .setColor(0x4aa3ff); 
  
@@ -37,9 +38,9 @@ module.exports = (client) => {
           .setStyle(ButtonStyle.Primary), 
  
         // ========================= 
-        // 利用規約ボタン追加
+        // 利用規約ボタン
         new ButtonBuilder() 
-          .setLabel("利用規約を確認") 
+          .setLabel("利用規約") 
           .setStyle(ButtonStyle.Link) 
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`) 
       ); 
