@@ -25,8 +25,8 @@ module.exports = (client) => {
         .setDescription(
 `下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると利用規約に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
         )
-        // 🔵 濃い水色（左のライン）
-        .setColor(0x1f6feb);
+        // 🔵 少し薄い水色
+        .setColor(0x4aa3ff);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -35,7 +35,7 @@ module.exports = (client) => {
           .setStyle(ButtonStyle.Primary)
       );
 
-      // 既にあるなら重複防止
+      // 重複防止
       const messages = await channel.messages.fetch({ limit: 10 });
       const exists = messages.some(m =>
         m.author.id === client.user.id &&
@@ -65,7 +65,6 @@ module.exports = (client) => {
 
     if (!interaction.isButton()) return;
 
-    // =========================
     // チケット作成
     if (interaction.customId === "ticket_create") {
 
@@ -113,8 +112,7 @@ module.exports = (client) => {
       const embed = new EmbedBuilder()
         .setTitle("🎫 チケット")
         .setDescription("管理者が対応するまでお待ちください")
-        // 🔵 ここも同じ水色に統一
-        .setColor(0x1f6feb);
+        .setColor(0x4aa3ff);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -135,7 +133,6 @@ module.exports = (client) => {
       });
     }
 
-    // =========================
     // チケット削除
     if (interaction.customId === "ticket_close") {
 
