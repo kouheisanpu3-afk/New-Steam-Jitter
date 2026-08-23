@@ -47,9 +47,9 @@ const WATCH_CHANNEL_ID = "1540694105305124904";
 // キック回数保存
 const kickCount = {};
 
-// 🚫安定表示用アイコン（超安定PNG）
+// 🚫画像（指定URL）
 const NO_ENTRY_ICON =
-  "https://emojicdn.elk.sh/%F0%9F%9A%AB.png";
+  "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
 
 // =======================
 // 起動時
@@ -88,9 +88,9 @@ client.once(Events.ClientReady, async () => {
         .setImage(NO_ENTRY_ICON)
         .setDescription(
           "## 認証\n\n" +
-          "🚫このチャンネルにメッセージを送信しないでください\n\n" +
-          "🚫このチャンネルはスパムボットを検知するために使用されます。\n" +
-          "🚫メッセージを送信したユーザーは即座にキックされます。\n\n" +
+          "このチャンネルにメッセージを送信しないでください\n\n" +
+          "このチャンネルはスパムボットを検知するために使用されます。\n" +
+          "メッセージを送信したユーザーは即座にキックされます。\n\n" +
           `${rulesText}に同意したものとみなされます。`
         );
 
@@ -99,9 +99,9 @@ client.once(Events.ClientReady, async () => {
         .setImage(NO_ENTRY_ICON)
         .setDescription(
           "## Verification\n\n" +
-          "🚫Do not send messages in this channel.\n\n" +
-          "🚫This channel is used to detect spam bots.\n" +
-          "🚫Users will be kicked immediately.\n\n" +
+          "Do not send messages in this channel.\n\n" +
+          "This channel is used to detect spam bots.\n" +
+          "Users will be kicked immediately.\n\n" +
           `By continuing, you agree to the ${tosText}.`
         );
 
@@ -133,16 +133,16 @@ client.once(Events.ClientReady, async () => {
         .setColor(0x6C8EA4)
         .setImage(NO_ENTRY_ICON)
         .setDescription(
-          "🚫このチャンネルにメッセージを送信しないでください\n" +
-          "🚫このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
+          "このチャンネルにメッセージを送信しないでください\n" +
+          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
         );
 
       const enEmbed = new EmbedBuilder()
         .setColor(0x6C8EA4)
         .setImage(NO_ENTRY_ICON)
         .setDescription(
-          "🚫DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
-          "🚫This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
+          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+          "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
       await watchChannel.send({
@@ -175,7 +175,7 @@ client.on(Events.MessageCreate, async (message) => {
     kickCount[message.author.id] = (kickCount[message.author.id] || 0) + 1;
     const count = kickCount[message.author.id];
 
-    await member.kick(`🚫スパム検知チャンネル (${count}回目)`);
+    await member.kick(`スパム検知チャンネル (${count}回目)`);
 
     console.log(`🚫 キック：${count}回 | ${message.author.tag}`);
 
@@ -245,4 +245,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
+// =======================
 client.login(TOKEN);
