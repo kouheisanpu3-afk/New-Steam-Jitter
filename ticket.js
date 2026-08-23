@@ -113,13 +113,18 @@ module.exports = (client) => {
  
       const embed = new EmbedBuilder() 
         .setTitle("🎫 チケット") 
+        // 👇ここが追加部分（作成者アイコン＋メンション） 
+        .setAuthor({ 
+          name: `${user.username}`, 
+          iconURL: user.displayAvatarURL({ dynamic: true }), 
+          url: `https://discord.com/users/${user.id}` 
+        }) 
         .setDescription(
 `チケットが作成されました
 
-作成者: ${user.tag}
+作成者: <@${user.id}>
 作成日時: ${now.toLocaleString("ja-JP")}
 
-管理者が対応するまでお待ちください`
         ) 
         .setColor(0x4aa3ff); 
  
