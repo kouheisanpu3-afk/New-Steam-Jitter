@@ -110,7 +110,7 @@ client.once(Events.ClientReady, async () => {
   }
 
   // =======================
-  // WATCHチャンネル警告メッセージ（色だけ変更）
+  // WATCHチャンネル警告メッセージ（半分表示）
   try {
     const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
     const messages = await watchChannel.messages.fetch({ limit: 10 });
@@ -122,17 +122,23 @@ client.once(Events.ClientReady, async () => {
     );
 
     if (!alreadySent) {
-      const warningEmbed = new EmbedBuilder()
-        .setColor(0x6C8EA4) // ← グレー＋青
+
+      const jpEmbed = new EmbedBuilder()
+        .setColor(0x6C8EA4)
         .setDescription(
           "このチャンネルにメッセージを送信しないでください\n" +
-          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。\n\n" +
+          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
+        );
+
+      const enEmbed = new EmbedBuilder()
+        .setColor(0x6C8EA4)
+        .setDescription(
           "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
           "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
       await watchChannel.send({
-        embeds: [warningEmbed]
+        embeds: [jpEmbed, enEmbed]
       });
     }
 
