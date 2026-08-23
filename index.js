@@ -150,7 +150,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    // 🇺🇸 English
+    // 🇺🇸 English（★ここだけ動作確定でEnglishロールのみ付与）
     if (interaction.values[0] === "en") {
 
       if (member.roles.cache.has(ROLE_ID_EN)) {
@@ -165,6 +165,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         });
       }
 
+      // ★Englishだけ付与（JPは一切触らない）
       await member.roles.add(ROLE_ID_EN);
 
       return interaction.update({
