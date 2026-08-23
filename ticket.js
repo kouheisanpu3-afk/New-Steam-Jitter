@@ -11,13 +11,10 @@ const {
 const TICKET_CHANNEL_ID = "1541001019880640573"; 
 const CATEGORY_ID = "1541000895167201300"; 
 
-// 利用規約チャンネル
 const TERMS_CHANNEL_ID = "1540626614982025327"; 
  
 module.exports = (client) => { 
  
-  // ========================= 
-  // パネル設置（起動時1回） 
   client.once(Events.ClientReady, async () => { 
     try { 
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID); 
@@ -25,9 +22,8 @@ module.exports = (client) => {
  
       const embed = new EmbedBuilder() 
         .setTitle("ご質問・お問い合わせチケット") 
-        .setDescription( 
-`ご質問・お問い合わせチケット
-下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると利用規約に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。` 
+        .setDescription(
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
         ) 
         .setColor(0x4aa3ff); 
  
@@ -37,15 +33,12 @@ module.exports = (client) => {
           .setLabel("チケットを作成") 
           .setStyle(ButtonStyle.Primary), 
  
-        // ========================= 
-        // 利用規約ボタン
         new ButtonBuilder() 
-          .setLabel("利用規約") 
+          .setLabel("利用規約を確認") 
           .setStyle(ButtonStyle.Link) 
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`) 
       ); 
  
-      // 重複防止 
       const messages = await channel.messages.fetch({ limit: 10 }); 
       const exists = messages.some(m => 
         m.author.id === client.user.id && 
@@ -69,13 +62,10 @@ module.exports = (client) => {
     } 
   }); 
  
-  // ========================= 
-  // ボタン処理 
   client.on(Events.InteractionCreate, async (interaction) => { 
  
     if (!interaction.isButton()) return; 
  
-    // チケット作成 
     if (interaction.customId === "ticket_create") { 
  
       const guild = interaction.guild; 
@@ -143,7 +133,6 @@ module.exports = (client) => {
       }); 
     } 
  
-    // チケット削除 
     if (interaction.customId === "ticket_close") { 
  
       await interaction.reply({ 
