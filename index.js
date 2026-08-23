@@ -47,9 +47,9 @@ const WATCH_CHANNEL_ID = "1540694105305124904";
 // キック回数保存
 const kickCount = {};
 
-// 🚫安定表示用アイコン
+// 🚫画像（指定URL）
 const NO_ENTRY_ICON =
-  "https://cdn-icons-png.flaticon.com/512/1828/1828665.png";
+  "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
 
 // =======================
 // 起動時
