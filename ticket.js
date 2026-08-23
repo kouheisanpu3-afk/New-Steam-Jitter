@@ -64,13 +64,10 @@ module.exports = (client) => {
 
     try {
 
-      // ========================
-      // BUTTON / SELECT ONLY
-      // ========================
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // ========================
-      // TICKET CREATE
+      // CREATE
       // ========================
       if (interaction.customId === "ticket_create") {
 
@@ -86,26 +83,6 @@ module.exports = (client) => {
         try {
           const guild = interaction.guild;
           const user = interaction.user;
-
-          const globalExisting = guild.channels.cache.find(c =>
-            c.type === ChannelType.GuildText &&
-            c.parentId === CATEGORY_ID &&
-            c.name.startsWith("ticket-")
-          );
-
-          if (globalExisting) {
-            return interaction.reply({
-              embeds: [
-                new EmbedBuilder()
-                  .setColor(0xE74C3C)
-                  .setDescription(
-`既に作成されたチケットが存在します  
-既存のチャンネルを使用してください。`
-                  )
-              ],
-              ephemeral: true
-            });
-          }
 
           const channel = await guild.channels.create({
             name: `ticket-${user.username}`,
@@ -205,7 +182,7 @@ module.exports = (client) => {
       }
 
       // ========================
-      // CATEGORY SELECT
+      // CATEGORY
       // ========================
       else if (interaction.customId === "ticket_category") {
 
@@ -229,22 +206,72 @@ module.exports = (client) => {
 
         const followSelect = new StringSelectMenuBuilder()
           .setCustomId("ticket_ping_choice")
-          .setPlaceholder("メンションの要否を選択")
+          .setPlaceholder("メンションの要否")
           .addOptions([
             { label: "メンションする", value: "ping_yes" },
             { label: "メンションしない", value: "ping_no" }
           ]);
 
+        const backButton = new ButtonBuilder()
+          .setCustomId("ticket_back")
+          .setLabel("戻る")
+          .setStyle(ButtonStyle.Secondary);
+
         const row = new ActionRowBuilder().addComponents(followSelect);
+        const row2 = new ActionRowBuilder().addComponents(backButton);
 
         return interaction.update({
           embeds: [embed],
+          components: [row, row2]
+        });
+      }
+
+      // ========================
+      // BACK BUTTON
+      // ========================
+      else if (interaction.customId === "ticket_back") {
+
+        const selectInfo = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。`
+          );
+
+        const selectMenu = new StringSelectMenuBuilder()
+          .setCustomId("ticket_category")
+          .setPlaceholder("お問い合わせ内容を選択")
+          .addOptions([
+            {
+              label: "reWASD",
+              value: "rewasd",
+              description: "reWASDに関するご質問・お問い合わせ",
+              emoji: { id: "1541059202737512508", name: "reWASD" }
+            },
+            {
+              label: "Steamジッターマクロ",
+              value: "steam_jitter",
+              description: "Steamジッターマクロに関するご質問・お問い合わせ",
+              emoji: { id: "1541060018567254076", name: "pngwingcom" }
+            },
+            {
+              label: "その他",
+              value: "other",
+              description: "上記に当てはまらないご質問・お問い合わせ",
+              emoji: { id: "1541062193863327744", name: "chat" }
+            }
+          ]);
+
+        const row = new ActionRowBuilder().addComponents(selectMenu);
+
+        return interaction.update({
+          embeds: [selectInfo],
           components: [row]
         });
       }
 
       // ========================
-      // PING SELECT
+      // PING
       // ========================
       else if (interaction.customId === "ticket_ping_choice") {
 
