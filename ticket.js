@@ -168,16 +168,19 @@ module.exports = (client) => {
           .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
             {
-              label: "reWASDに関するご質問・お問い合わせ",
-              value: "rewasd"
+              label: "reWASD",
+              value: "rewasd",
+              description: "reWASDに関するご質問・お問い合わせ"
             },
             {
-              label: "Steamジッターマクロに関するご質問・お問い合わせ",
-              value: "steam_jitter"
+              label: "Steamジッターマクロ",
+              value: "steam_jitter",
+              description: "Steamジッターマクロに関するご質問・お問い合わせ"
             },
             {
-              label: "その他（上記に当てはまらないご質問・お問い合わせ）",
-              value: "other"
+              label: "その他",
+              value: "other",
+              description: "上記に当てはまらないご質問・お問い合わせ"
             }
           ]);
 
@@ -190,7 +193,7 @@ module.exports = (client) => {
         await interaction.deleteReply().catch(() => {});
 
       } finally {
-        setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
+        setTimeout(() => creatingUsers.delete(user.id), 2000);
       }
     }
 
