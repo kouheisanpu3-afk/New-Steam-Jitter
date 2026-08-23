@@ -18,8 +18,6 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 
 module.exports = (client) => {
 
-  // =======================
-  // 起動時メッセージ送信
   client.once(Events.ClientReady, async () => {
     console.log(`ログイン: ${client.user.tag}`);
 
@@ -55,21 +53,16 @@ module.exports = (client) => {
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
       // =======================
-      // 元のシンプル見た目に戻す
+      // 横長“っぽく”見せる（改行削減）
       const embedJP = new EmbedBuilder()
         .setColor(0x6f8fa6)
         .setTitle("認証")
-        .setDescription(
-          "下のボタンをクリックすると認証できます。\n" +
-          `認証すると${rulesText}に同意したものとみなされます。`
-        );
+        .setDescription(`下のボタンをクリックすると認証できます。 認証すると${rulesText}に同意したものとみなされます。`);
 
       const embedEN = new EmbedBuilder()
         .setColor(0x6f8fa6)
         .setTitle("Verification")
-        .setDescription(
-          `Click the button below to verify.\nYou agree to ${tosText}.`
-        );
+        .setDescription(`Click the button below to verify. You agree to ${tosText}.`);
 
       await channel.send({ embeds: [embedJP] });
       await channel.send({ embeds: [embedEN], components: [row] });
@@ -79,8 +72,6 @@ module.exports = (client) => {
     }
   });
 
-  // =======================
-  // インタラクション処理
   client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isButton()) {
