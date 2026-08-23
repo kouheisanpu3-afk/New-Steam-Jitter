@@ -100,7 +100,6 @@ module.exports = (client) => {
         const channel = await guild.channels.create({
           name: `ticket-${ticketNumber}`,
           type: ChannelType.GuildText,
-
           parent: CATEGORY_ID,
 
           permissionOverwrites: [
@@ -126,8 +125,8 @@ module.exports = (client) => {
         ticketNumber++;
 
         // =========================
-        // 🔥 ここだけ修正（番号順で並べる & 必ずチケットをカテゴリ最下部へ）
-        const channels = guild.channels.cache
+        // 🔥 ここだけ修正（完全に一番上へ固定）
+        const categoryChannels = guild.channels.cache
           .filter(c =>
             c.type === ChannelType.GuildText &&
             c.parentId === CATEGORY_ID &&
@@ -139,13 +138,15 @@ module.exports = (client) => {
             return aNum - bNum;
           });
 
-        let pos = 0;
-        for (const ch of channels.values()) {
+        // 新しく作ったチャンネルを一番上へ
+        await channel.setPosition(0);
+
+        // 他のチケットも順番維持
+        let pos = 1;
+        for (const ch of categoryChannels.values()) {
+          if (ch.id === channel.id) continue;
           await ch.setPosition(pos++);
         }
-
-        // 🔥 新しく作ったチャンネルも確実に最後へ（＝一番下）
-        await channel.setPosition(channels.size);
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
