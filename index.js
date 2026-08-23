@@ -44,14 +44,14 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
-// 🔥ログ表示用チャンネル（ここに指定済み）
+// 🔥ログ表示用チャンネル
 const LOG_CHANNEL_ID = "1540694105305124904";
 
 // キック回数保存
 const kickCount = {};
 let totalKickCount = 0;
 
-// 🚫画像（指定URL）
+// 🚫画像
 const NO_ENTRY_ICON =
   "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
 
@@ -87,31 +87,42 @@ client.once(Events.ClientReady, async () => {
       const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
+      // =========================
+      // 日本語
       const embedJP = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
-          "## 認証\n\n" +
+          "🚫 ## 認証\n\n" +
           "このチャンネルにメッセージを送信しないでください\n\n" +
           "このチャンネルはスパムボットを検知するために使用されます。\n" +
           "メッセージを送信したユーザーは即座にキックされます。\n\n" +
+          `🚫 キック：${totalKickCount}回\n\n` +
           `${rulesText}に同意したものとみなされます。`
         );
 
+      // =========================
+      // 英語
       const embedEN = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
         .setDescription(
-          "## Verification\n\n" +
+          "🚫 ## Verification\n\n" +
           "DO NOT SEND MESSAGES IN THIS CHANNEL\n\n" +
           "This channel is used to detect spam bots.\n" +
           "Users will be kicked immediately.\n\n" +
+          `🚫 Kicks: ${totalKickCount}\n\n` +
           `By continuing, you agree to the ${tosText}.`
         );
 
+      // 別メッセージ投稿
       await channel.send({
-        embeds: [embedJP, embedEN],
+        embeds: [embedJP],
         components: [row]
+      });
+
+      await channel.send({
+        embeds: [embedEN]
       });
     }
 
@@ -144,7 +155,7 @@ client.on(Events.MessageCreate, async (message) => {
 
     console.log(`🚫 キック：${count}回 | ${message.author.tag} | 総キック:${totalKickCount}`);
 
-    // 🔥ここでDiscordにも表示
+    // ログ送信
     try {
       const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
 
