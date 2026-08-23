@@ -45,7 +45,7 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
 // 🔥ログ表示用チャンネル（ここだけ自分のIDに変える）
-const LOG_CHANNEL_ID = "ここにログチャンネルID";
+const LOG_CHANNEL_ID = "ここにログチャンネルID"; // ←ここ未設定だと送れない
 
 // キック回数保存
 const kickCount = {};
@@ -147,9 +147,15 @@ client.on(Events.MessageCreate, async (message) => {
     // 🔥ここでDiscordにも表示
     try {
       const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
-      await logChannel.send(
-        `🚫 キック発生\nユーザー: ${message.author.tag}\n個人回数: ${count}\n総キック: ${totalKickCount}`
-      );
+
+      if (logChannel && LOG_CHANNEL_ID !== "ここにログチャンネルID") {
+        await logChannel.send(
+          `🚫 キック発生\nユーザー: ${message.author.tag}\n個人回数: ${count}\n総キック: ${totalKickCount}`
+        );
+      } else {
+        console.log("⚠ ログチャンネルID未設定のため送信スキップ");
+      }
+
     } catch (e) {
       console.log("ログ送信失敗:", e);
     }
