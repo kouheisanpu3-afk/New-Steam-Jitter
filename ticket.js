@@ -296,7 +296,7 @@ module.exports = (client) => {
 選択内容：${state.label}
 メンション：${isYes ? "要する" : "要しない"}
 
-以下にご質問・お問い合わせをご記入ください。`
+以下にご質問・お問い合わせ内容をご記入ください。`
           );
 
         const changeButton = new ButtonBuilder()
