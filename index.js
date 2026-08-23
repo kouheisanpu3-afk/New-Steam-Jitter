@@ -47,6 +47,9 @@ const WATCH_CHANNEL_ID = "1540694105305124904";
 // キック回数保存
 const kickCount = {};
 
+// 🔥追加：総キック回数
+let totalKickCount = 0;
+
 // 🚫画像（指定URL）
 const NO_ENTRY_ICON =
   "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
@@ -83,8 +86,6 @@ client.once(Events.ClientReady, async () => {
       const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
-      // =========================
-      // 日本語（別メッセージ）
       const embedJP = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
@@ -96,8 +97,6 @@ client.once(Events.ClientReady, async () => {
           `${rulesText}に同意したものとみなされます。`
         );
 
-      // =========================
-      // 英語（別メッセージ）
       const embedEN = new EmbedBuilder()
         .setColor(0x0099ff)
         .setThumbnail(NO_ENTRY_ICON)
@@ -109,14 +108,9 @@ client.once(Events.ClientReady, async () => {
           `By continuing, you agree to the ${tosText}.`
         );
 
-      // 🔥完全に別投稿
       await channel.send({
-        embeds: [embedJP],
+        embeds: [embedJP, embedEN],
         components: [row]
-      });
-
-      await channel.send({
-        embeds: [embedEN]
       });
     }
 
@@ -154,9 +148,9 @@ client.once(Events.ClientReady, async () => {
           "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
         );
 
-      // 🔥別メッセージ化
-      await watchChannel.send({ embeds: [jpEmbed] });
-      await watchChannel.send({ embeds: [enEmbed] });
+      await watchChannel.send({
+        embeds: [jpEmbed, enEmbed]
+      });
     }
 
   } catch (err) {
@@ -184,9 +178,12 @@ client.on(Events.MessageCreate, async (message) => {
     kickCount[message.author.id] = (kickCount[message.author.id] || 0) + 1;
     const count = kickCount[message.author.id];
 
+    // 🔥総キック回数追加
+    totalKickCount++;
+
     await member.kick(`スパム検知チャンネル (${count}回目)`);
 
-    console.log(`🚫 キック：${count}回 | ${message.author.tag}`);
+    console.log(`🚫 キック：${count}回 | ${message.author.tag} | 総キック:${totalKickCount}`);
 
   } catch (err) {
     console.log("エラー:", err);
