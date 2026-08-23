@@ -78,6 +78,27 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 🔥 追加：サーバー内にチケットが1つでもあれば作成不可
+        const globalExisting = guild.channels.cache.find(c =>
+          c.type === ChannelType.GuildText &&
+          c.parentId === CATEGORY_ID &&
+          c.name.startsWith("ticket-")
+        );
+
+        if (globalExisting) {
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xE74C3C)
+                .setDescription(
+`既に作成されたチケットが存在します
+既存のチャンネルを使用してください。`
+                )
+            ],
+            ephemeral: true
+          });
+        }
+
         const existing = guild.channels.cache.find(c =>
           c.type === ChannelType.GuildText &&
           c.parentId === CATEGORY_ID &&
@@ -193,7 +214,7 @@ module.exports = (client) => {
         await interaction.deleteReply().catch(() => {});
 
       } finally {
-        setTimeout(() => creatingUsers.delete(user.id), 2000);
+        setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
       }
     }
 
