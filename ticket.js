@@ -117,7 +117,7 @@ module.exports = (client) => {
       const row = new ActionRowBuilder().addComponents( 
         new ButtonBuilder() 
           .setCustomId("ticket_close") 
-          .setLabel("🔒 チケットを閉じる") 
+          .setLabel("チケットを消去") 
           .setStyle(ButtonStyle.Danger) 
       ); 
  
