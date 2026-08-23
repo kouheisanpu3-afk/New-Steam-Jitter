@@ -6,16 +6,14 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessageReactions
+    GatewayIntentBits.MessageContent
   ]
 });
 
-// =======================
-// 機能読み込み（司令塔）
+// 機能読み込み
 require("./auth")(client);
+require("./kick")(client);
 
-// =======================
 // Webサーバー（Render用）
 const app = express();
 
@@ -27,5 +25,4 @@ app.listen(3000, () => {
   console.log("Web server started");
 });
 
-// =======================
 client.login(process.env.TOKEN);
