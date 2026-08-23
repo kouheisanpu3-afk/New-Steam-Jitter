@@ -47,9 +47,9 @@ const WATCH_CHANNEL_ID = "1540694105305124904";
 // キック回数保存
 const kickCount = {};
 
-// 🚫高品質アイコン（フリー素材・差し替え可能）
+// 🚫安定表示用アイコン（確実に表示されるCDN）
 const NO_ENTRY_ICON =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/No_entry_sign.svg/1024px-No_entry_sign.svg.png";
+  "https://cdn-icons-png.flaticon.com/512/1828/1828665.png";
 
 // =======================
 // 起動時
@@ -85,7 +85,7 @@ client.once(Events.ClientReady, async () => {
 
       const embedJP = new EmbedBuilder()
         .setColor(0x0099ff)
-        .setThumbnail(NO_ENTRY_ICON)
+        .setImage(NO_ENTRY_ICON)
         .setDescription(
           "## 認証\n\n" +
           "このチャンネルにメッセージを送信しないでください\n\n" +
@@ -96,7 +96,7 @@ client.once(Events.ClientReady, async () => {
 
       const embedEN = new EmbedBuilder()
         .setColor(0x0099ff)
-        .setThumbnail(NO_ENTRY_ICON)
+        .setImage(NO_ENTRY_ICON)
         .setDescription(
           "## Verification\n\n" +
           "Do not send messages in this channel.\n\n" +
@@ -116,7 +116,7 @@ client.once(Events.ClientReady, async () => {
   }
 
   // =======================
-  // WATCHチャンネル警告メッセージ（画像付き）
+  // WATCHチャンネル警告メッセージ
   try {
     const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
     const messages = await watchChannel.messages.fetch({ limit: 10 });
@@ -131,7 +131,7 @@ client.once(Events.ClientReady, async () => {
 
       const jpEmbed = new EmbedBuilder()
         .setColor(0x6C8EA4)
-        .setThumbnail(NO_ENTRY_ICON)
+        .setImage(NO_ENTRY_ICON)
         .setDescription(
           "このチャンネルにメッセージを送信しないでください\n" +
           "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
@@ -139,7 +139,7 @@ client.once(Events.ClientReady, async () => {
 
       const enEmbed = new EmbedBuilder()
         .setColor(0x6C8EA4)
-        .setThumbnail(NO_ENTRY_ICON)
+        .setImage(NO_ENTRY_ICON)
         .setDescription(
           "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
           "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
