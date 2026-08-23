@@ -73,21 +73,27 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 超強化チェック（ユーザーIDベース）
         const existing = guild.channels.cache.find(
           c => c.type === ChannelType.GuildText &&
                c.name === `ticket-${user.id}`
         );
 
         if (existing) {
+          const embed = new EmbedBuilder()
+            .setColor(0xFFA500) // 🔥 薄いオレンジ
+            .setDescription(
+`既に作成されたチケットが存在します
+既存のチャンネルを使用してください。`
+            );
+
           return interaction.reply({
-            content: "既に作成されたチケットが存在します。既存のチャンネルを使用してください。",
+            embeds: [embed],
             ephemeral: true
           });
         }
 
         const channel = await guild.channels.create({
-          name: `ticket-${user.id}`, // ← ユーザーID固定で重複防止
+          name: `ticket-${user.id}`,
           type: ChannelType.GuildText,
           parent: CATEGORY_ID,
           permissionOverwrites: [
