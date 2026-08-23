@@ -73,19 +73,21 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 🔥 超強化チェック（ユーザーIDベース）
         const existing = guild.channels.cache.find(
-          c => c.name.includes(`ticket-${user.id}`)
+          c => c.type === ChannelType.GuildText &&
+               c.name === `ticket-${user.id}`
         );
 
         if (existing) {
           return interaction.reply({
-            content: "すでにチケットがあります",
+            content: "既に作成されたチケットが存在します。既存のチャンネルを使用してください。",
             ephemeral: true
           });
         }
 
         const channel = await guild.channels.create({
-          name: `ticket-${user.username}`,
+          name: `ticket-${user.id}`, // ← ユーザーID固定で重複防止
           type: ChannelType.GuildText,
           parent: CATEGORY_ID,
           permissionOverwrites: [
