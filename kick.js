@@ -2,7 +2,7 @@ const { Events, EmbedBuilder } = require("discord.js");
 
 const KICK_CHANNEL_ID = "1540932243826942002";
 
-// グレー＋青っぽい色（いい感じの中間色）
+// グレー＋青
 const EMBED_COLOR = 0x6b85a6;
 
 const WARNING_TEXT =
@@ -14,27 +14,51 @@ This channel is used to detect spam bots. Any user who sends a message here will
 
 module.exports = (client) => {
 
-  client.on(Events.MessageCreate, async (message) => {
-    if (message.author.bot) return;
-
-    if (message.channel.id !== KICK_CHANNEL_ID) return;
-
+  // =======================
+  // 起動時：警告メッセージ設置（重複防止あり）
+  client.once(Events.ClientReady, async () => {
     try {
+      const channel = await client.channels.fetch(KICK_CHANNEL_ID);
 
-      // ✅ Embed作成（背景＋左線）
+      if (!channel) return console.log("チャンネル取得失敗");
+
+      // 直近メッセージ取得
+      const messages = await channel.messages.fetch({ limit: 10 });
+
+      // 既にBotのEmbedがあるか確認
+      const alreadyExists = messages.some(msg =>
+        msg.author.id === client.user.id &&
+        msg.embeds.length > 0
+      );
+
+      if (alreadyExists) {
+        console.log("既に警告メッセージあり");
+        return;
+      }
+
+      // Embed作成
       const embed = new EmbedBuilder()
         .setDescription(WARNING_TEXT)
         .setColor(EMBED_COLOR);
 
-      // 送信
-      await message.channel.send({ embeds: [embed] });
+      await channel.send({ embeds: [embed] });
 
+      console.log("警告メッセージを設置しました");
+
+    } catch (err) {
+      console.error("初期メッセージ送信エラー:", err);
+    }
+  });
+
+  // =======================
+  // キック処理
+  client.on(Events.MessageCreate, async (message) => {
+    if (message.author.bot) return;
+    if (message.channel.id !== KICK_CHANNEL_ID) return;
+
+    try {
       console.log(`⚠ WARNING: ${message.author.tag}`);
 
-      // 少し待つ
-      await new Promise(res => setTimeout(res, 500));
-
-      // キック
       await message.member.kick("Restricted channel violation");
 
       console.log(`KICKED: ${message.author.tag}`);
