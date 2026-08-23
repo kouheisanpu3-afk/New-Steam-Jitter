@@ -42,16 +42,16 @@ const CHANNEL_ID = "1540606154093367336";
 const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
+// 認証監視チャンネル
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
-// ログチャンネル
+// 🔥キックログ送信先（ここが重要）
 const LOG_CHANNEL_ID = "1540694105305124904";
 
 // キック回数
 const kickCount = {};
 let totalKickCount = 0;
 
-// 🚫アイコン
 const NO_ENTRY_ICON =
   "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
 
@@ -62,10 +62,6 @@ client.once(Events.ClientReady, async () => {
 
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
-
-    // ❌ここ削除（原因）
-    // const messages = await channel.messages.fetch({ limit: 20 });
-    // const alreadySent = ...
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -83,7 +79,7 @@ client.once(Events.ClientReady, async () => {
     const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
     // =========================
-    // 日本語
+    // 日本語（認証）
     const embedJP = new EmbedBuilder()
       .setColor(0x0099ff)
       .setThumbnail(NO_ENTRY_ICON)
@@ -92,12 +88,11 @@ client.once(Events.ClientReady, async () => {
         "このチャンネルにメッセージを送信しないでください\n\n" +
         "このチャンネルはスパムボットを検知するために使用されます。\n" +
         "メッセージを送信したユーザーは即座にキックされます。\n\n" +
-        `🚫 キック：${totalKickCount}回\n\n` +
         `${rulesText}に同意したものとみなされます。`
       );
 
     // =========================
-    // 英語
+    // 英語（認証）
     const embedEN = new EmbedBuilder()
       .setColor(0x0099ff)
       .setThumbnail(NO_ENTRY_ICON)
@@ -106,19 +101,11 @@ client.once(Events.ClientReady, async () => {
         "DO NOT SEND MESSAGES IN THIS CHANNEL\n\n" +
         "This channel is used to detect spam bots.\n" +
         "Users will be kicked immediately.\n\n" +
-        `🚫 Kicks: ${totalKickCount}\n\n` +
         `By continuing, you agree to the ${tosText}.`
       );
 
-    // 別メッセージで送信
-    await channel.send({
-      embeds: [embedJP],
-      components: [row]
-    });
-
-    await channel.send({
-      embeds: [embedEN]
-    });
+    await channel.send({ embeds: [embedJP], components: [row] });
+    await channel.send({ embeds: [embedEN] });
 
   } catch (err) {
     console.log(err);
@@ -149,6 +136,8 @@ client.on(Events.MessageCreate, async (message) => {
 
     console.log(`🚫 キック：${count}回 | ${message.author.tag} | 総キック:${totalKickCount}`);
 
+    // =========================
+    // 🔥キックログ送信（別チャンネル）
     try {
       const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
 
@@ -157,7 +146,6 @@ client.on(Events.MessageCreate, async (message) => {
           `🚫 キック発生\nユーザー: ${message.author.tag}\n個人回数: ${count}\n総キック: ${totalKickCount}`
         );
       }
-
     } catch (e) {
       console.log("ログ送信失敗:", e);
     }
@@ -228,5 +216,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-// =======================
 client.login(TOKEN);
