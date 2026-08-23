@@ -39,20 +39,19 @@ module.exports = (client) => {
         return;
       }
 
-      // ✅ Embed（上下分割）
+      // =======================
+      // 🔥 上下“完全分割風”Embed
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLOR)
-        .addFields(
-          {
-            name: "🇯🇵 日本語",
-            value: JP_TEXT,
-            inline: false
-          },
-          {
-            name: "🇺🇸 English",
-            value: EN_TEXT,
-            inline: false
-          }
+        .setTitle("⚠ WARNING / 注意")
+        .setDescription(
+`🇯🇵 **日本語**
+${JP_TEXT}
+
+━━━━━━━━━━━━━━━━━━
+
+🇺🇸 **English**
+${EN_TEXT}`
         );
 
       await channel.send({ embeds: [embed] });
