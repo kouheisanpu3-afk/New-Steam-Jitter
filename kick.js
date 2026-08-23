@@ -1,33 +1,31 @@
-const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");    
-    
-const KICK_CHANNEL_ID = "1540932243826942002";    
-    
-// グレー寄りブルー    
-const EMBED_COLOR = 0x5f6f82;    
-    
-// 🚫画像（Embed用）
-const NO_ENTRY_IMG = "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";        
-         
-// 日本語              
-const JP_TEXT =              
-`このチャンネルにメッセージを送信しないでください              
-このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。`;              
-              
-// 英語              
-const EN_TEXT =              
-`DO NOT SEND MESSAGES IN THIS CHANNEL              
-This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately.`;              
+const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-// =======================
-// 🔥 カスタム絵文字ID（あなたのやつ）
+const KICK_CHANNEL_ID = "1540932243826942002";
+
+// グレー寄りブルー
+const EMBED_COLOR = 0x5f6f82;
+
+// 🚫画像（Embed用）
+const NO_ENTRY_IMG = "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
+
+// 日本語
+const JP_TEXT =
+`このチャンネルにメッセージを送信しないでください
+このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。`;
+
+// 英語
+const EN_TEXT =
+`DO NOT SEND MESSAGES IN THIS CHANNEL
+This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately.`;
+
+// カスタム絵文字ID
 const NO_ENTRY_EMOJI_ID = "1540993447278805042";
 
-// =======================
 // キック回数
 let kickCount = 0;
 
 // =======================
-// ボタン（JP）
+// ボタン
 function createJPButton() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -38,8 +36,6 @@ function createJPButton() {
   );
 }
 
-// =======================
-// ボタン（EN）
 function createENButton() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -58,23 +54,31 @@ module.exports = (client) => {
   client.once(Events.ClientReady, async () => {
     try {
       const channel = await client.channels.fetch(KICK_CHANNEL_ID);
-
       if (!channel) return console.log("チャンネル取得失敗");
 
-      const messages = await channel.messages.fetch({ limit: 10 });
+      const messages = await channel.messages.fetch({ limit: 20 });
 
-      const alreadyExists = messages.some(msg =>
+      // =======================
+      // 既存チェック（JP/EN両方）
+      const alreadyJP = messages.find(msg =>
         msg.author.id === client.user.id &&
-        msg.embeds.length > 0
+        msg.embeds.length > 0 &&
+        msg.embeds[0].description?.includes("このチャンネルにメッセージを送信しないでください")
       );
 
-      if (alreadyExists) {
-        console.log("既に警告メッセージあり");
+      const alreadyEN = messages.find(msg =>
+        msg.author.id === client.user.id &&
+        msg.embeds.length > 0 &&
+        msg.embeds[0].description?.includes("DO NOT SEND MESSAGES IN THIS CHANNEL")
+      );
+
+      if (alreadyJP || alreadyEN) {
+        console.log("既に警告メッセージあり（スキップ）");
         return;
       }
 
       // =======================
-      // 🇯🇵 日本語Embed
+      // 日本語Embed
       const jpEmbed = new EmbedBuilder()
         .setDescription(JP_TEXT)
         .setColor(EMBED_COLOR)
@@ -85,8 +89,7 @@ module.exports = (client) => {
         components: [createJPButton()]
       });
 
-      // =======================
-      // 🇺🇸 英語Embed
+      // 英語Embed
       const enEmbed = new EmbedBuilder()
         .setDescription(EN_TEXT)
         .setColor(EMBED_COLOR)
@@ -97,13 +100,15 @@ module.exports = (client) => {
         components: [createENButton()]
       });
 
-      console.log("警告メッセージ設置完了（カスタム絵文字ボタン）");
+      console.log("警告メッセージ設置完了");
 
     } catch (err) {
       console.error("初期メッセージ送信エラー:", err);
     }
   });
 
+  // =======================
+  // キック処理
   client.on(Events.MessageCreate, async (message) => {
     if (message.author.bot) return;
     if (message.channel.id !== KICK_CHANNEL_ID) return;
