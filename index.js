@@ -120,7 +120,7 @@ client.once(Events.ClientReady, async () => {
   }
 
   // =======================
-  // WATCHチャンネル警告メッセージ（元の機能そのまま）
+  // WATCHチャンネル警告メッセージ
   try {
     const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
     const messages = await watchChannel.messages.fetch({ limit: 10 });
@@ -154,7 +154,7 @@ client.once(Events.ClientReady, async () => {
     }
 
     // =======================
-    // 🔥追加：同じチャンネルに認証ボタンメッセージ（機能なし）
+    // 🔥修正：Embed削除（ボタンのみ）
     const verifyRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("verify_dummy")
@@ -162,13 +162,8 @@ client.once(Events.ClientReady, async () => {
         .setStyle(ButtonStyle.Primary)
     );
 
-    const verifyEmbed = new EmbedBuilder()
-      .setColor(0x2b2d31)
-      .setThumbnail(NO_ENTRY_ICON)
-      .setDescription("認証ボタン（このチャンネル用・機能なし）");
-
     await watchChannel.send({
-      embeds: [verifyEmbed],
+      content: " ",
       components: [verifyRow]
     });
 
@@ -205,7 +200,7 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 // =======================
-// ボタン処理（変更なし）
+// ボタン処理
 client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
