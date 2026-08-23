@@ -44,10 +44,11 @@ const TOS_CHANNEL_ID = "1540627413136973824";
 
 const WATCH_CHANNEL_ID = "1540694105305124904";
 
+// 🔥ログ表示用チャンネル（ここだけ自分のIDに変える）
+const LOG_CHANNEL_ID = "ここにログチャンネルID";
+
 // キック回数保存
 const kickCount = {};
-
-// 🔥追加：総キック回数
 let totalKickCount = 0;
 
 // 🚫画像（指定URL）
@@ -117,52 +118,11 @@ client.once(Events.ClientReady, async () => {
   } catch (err) {
     console.log(err);
   }
-
-  // =======================
-  // WATCHチャンネル警告メッセージ
-  try {
-    const watchChannel = await client.channels.fetch(WATCH_CHANNEL_ID);
-    const messages = await watchChannel.messages.fetch({ limit: 10 });
-
-    const alreadySent = messages.some(m =>
-      m.author.id === client.user.id &&
-      m.embeds.length > 0 &&
-      m.embeds[0].description?.includes("DO NOT SEND MESSAGES")
-    );
-
-    if (!alreadySent) {
-
-      const jpEmbed = new EmbedBuilder()
-        .setColor(0x6C8EA4)
-        .setThumbnail(NO_ENTRY_ICON)
-        .setDescription(
-          "このチャンネルにメッセージを送信しないでください\n" +
-          "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。"
-        );
-
-      const enEmbed = new EmbedBuilder()
-        .setColor(0x6C8EA4)
-        .setThumbnail(NO_ENTRY_ICON)
-        .setDescription(
-          "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
-          "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
-        );
-
-      await watchChannel.send({
-        embeds: [jpEmbed, enEmbed]
-      });
-    }
-
-  } catch (err) {
-    console.log(err);
-  }
 });
 
 // =======================
 // スパム検知
 client.on(Events.MessageCreate, async (message) => {
-
-  console.log("📩検知:", message.channel.id, message.content);
 
   if (message.author.bot) return;
   if (!message.guild) return;
@@ -178,12 +138,21 @@ client.on(Events.MessageCreate, async (message) => {
     kickCount[message.author.id] = (kickCount[message.author.id] || 0) + 1;
     const count = kickCount[message.author.id];
 
-    // 🔥総キック回数追加
     totalKickCount++;
 
     await member.kick(`スパム検知チャンネル (${count}回目)`);
 
     console.log(`🚫 キック：${count}回 | ${message.author.tag} | 総キック:${totalKickCount}`);
+
+    // 🔥ここでDiscordにも表示
+    try {
+      const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
+      await logChannel.send(
+        `🚫 キック発生\nユーザー: ${message.author.tag}\n個人回数: ${count}\n総キック: ${totalKickCount}`
+      );
+    } catch (e) {
+      console.log("ログ送信失敗:", e);
+    }
 
   } catch (err) {
     console.log("エラー:", err);
