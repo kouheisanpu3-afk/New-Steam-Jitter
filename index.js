@@ -55,7 +55,6 @@ client.once(Events.ClientReady, async () => {
         .setLabel("認証/Verify")
         .setStyle(ButtonStyle.Primary),
 
-      // ★追加ボタン
       new ButtonBuilder()
         .setCustomId("change_lang")
         .setLabel("言語を変更/Change Language")
@@ -95,6 +94,34 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // 認証ボタン
   if (interaction.isButton()) {
     if (interaction.customId === "verify") {
+
+      const select = new StringSelectMenuBuilder()
+        .setCustomId("select_lang")
+        .setPlaceholder("言語を選択 / Select Language")
+        .addOptions([
+          {
+            label: "日本語",
+            value: "jp",
+            emoji: "🇯🇵"
+          },
+          {
+            label: "English",
+            value: "en",
+            emoji: "🇺🇸"
+          }
+        ]);
+
+      const row = new ActionRowBuilder().addComponents(select);
+
+      return interaction.reply({
+        content: "言語を選択してください",
+        components: [row],
+        ephemeral: true
+      });
+    }
+
+    // ★追加：言語変更ボタンも同じ動作
+    if (interaction.customId === "change_lang") {
 
       const select = new StringSelectMenuBuilder()
         .setCustomId("select_lang")
