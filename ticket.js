@@ -106,7 +106,6 @@ module.exports = (client) => {
  
         // 🔥ここを黄緑に変更（左の線）
         const embed = new EmbedBuilder()   
-          .setTitle("チケット")   
           .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })   
           .setDescription( 
 `チケットが作成されました 
