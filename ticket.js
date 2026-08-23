@@ -276,12 +276,34 @@ module.exports = (client) => {
       }
 
       // ========================
-      // PING
+      // PING → ここだけ変更
       // ========================
       else if (interaction.customId === "ticket_ping_choice") {
 
+        const value = interaction.values[0];
+
+        const embed = new EmbedBuilder()
+          .setColor(0xF1C40F)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+
+選択内容：（ここは直前状態維持）
+
+メンション：${value === "ping_yes" ? "要する" : "要しない"}
+
+以下にご質問・お問い合わせ内容をご記入ください。`
+          );
+
+        const changeButton = new ButtonBuilder()
+          .setCustomId("ticket_back")
+          .setLabel("ご質問・お問い合わせ内容を変更")
+          .setStyle(ButtonStyle.Secondary);
+
+        const row = new ActionRowBuilder().addComponents(changeButton);
+
         return interaction.reply({
-          content: `メンション設定: ${interaction.values[0]}`,
+          embeds: [embed],
+          components: [row],
           ephemeral: true
         });
       }
