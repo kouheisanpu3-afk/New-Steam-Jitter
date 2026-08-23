@@ -131,7 +131,7 @@ module.exports = (client) => {
 
             new ButtonBuilder()
               .setCustomId("ticket_resolved")
-              .setLabel("解決済みにする")
+              .setLabel("このチケットを解決済みとしてマーク")
               .setStyle(ButtonStyle.Success)
           );
 
@@ -277,8 +277,10 @@ module.exports = (client) => {
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
+        const isNo = !isYes;
+
         const embed = new EmbedBuilder()
-          .setColor(isYes ? 0xF1C40F : 0x4aa3ff)
+          .setColor(isNo ? 0xF1C40F : 0x4aa3ff) // ★変更（noで黄色）
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
