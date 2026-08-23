@@ -1,25 +1,26 @@
-const { Client, GatewayIntentBits } = require("discord.js");
-const express = require("express");
+const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
-const auth = require("./auth");
-
-// Webサーバー（Render用）
-const app = express();
-app.get("/", (req, res) => res.send("Bot is alive!"));
-app.listen(process.env.PORT || 3000);
-
-// Bot
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageReactions
+  ],
+  partials: [Partials.Channel, Partials.Message, Partials.Reaction]
 });
 
-// 認証読み込み
-auth(client);
+// =======================
+// 各モジュール読み込み
+require("./auth")(client);
+require("./kick")(client);
+require("./ticket")(client);
 
-// 起動
-client.login(process.env.TOKEN);
+// =======================
+// 起動ログ
+client.once("ready", () => {
+  console.log(`ログイン: ${client.user.tag}`);
+});
+
+client.login("YOUR_BOT_TOKEN");
