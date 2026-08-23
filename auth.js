@@ -54,19 +54,30 @@ module.exports = (client) => {
       const rulesText = `[利用規約](https://discord.com/channels/${channel.guild.id}/${RULES_CHANNEL_ID})`;
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
+      // =======================
+      // 横長風（ここだけ変更）
       const embedJP = new EmbedBuilder()
         .setColor(0x6f8fa6)
         .setTitle("認証")
-        .setDescription(
-          "下のボタンをクリックすると認証できます。\n" +
-          `認証すると${rulesText}に同意したものとみなされます。`
+        .setDescription("下のボタンをクリックすると認証できます。")
+        .addFields(
+          {
+            name: "利用規約",
+            value: `認証すると${rulesText}に同意したものとみなされます。`,
+            inline: true
+          }
         );
 
       const embedEN = new EmbedBuilder()
         .setColor(0x6f8fa6)
         .setTitle("Verification")
-        .setDescription(
-          `Click the button below to verify.\nYou agree to ${tosText}.`
+        .setDescription("Click the button below to verify.")
+        .addFields(
+          {
+            name: "Terms of Service",
+            value: `You agree to ${tosText}.`,
+            inline: true
+          }
         );
 
       await channel.send({ embeds: [embedJP] });
