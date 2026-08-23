@@ -16,8 +16,6 @@ const TERMS_CHANNEL_ID = "1540626614982025327";
 module.exports = (client) => {
 
   const creatingUsers = new Set();
-
-  // 🔥 連番
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -69,7 +67,6 @@ module.exports = (client) => {
     // チケット作成
     if (interaction.customId === "ticket_create") {
 
-      // 🔥 1秒以内の連打完全防止
       if (creatingUsers.has(interaction.user.id)) {
         return interaction.reply({
           content: "処理中です。少し待ってください。",
@@ -83,11 +80,9 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 完全一致チェック（ここ重要）
         const existing = guild.channels.cache.find(
-          c =>
-            c.type === ChannelType.GuildText &&
-            c.name === `ticket-${user.id}`
+          c => c.type === ChannelType.GuildText &&
+               c.name === `ticket-${user.id}`
         );
 
         if (existing) {
@@ -104,12 +99,8 @@ module.exports = (client) => {
           });
         }
 
-        // 🔥 連番チャンネル
-        const channelName = `ticket-${ticketNumber}`;
-        ticketNumber++;
-
         const channel = await guild.channels.create({
-          name: channelName,
+          name: `ticket-${ticketNumber}`,
           type: ChannelType.GuildText,
           parent: CATEGORY_ID,
           permissionOverwrites: [
@@ -131,6 +122,11 @@ module.exports = (client) => {
             }
           ]
         });
+
+        ticketNumber++;
+
+        // 🔥 ここが追加：サーバーの一番上へ移動
+        await channel.setPosition(0);
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
