@@ -1,1 +1,86 @@
+const {
+  Client,
+  GatewayIntentBits,
+  Events,
+  EmbedBuilder,
+} = require("discord.js");
 
+const express = require("express");
+
+// =======================
+// 設定
+// =======================
+const TOKEN = "YOUR_BOT_TOKEN";
+
+const WATCH_CHANNEL_ID = "1540932243826942002";
+
+// グレー＋青を混ぜた色（左ライン）
+const EMBED_COLOR = 0x6f8fa6;
+
+// =======================
+// Discord Bot
+// =======================
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent,
+  ],
+});
+
+// =======================
+// Webサーバー（Render用）
+ // =======================
+const app = express();
+app.get("/", (req, res) => {
+  res.send("Bot is alive!");
+});
+
+app.listen(3000, () => {
+  console.log("Web server is running on port 3000");
+});
+
+// =======================
+// メッセージ監視
+// =======================
+client.on(Events.MessageCreate, async (message) => {
+  try {
+    // botは無視
+    if (message.author.bot) return;
+
+    // 指定チャンネル以外は無視
+    if (message.channel.id !== WATCH_CHANNEL_ID) return;
+
+    const member = await message.guild.members.fetch(message.author.id);
+
+    // Embed（警告メッセージ）
+    const embed = new EmbedBuilder()
+      .setColor(EMBED_COLOR)
+      .setTitle("🚨 Anti-Spam System")
+      .setDescription(
+        "このチャンネルにメッセージを送信しないでください\n" +
+        "このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。\n\n" +
+        "DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
+        "This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately."
+      )
+      .setFooter({ text: "Auto Moderation System" });
+
+    await message.channel.send({ embeds: [embed] });
+
+    // キック
+    await member.kick("Sent message in anti-spam detection channel");
+
+  } catch (err) {
+    console.error("Error:", err);
+  }
+});
+
+// =======================
+// 起動
+// =======================
+client.once(Events.ClientReady, (c) => {
+  console.log(`Logged in as ${c.user.tag}`);
+});
+
+client.login(TOKEN);
