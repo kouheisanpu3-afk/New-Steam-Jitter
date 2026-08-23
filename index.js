@@ -1,37 +1,37 @@
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
+const express = require("express");
 
 // =======================
-// Bot作成
+// Express（Render対策）
+const app = express();
+app.get("/", (req, res) => {
+  res.send("Bot is alive");
+});
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Web server started");
+});
+
+// =======================
+// Discord Bot
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessageReactions
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ],
-  partials: [Partials.Channel, Partials.Message, Partials.Reaction]
+  partials: [Partials.Channel]
 });
 
-// =======================
-// 各機能読み込み
-require("./auth")(client);
-require("./kick")(client);
-require("./ticket")(client);
+// ====== TOKEN確認 ======
+client.login(process.env.TOKEN);
 
-// =======================
-// 起動ログ
-client.once("ready", () => {
+// ====== ログイン ======
+client.once("clientReady", () => {
   console.log(`ログイン: ${client.user.tag}`);
 });
 
-// =======================
-// 🔥 Render対応ログイン（ここが重要）
-const TOKEN = process.env.TOKEN;
-
-if (!TOKEN) {
-  console.error("❌ TOKENが設定されていません（Renderの環境変数を確認）");
-  process.exit(1);
-}
-
-client.login(TOKEN);
+// ====== モジュール読み込み（例） ======
+require("./auth.js")(client);
+require("./kick.js")(client);
+require("./ticket.js")(client);
