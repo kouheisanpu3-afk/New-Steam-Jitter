@@ -25,7 +25,8 @@ module.exports = (client) => {
         .setDescription(
 `下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると利用規約に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
         )
-        .setColor(0x2b2d31);
+        // 🔵 濃い水色（左のライン）
+        .setColor(0x1f6feb);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -71,7 +72,6 @@ module.exports = (client) => {
       const guild = interaction.guild;
       const user = interaction.user;
 
-      // 既にチケットあるかチェック
       const existing = guild.channels.cache.find(
         c => c.name === `ticket-${user.id}`
       );
@@ -113,7 +113,8 @@ module.exports = (client) => {
       const embed = new EmbedBuilder()
         .setTitle("🎫 チケット")
         .setDescription("管理者が対応するまでお待ちください")
-        .setColor(0x57F287);
+        // 🔵 ここも同じ水色に統一
+        .setColor(0x1f6feb);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
