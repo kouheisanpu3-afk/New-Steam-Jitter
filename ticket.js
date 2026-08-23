@@ -5,7 +5,8 @@ const {
   ButtonBuilder, 
   ButtonStyle, 
   PermissionsBitField, 
-  ChannelType 
+  ChannelType,
+  StringSelectMenuBuilder
 } = require("discord.js"); 
  
 const TICKET_CHANNEL_ID = "1541001019880640573"; 
@@ -14,7 +15,7 @@ const TERMS_CHANNEL_ID = "1540626614982025327";
  
 module.exports = (client) => { 
  
-  let creatingUsers = new Set(); // 🔥二重防止ロック
+  let creatingUsers = new Set();
 
   client.once(Events.ClientReady, async () => { 
     try { 
@@ -46,7 +47,7 @@ module.exports = (client) => {
         m.components.length > 0  
       );  
  
-      if (exists) return console.log("既にチケットパネルあり"); 
+      if (exists) return console.log("既にチケットパネルあり");  
  
       await channel.send({ embeds: [embed], components: [row] });  
  
@@ -56,15 +57,15 @@ module.exports = (client) => {
       console.error("パネル設置エラー:", err);  
     }  
   });  
- 
+
   client.on(Events.InteractionCreate, async (interaction) => {  
- 
-    if (!interaction.isButton()) return;  
- 
-    // 🔥チケット作成
+
+    if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;  
+
+    // =========================
+    // チケット作成
     if (interaction.customId === "ticket_create") {  
 
-      // 二重クリック防止
       if (creatingUsers.has(interaction.user.id)) return;
       creatingUsers.add(interaction.user.id);
 
@@ -88,40 +89,26 @@ module.exports = (client) => {
           type: ChannelType.GuildText,  
           parent: CATEGORY_ID,  
           permissionOverwrites: [  
-            {  
-              id: guild.id,  
-              deny: [PermissionsBitField.Flags.ViewChannel]  
-            },  
-            {  
-              id: user.id,  
-              allow: [  
-                PermissionsBitField.Flags.ViewChannel,  
-                PermissionsBitField.Flags.SendMessages,  
-                PermissionsBitField.Flags.ReadMessageHistory  
-              ]  
-            },  
-            {  
-              id: client.user.id,  
-              allow: [  
-                PermissionsBitField.Flags.ViewChannel,  
-                PermissionsBitField.Flags.SendMessages  
-              ]  
-            }  
+            { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },  
+            { id: user.id, allow: [
+              PermissionsBitField.Flags.ViewChannel,  
+              PermissionsBitField.Flags.SendMessages,  
+              PermissionsBitField.Flags.ReadMessageHistory  
+            ]},  
+            { id: client.user.id, allow: [
+              PermissionsBitField.Flags.ViewChannel,  
+              PermissionsBitField.Flags.SendMessages  
+            ]}
           ]  
         });  
 
-        const now = new Date().toLocaleString("ja-JP", {  
-          timeZone: "Asia/Tokyo"  
-        });  
+        const now = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });  
 
         const embed = new EmbedBuilder()  
           .setTitle("チケット")  
-          .setAuthor({  
-            name: user.username,  
-            iconURL: user.displayAvatarURL()  
-          })  
-          .setDescription(  
-`チケットが作成されました  
+          .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })  
+          .setDescription(
+`チケットが作成されました
 
 作成者: <@${user.id}>  
 作成日時: ${now}`  
@@ -140,50 +127,75 @@ module.exports = (client) => {
             .setStyle(ButtonStyle.Success)  
         );  
 
-        await channel.send({  
-          content: `<@${user.id}>`,  
-          embeds: [embed],  
-          components: [row]  
-        });  
+        // =========================
+        // 追加UI（説明Embed：水色ライン）
+        const selectInfo = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**  
+下のボックスからご質問・お問い合わせ内容を選択してください。`
+          );
 
-        return interaction.reply({  
-          content: "チケットを作成しました",  
-          ephemeral: true  
-        });  
+        const selectMenu = new StringSelectMenuBuilder()
+          .setCustomId("ticket_category")
+          .setPlaceholder("内容を選択してください")
+          .addOptions([
+            {
+              label: "一般質問",
+              value: "general",
+            },
+            {
+              label: "不具合報告",
+              value: "bug",
+            },
+            {
+              label: "その他",
+              value: "other",
+            }
+          ]);
+
+        const selectRow = new ActionRowBuilder().addComponents(selectMenu);
+
+        await channel.send({ content: `<@${user.id}>`, embeds: [embed], components: [row] });
+        await channel.send({ embeds: [selectInfo], components: [selectRow] });
+
+        return interaction.reply({
+          content: "チケットを作成しました",
+          ephemeral: true
+        });
 
       } finally {
         setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
       }
-    }  
- 
-    // ❌削除
-    else if (interaction.customId === "ticket_close") {  
-      await interaction.reply({  
-        content: "チケットを削除します",  
-        ephemeral: true  
-      });  
+    }
 
-      setTimeout(() => {  
-        interaction.channel.delete().catch(() => {});  
-      }, 2000);  
+    // =========================
+    // 削除
+    else if (interaction.customId === "ticket_close") {  
+      await interaction.reply({ content: "チケットを削除します", ephemeral: true });  
+      setTimeout(() => interaction.channel.delete().catch(() => {}), 2000);  
     }  
- 
-    // 🟢解決済み
+
+    // =========================
+    // 解決済み
     else if (interaction.customId === "ticket_resolved") {  
- 
-      const channel = interaction.channel;  
- 
-      const embed = new EmbedBuilder() 
-        .setTitle("✅ 解決済み") 
-        .setDescription("このチケットは解決済みとしてマークされました") 
-        .setColor(0x57F287); 
- 
-      await interaction.reply({  
-        content: "解決済みとしてマークしました",  
-        ephemeral: true  
-      });  
- 
-      await channel.send({ embeds: [embed] });  
-    }  
+
+      const embed = new EmbedBuilder()  
+        .setTitle("✅ 解決済み")  
+        .setDescription("このチケットは解決済みとしてマークされました")  
+        .setColor(0x57F287);  
+
+      await interaction.reply({ content: "解決済みとしてマークしました", ephemeral: true });  
+      await interaction.channel.send({ embeds: [embed] });  
+    }
+
+    // =========================
+    // セレクトメニュー
+    else if (interaction.customId === "ticket_category") {
+      await interaction.reply({
+        content: `選択: ${interaction.values[0]}`,
+        ephemeral: true
+      });
+    }
   });  
-}; 
+};
