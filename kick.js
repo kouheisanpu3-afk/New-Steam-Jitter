@@ -5,20 +5,18 @@ const KICK_CHANNEL_ID = "1540932243826942002";
 // グレー寄りブルー
 const EMBED_COLOR = 0x5f6f82;
 
-// 🚫絵文字
-const NO_ENTRY = "🚫";
+// 🚫画像（指定URL）
+const NO_ENTRY_IMG = "🚫";
 
 // 日本語
 const JP_TEXT =
-`${NO_ENTRY} このチャンネルにメッセージを送信しないでください
-このチャンネルはスパムボットを検知するために使用されます。
-メッセージを送信したユーザーは即座にキックされます。`;
+`${NO_ENTRY_IMG} このチャンネルにメッセージを送信しないでください
+このチャンネルはスパムボットを検知するために使用されます。メッセージを送信したユーザーは即座にキックされます。`;
 
 // 英語
 const EN_TEXT =
-`${NO_ENTRY} DO NOT SEND MESSAGES IN THIS CHANNEL
-This channel is used to detect spam bots.
-Any user who sends a message here will be kicked immediately.`;
+`${NO_ENTRY_IMG} DO NOT SEND MESSAGES IN THIS CHANNEL
+This channel is used to detect spam bots. Any user who sends a message here will be kicked immediately.`;
 
 module.exports = (client) => {
 
