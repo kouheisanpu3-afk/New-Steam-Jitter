@@ -12,7 +12,7 @@ const {
 const express = require("express");
 
 // =======================
-// Webサーバー（Render用）
+// Webサーバー
 const app = express();
 app.get("/", (req, res) => {
   res.send("Bot is alive!");
@@ -35,16 +35,16 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 // =======================
-// ID管理
 const ROLE_ID = "1540560312602988594";
 const ENGLISH_ROLE_ID = "1540560377866362950";
 
 const AUTH_CHANNEL_ID = "1540606154093367336";   // 認証
-const WATCH_CHANNEL_ID = "1540694105305124904";  // キック監視
+const WATCH_CHANNEL_ID = "1540694105305124904";  // キック
+
 const RULES_CHANNEL_ID = "1540626614982025327";
 const TOS_CHANNEL_ID = "1540627413136973824";
 
-// キック回数
+// キック
 const kickCount = {};
 
 // アイコン
@@ -52,12 +52,17 @@ const NO_ENTRY_ICON =
   "https://images-ext-1.discordapp.net/external/V3wsBTSebz_y5_eqHOENkSM6E2SRWyZ0jE66pG9qFKs/https/emojicdn.elk.sh/%F0%9F%9A%AB?format=webp";
 
 // =======================
-// 起動処理（完全分離）
+// 起動時（完全分離）
 client.once(Events.ClientReady, async () => {
   console.log(`ログイン: ${client.user.tag}`);
 
-  // =======================
-  // ① 認証チャンネル
+  await sendAuthMessage();
+  await sendWatchMessage();
+});
+
+// =======================
+// ① 認証チャンネル（完全独立）
+async function sendAuthMessage() {
   try {
     const channel = await client.channels.fetch(AUTH_CHANNEL_ID);
 
@@ -103,17 +108,19 @@ client.once(Events.ClientReady, async () => {
   } catch (e) {
     console.log("AUTH ERROR:", e);
   }
+}
 
-  // =======================
-  // ② WATCHチャンネル（キック専用）
+// =======================
+// ② キックチャンネル（完全独立）
+async function sendWatchMessage() {
   try {
-    const watch = await client.channels.fetch(WATCH_CHANNEL_ID);
+    const channel = await client.channels.fetch(WATCH_CHANNEL_ID);
 
     const jp = new EmbedBuilder()
       .setColor(0x6C8EA4)
       .setThumbnail(NO_ENTRY_ICON)
       .setDescription(
-        "🚫 このチャンネルにメッセージを送信しないでください\n" +
+        "## このチャンネルにメッセージを送信しないでください\n" +
         "スパム検知用です"
       );
 
@@ -121,20 +128,20 @@ client.once(Events.ClientReady, async () => {
       .setColor(0x6C8EA4)
       .setThumbnail(NO_ENTRY_ICON)
       .setDescription(
-        "🚫 DO NOT SEND MESSAGES HERE\n" +
+        "## DO NOT SEND MESSAGES IN THIS CHANNEL\n" +
         "Used for spam detection"
       );
 
-    await watch.send({ embeds: [jp] });
-    await watch.send({ embeds: [en] });
+    await channel.send({ embeds: [jp] });
+    await channel.send({ embeds: [en] });
 
   } catch (e) {
     console.log("WATCH ERROR:", e);
   }
-});
+}
 
 // =======================
-// キック処理（WATCHのみ反応）
+// キック処理（WATCHだけ）
 client.on(Events.MessageCreate, async (message) => {
 
   if (message.author.bot) return;
