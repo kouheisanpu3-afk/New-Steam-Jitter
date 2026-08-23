@@ -62,6 +62,7 @@ module.exports = (client) => {
 
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+    // =========================
     // チケット作成
     if (interaction.customId === "ticket_create") {
 
@@ -154,7 +155,6 @@ module.exports = (client) => {
 
         const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-        // 🔥 メンション削除（ここが修正ポイント）
         await channel.send({
           embeds: [embed],
           components: [row]
@@ -165,16 +165,15 @@ module.exports = (client) => {
           components: [selectRow]
         });
 
-        return interaction.reply({
-          content: "チケットを作成しました",
-          ephemeral: true
-        });
+        // ❌ interaction.reply 完全削除（ここが変更点）
 
       } finally {
         setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
       }
     }
 
+    // =========================
+    // 削除
     else if (interaction.customId === "ticket_close") {
       await interaction.reply({
         content: "チケットを削除します",
@@ -186,6 +185,8 @@ module.exports = (client) => {
       }, 2000);
     }
 
+    // =========================
+    // 解決済み
     else if (interaction.customId === "ticket_resolved") {
       const embed = new EmbedBuilder()
         .setTitle("✅ 解決済み")
@@ -200,6 +201,8 @@ module.exports = (client) => {
       await interaction.channel.send({ embeds: [embed] });
     }
 
+    // =========================
+    // セレクト
     else if (interaction.customId === "ticket_category") {
       await interaction.reply({
         content: `選択: ${interaction.values[0]}`,
