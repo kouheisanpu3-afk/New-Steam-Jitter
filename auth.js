@@ -53,16 +53,20 @@ module.exports = (client) => {
       const tosText = `[Terms of Service](https://discord.com/channels/${channel.guild.id}/${TOS_CHANNEL_ID})`;
 
       // =======================
-      // 横長“っぽく”見せる（改行削減）
+      // 横長“最大化”（改行削除＋1行圧縮）
       const embedJP = new EmbedBuilder()
         .setColor(0x6f8fa6)
         .setTitle("認証")
-        .setDescription(`下のボタンをクリックすると認証できます。 認証すると${rulesText}に同意したものとみなされます。`);
+        .setDescription(
+          `下のボタンをクリックすると認証できます。認証すると${rulesText}に同意したものとみなされます。`
+        );
 
       const embedEN = new EmbedBuilder()
         .setColor(0x6f8fa6)
         .setTitle("Verification")
-        .setDescription(`Click the button below to verify. You agree to ${tosText}.`);
+        .setDescription(
+          `Click the button below to complete verification. By completing verification, you agree to the Terms of Service.`
+        );
 
       await channel.send({ embeds: [embedJP] });
       await channel.send({ embeds: [embedEN], components: [row] });
