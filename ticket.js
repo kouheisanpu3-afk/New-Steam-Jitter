@@ -22,11 +22,11 @@ module.exports = (client) => {
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
+      // 🔥 ここを「一個前の文言」に戻した
       const embed = new EmbedBuilder()
         .setTitle("ご質問・お問い合わせチケット")
         .setDescription(
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。
-チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。`
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
         )
         .setColor(0x4aa3ff);
 
@@ -74,13 +74,11 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 既存チェック
         const existing = guild.channels.cache.find(
           c => c.name.includes(`ticket-${user.id}`)
         );
 
         if (existing) {
-          // ❌ これだけは必要（通知）
           return interaction.reply({
             content: "すでにチケットがあります",
             ephemeral: true
@@ -151,27 +149,16 @@ module.exports = (client) => {
           .setCustomId("ticket_category")
           .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
-            {
-              label: "一般質問",
-              value: "general"
-            },
-            {
-              label: "不具合報告",
-              value: "bug"
-            },
-            {
-              label: "その他",
-              value: "other"
-            }
+            { label: "一般質問", value: "general" },
+            { label: "不具合報告", value: "bug" },
+            { label: "その他", value: "other" }
           ]);
 
         const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-        // 👇 メッセージ送信（通知なし）
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        // ❌ これで「チケットを作成しました」系は完全に消える
         await interaction.deferReply({ ephemeral: true }).catch(() => {});
         await interaction.deleteReply().catch(() => {});
 
@@ -180,8 +167,6 @@ module.exports = (client) => {
       }
     }
 
-    // =========================
-    // チケット削除
     else if (interaction.customId === "ticket_close") {
       await interaction.reply({
         content: "チケットを削除します",
@@ -193,8 +178,6 @@ module.exports = (client) => {
       }, 2000);
     }
 
-    // =========================
-    // 解決済み
     else if (interaction.customId === "ticket_resolved") {
       const embed = new EmbedBuilder()
         .setTitle("✅ 解決済み")
@@ -209,8 +192,6 @@ module.exports = (client) => {
       await interaction.channel.send({ embeds: [embed] });
     }
 
-    // =========================
-    // セレクト
     else if (interaction.customId === "ticket_category") {
       await interaction.reply({
         content: `選択: ${interaction.values[0]}`,
