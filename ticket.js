@@ -222,6 +222,27 @@ module.exports = (client) => {
 
       const value = interaction.values[0];
 
+      if (value === "rewasd" || value === "other") {
+
+        const labelText =
+          value === "rewasd" ? "reWASD" : "その他";
+
+        const embed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+
+選択内容：${labelText}
+
+続けて下のボックスからメンションの要否を選択してください。`
+          );
+
+        return interaction.reply({
+          embeds: [embed],
+          ephemeral: true
+        });
+      }
+
       if (value === "steam_jitter") {
 
         const embed = new EmbedBuilder()
@@ -238,14 +259,8 @@ module.exports = (client) => {
           .setCustomId("ticket_ping_choice")
           .setPlaceholder("メンションの要否を選択")
           .addOptions([
-            {
-              label: "メンションする",
-              value: "ping_yes"
-            },
-            {
-              label: "メンションしない",
-              value: "ping_no"
-            }
+            { label: "メンションする", value: "ping_yes" },
+            { label: "メンションしない", value: "ping_no" }
           ]);
 
         const row = new ActionRowBuilder().addComponents(followSelect);
