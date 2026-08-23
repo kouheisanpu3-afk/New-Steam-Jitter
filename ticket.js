@@ -1,35 +1,126 @@
 const {
+  Events,
+  EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ChannelType,
+  PermissionsBitField
 } = require("discord.js");
 
+const TICKET_CHANNEL_ID = "1541001019880640573";
+const CATEGORY_ID = "1541000895167201300";
+
 module.exports = (client) => {
-  client.on("interactionCreate", async (interaction) => {
+
+  // =========================
+  // 起動時：パネル設置
+  client.once(Events.ClientReady, async () => {
+    try {
+      const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
+
+      if (!channel) return console.log("チケットチャンネル取得失敗");
+
+      const embed = new EmbedBuilder()
+        .setTitle("ご質問・お問い合わせチケット")
+        .setDescription(
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると利用規約に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
+        )
+        .setColor(0x2b2d31);
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ticket_create")
+          .setLabel("🎫 チケット作成")
+          .setStyle(ButtonStyle.Primary)
+      );
+
+      await channel.send({
+        embeds: [embed],
+        components: [row]
+      });
+
+      console.log("チケットパネル設置完了");
+    } catch (err) {
+      console.error("パネル設置エラー:", err);
+    }
+  });
+
+  // =========================
+  // ボタン処理
+  client.on(Events.InteractionCreate, async (interaction) => {
+
     if (!interaction.isButton()) return;
 
-    // チケット作成ボタン
+    // 🎫チケット作成
     if (interaction.customId === "ticket_create") {
-      const channel = await interaction.guild.channels.create({
-        name: `ticket-${interaction.user.username}`,
-        type: ChannelType.GuildText,
+
+      const guild = interaction.guild;
+      const user = interaction.user;
+
+      const channel = await guild.channels.create({
+        name: `ticket-${user.username}`,
+        type: 0,
+        parent: CATEGORY_ID,
         permissionOverwrites: [
           {
-            id: interaction.guild.id,
-            deny: ["ViewChannel"],
+            id: guild.id,
+            deny: [PermissionsBitField.Flags.ViewChannel]
           },
           {
-            id: interaction.user.id,
-            allow: ["ViewChannel", "SendMessages"],
+            id: user.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory
+            ]
           },
-        ],
+          {
+            id: client.user.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages
+            ]
+          }
+        ]
+      });
+
+      const embed = new EmbedBuilder()
+        .setTitle("🎫 チケット")
+        .setDescription("管理者が対応するまでお待ちください")
+        .setColor(0x57F287);
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ticket_close")
+          .setLabel("🔒 チケットを閉じる")
+          .setStyle(ButtonStyle.Danger)
+      );
+
+      await channel.send({
+        content: `<@${user.id}>`,
+        embeds: [embed],
+        components: [row]
       });
 
       await interaction.reply({
-        content: `チケット作成しました ${channel}`,
-        ephemeral: true,
+        content: "チケットを作成しました",
+        ephemeral: true
       });
+    }
+
+    // 🔒チケット削除
+    if (interaction.customId === "ticket_close") {
+
+      const channel = interaction.channel;
+
+      await interaction.reply({
+        content: "チケットを削除します",
+        ephemeral: true
+      });
+
+      setTimeout(() => {
+        channel.delete().catch(() => {});
+      }, 2000);
     }
   });
 };
