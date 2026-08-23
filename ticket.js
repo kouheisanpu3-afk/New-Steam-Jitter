@@ -19,9 +19,7 @@ const {
 } = require("discord.js");
 
 const TICKET_CHANNEL_ID = "1541001019880640573";
-
 const CATEGORY_ID = "1541000895167201300";
-
 const TERMS_CHANNEL_ID = "1540626614982025327";
 
 module.exports = (client) => {
@@ -83,6 +81,7 @@ module.exports = (client) => {
 
       if (interaction.customId === "ticket_create") {
 
+        // 🔥完全二重防止
         if (creatingUsers.has(interaction.user.id)) {
           return interaction.reply({
             content: "処理中です。少し待ってください。",
@@ -92,7 +91,8 @@ module.exports = (client) => {
 
         creatingUsers.add(interaction.user.id);
 
-        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+        // ★変更：考え中UI完全削除
+        await interaction.deferUpdate().catch(() => {});
 
         try {
 
@@ -187,8 +187,6 @@ module.exports = (client) => {
 
           await channel.send({ embeds: [embed], components: [row] });
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
-
-          await interaction.deleteReply().catch(() => {});
 
         } finally {
           setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
@@ -294,7 +292,7 @@ module.exports = (client) => {
         const isYes = interaction.values[0] === "ping_yes";
 
         const embed = new EmbedBuilder()
-          .setColor(isYes ? 0x4aa3ff : 0xF1C40F)
+          .setColor(isYes ? 0xF1C40F : 0x4aa3ff) // ★変更：要する→黄色
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
@@ -344,7 +342,6 @@ module.exports = (client) => {
 
       else if (interaction.customId === "ticket_close_confirm") {
 
-        // ❌「削除中...」完全削除
         setTimeout(() => {
           interaction.channel.delete().catch(() => {});
         }, 1000);
