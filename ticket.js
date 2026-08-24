@@ -307,27 +307,22 @@ if (existsChannel) {
         });
       }
 
-// =========================
-// チケット削除確認（UI表示）
-// =========================
 else if (interaction.customId === "ticket_close") {
 
   const embed = new EmbedBuilder()
-    .setColor(0xFF4D4D) // 赤
+    .setColor(0xFF4D4D)
     .setDescription("このチケットを消去しますか？");
 
   const row = new ActionRowBuilder().addComponents(
-
     new ButtonBuilder()
       .setCustomId("ticket_close_confirm")
       .setLabel("OK")
-      .setStyle(ButtonStyle.Success),
+      .setStyle(ButtonStyle.Danger),
 
     new ButtonBuilder()
       .setCustomId("ticket_close_cancel")
       .setLabel("キャンセル")
       .setStyle(ButtonStyle.Secondary)
-
   );
 
   return interaction.reply({
@@ -337,11 +332,7 @@ else if (interaction.customId === "ticket_close") {
   });
 }
 
-
-// =========================
-// OK → チャンネル削除
-// =========================
-else if (interaction.customId === "ticket_close_confirm") {
+  else if (interaction.customId === "ticket_close_confirm") {
 
   await interaction.reply({
     content: "チケットを削除しています...",
@@ -353,20 +344,10 @@ else if (interaction.customId === "ticket_close_confirm") {
   }, 1000);
 }
 
+    else if (interaction.customId === "ticket_close_cancel") {
 
-// =========================
-// キャンセル → メッセージ削除
-// =========================
-else if (interaction.customId === "ticket_close_cancel") {
-
-  await interaction.message.delete().catch(() => {
-    interaction.reply({
-      content: "メッセージを削除できませんでした",
-      ephemeral: true
-    }).catch(() => {});
-  });
-
-  return;
+  // ephemeralで出した確認メッセージを削除
+  return interaction.message.delete().catch(() => {});
 }
 
       else if (interaction.customId === "ticket_resolved") {
