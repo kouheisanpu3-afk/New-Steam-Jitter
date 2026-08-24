@@ -85,25 +85,6 @@ module.exports = (client) => {
       // =========================
       if (interaction.customId === "ticket_create") {
 
-        if (activeTickets.has(interaction.user.id)) {
-          return interaction.reply({
-            content: "すでにチケットが存在します。",
-            ephemeral: true
-          }).catch(() => {});
-        }
-
-        const existsChannel = interaction.guild.channels.cache.find(
-          c => c.parentId === CATEGORY_ID && c.topic === interaction.user.id
-        );
-
-        if (existsChannel) {
-          activeTickets.add(interaction.user.id);
-          return interaction.reply({
-            content: "既にチケットチャンネルが存在します。",
-            ephemeral: true
-          }).catch(() => {});
-        }
-
         const guild = interaction.guild;
         const user = interaction.user;
 
@@ -200,22 +181,19 @@ module.exports = (client) => {
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         // =========================
-        // 🔧 修正ポイント（チャンネル表示を正しくする）
+        // ユーザーだけ通知（修正ポイント）
         // =========================
-        const notifyChannel = await client.channels.fetch(TICKET_CHANNEL_ID);
-
-        const createdEmbed = new EmbedBuilder()
-          .setTitle("チケットが作成されました")
-          .setDescription(`チャンネル: ${channel.toString()}`)
-          .setColor(0x4aa3ff);
-
-        await notifyChannel.send({ embeds: [createdEmbed] });
+        return interaction.reply({
+          content: `チケットが作成されました\nチャンネル: ${channel.toString()}`,
+          ephemeral: true
+        });
       }
 
       // =========================
-      // 以降そのまま（省略なし）
+      // カテゴリ選択
       // =========================
       else if (interaction.customId === "ticket_category") {
+
         const value = interaction.values[0];
 
         let label = "不明";
