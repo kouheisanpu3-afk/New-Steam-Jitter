@@ -88,10 +88,22 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 連打・同時作成防止
+if (creatingUsers.has(user.id)) {
+  return interaction.reply({
+    content: "チケット作成中です。少し待ってください。",
+    ephemeral: true
+  });
+}
+
+creatingUsers.add(user.id);
+
         // 既存チケットチェック
 const existsChannel = interaction.guild.channels.cache.find(
   c => c.parentId === CATEGORY_ID && c.topic === user.id
 );
+
+        creatingUsers.delete(user.id);
 
 if (existsChannel) {
   const embed = new EmbedBuilder()
