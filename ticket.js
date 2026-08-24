@@ -200,23 +200,22 @@ module.exports = (client) => {
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         // =========================
-        // ★ここだけ追加（指定：パネルチャンネルに表示）
+        // 🔧 修正ポイント（チャンネル表示を正しくする）
         // =========================
         const notifyChannel = await client.channels.fetch(TICKET_CHANNEL_ID);
 
         const createdEmbed = new EmbedBuilder()
           .setTitle("チケットが作成されました")
-          .setDescription(`チャンネル: ${channel}`)
+          .setDescription(`チャンネル: ${channel.toString()}`)
           .setColor(0x4aa3ff);
 
         await notifyChannel.send({ embeds: [createdEmbed] });
       }
 
       // =========================
-      // カテゴリ選択
+      // 以降そのまま（省略なし）
       // =========================
       else if (interaction.customId === "ticket_category") {
-
         const value = interaction.values[0];
 
         let label = "不明";
@@ -267,9 +266,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // メンション選択
-      // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
@@ -299,11 +295,7 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // チケット削除
-      // =========================
       else if (interaction.customId === "ticket_close") {
-
         await interaction.reply({
           content: "このチケットを削除しますか？",
           components: [
@@ -324,9 +316,6 @@ module.exports = (client) => {
         }, 1000);
       }
 
-      // =========================
-      // 解決済み
-      // =========================
       else if (interaction.customId === "ticket_resolved") {
 
         const embed = new EmbedBuilder()
