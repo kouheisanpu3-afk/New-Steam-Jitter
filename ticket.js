@@ -325,7 +325,7 @@ else if (interaction.customId === "ticket_close") {
       .setStyle(ButtonStyle.Secondary)
   );
 
-  // ❗ replyじゃなくて update（重要）
+  // ❗reply禁止 → updateで統一
   return interaction.update({
     embeds: [embed],
     components: [row],
@@ -335,10 +335,11 @@ else if (interaction.customId === "ticket_close") {
 
 else if (interaction.customId === "ticket_close_confirm") {
 
+  // まずUIだけ消す
   await interaction.update({
-    content: "削除中...",
     embeds: [],
-    components: []
+    components: [],
+    content: "チケットを削除しています..."
   });
 
   setTimeout(() => {
@@ -348,7 +349,7 @@ else if (interaction.customId === "ticket_close_confirm") {
 
 else if (interaction.customId === "ticket_close_cancel") {
 
-  // 元の状態に戻す（UIを消す）
+  // 元のチケット状態に戻す（空じゃなく復元）
   return interaction.update({
     content: "",
     embeds: [],
