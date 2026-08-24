@@ -217,7 +217,7 @@ if (existsChannel) {
           .setColor(0x4aa3ff) // 水色（左のライン）
           .setDescription(
 `チケットが作成されました  
-チャンネル: ${channel}`
+ ${channel}`
           );
 
         return interaction.reply({
