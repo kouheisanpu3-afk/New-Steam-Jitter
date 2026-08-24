@@ -354,17 +354,16 @@ else if (interaction.customId === "ticket_close_confirm") {
 }
 
 
-// =========================
-// キャンセル → 確認メッセージを削除
-// =========================
 else if (interaction.customId === "ticket_close_cancel") {
 
-  return interaction.message.delete().catch(() => {
-    interaction.reply({
-      content: "メッセージを削除できませんでした",
-      ephemeral: true
-    }).catch(() => {});
-  });
+  // ephemeralの「確認メッセージ」を安全に閉じる
+  if (interaction.message) {
+    await interaction.message.delete().catch(() => {});
+  }
+
+  // すでに返答済みでもエラー出さない
+  return;
+}
 
 }
       else if (interaction.customId === "ticket_resolved") {
