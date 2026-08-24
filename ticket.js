@@ -58,9 +58,10 @@ module.exports = (client) => {
 
       const messages = await channel.messages.fetch({ limit: 10 });
 
-      const exists = messages.some(m =>
-        m.author.id === client.user.id &&
-        m.components.length > 0
+      const exists = messages.some(
+        m =>
+          m.author.id === client.user.id &&
+          m.components.length > 0
       );
 
       if (exists) return console.log("既にチケットパネルあり");
@@ -88,19 +89,21 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // =========================
-        // ★追加：既存チケットチェック
-        // =========================
+        // 既存チケットチェック
         const existsChannel = interaction.guild.channels.cache.find(
           c => c.parentId === CATEGORY_ID && c.topic === user.id
         );
 
-        if (existsChannel) {
+        // ★修正：二重作成完全防止
+        if (activeTickets.has(user.id) || existsChannel) {
           return interaction.reply({
-            content: "すでにチケットが存在します。",
+            content: "既に作成されたチケットが存在します。既存のチャンネルを使用してください。",
             ephemeral: true
           }).catch(() => {});
         }
+
+        // ★修正：作成前にロック（連打対策）
+        activeTickets.add(user.id);
 
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
@@ -126,8 +129,6 @@ module.exports = (client) => {
             }
           ]
         });
-
-        activeTickets.add(user.id);
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
