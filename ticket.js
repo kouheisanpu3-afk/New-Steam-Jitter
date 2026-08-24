@@ -317,7 +317,7 @@ else if (interaction.customId === "ticket_close") {
     new ButtonBuilder()
       .setCustomId("ticket_close_confirm")
       .setLabel("OK")
-      .setStyle(ButtonStyle.Danger),
+      .setStyle(ButtonStyle.Success), // ← 黄緑（Success）
 
     new ButtonBuilder()
       .setCustomId("ticket_close_cancel")
@@ -334,30 +334,26 @@ else if (interaction.customId === "ticket_close") {
 
 else if (interaction.customId === "ticket_close_confirm") {
 
+  // UIだけ消す（メッセージ更新）
   await interaction.update({
-    content: "チケットを削除しています...",
     embeds: [],
-    components: []
+    components: [],
+    content: ""
   });
 
   setTimeout(() => {
     interaction.channel.delete().catch(() => {});
-  }, 1000);
+  }, 800);
 }
 
   else if (interaction.customId === "ticket_close_cancel") {
 
+  // 何も表示せず元に戻す
   return interaction.update({
-    content: "キャンセルしました",
     embeds: [],
-    components: []
+    components: [],
+    content: ""
   });
-}
-
-    else if (interaction.customId === "ticket_close_cancel") {
-
-  // ephemeralで出した確認メッセージを削除
-  return interaction.message.delete().catch(() => {});
 }
 
       else if (interaction.customId === "ticket_resolved") {
