@@ -21,11 +21,12 @@ This channel is used to detect spam bots. Any user who sends a message here will
 // カスタム絵文字ID
 const NO_ENTRY_EMOJI_ID = "1540993447278805042";
 
-// キック回数
+// =======================
+// ★変更①：永続カウント用（リアルタイム安定化）
 let kickCount = 0;
 
 // =======================
-// ボタン
+// ボタン（そのまま）
 function createJPButton() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -58,8 +59,6 @@ module.exports = (client) => {
 
       const messages = await channel.messages.fetch({ limit: 20 });
 
-      // =======================
-      // 既存チェック（JP/EN両方）
       const alreadyJP = messages.find(msg =>
         msg.author.id === client.user.id &&
         msg.embeds.length > 0 &&
@@ -77,8 +76,6 @@ module.exports = (client) => {
         return;
       }
 
-      // =======================
-      // 日本語Embed
       const jpEmbed = new EmbedBuilder()
         .setDescription(JP_TEXT)
         .setColor(EMBED_COLOR)
@@ -89,7 +86,6 @@ module.exports = (client) => {
         components: [createJPButton()]
       });
 
-      // 英語Embed
       const enEmbed = new EmbedBuilder()
         .setDescription(EN_TEXT)
         .setColor(EMBED_COLOR)
@@ -107,8 +103,6 @@ module.exports = (client) => {
     }
   });
 
-  // =======================
-  // キック処理
   client.on(Events.MessageCreate, async (message) => {
     if (message.author.bot) return;
     if (message.channel.id !== KICK_CHANNEL_ID) return;
@@ -122,10 +116,14 @@ module.exports = (client) => {
 
       await message.member.kick("Restricted channel violation");
 
+      // =======================
+      // ★変更②：即時更新用に先に加算
       kickCount++;
 
       console.log(`KICKED: ${message.author.tag} / total: ${kickCount}`);
 
+      // =======================
+      // ★変更③：毎回確実に再編集
       if (jpMsgRef) {
         await jpMsgRef.edit({
           components: [createJPButton()]
