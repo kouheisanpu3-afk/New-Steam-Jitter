@@ -354,19 +354,29 @@ else if (interaction.customId === "ticket_close_confirm") {
 }
 
 
-// =========================
-// キャンセル → メッセージ削除
-// =========================
 else if (interaction.customId === "ticket_close_cancel") {
 
-  await interaction.message.delete().catch(() => {
-    interaction.reply({
-      content: "メッセージを削除できませんでした",
-      ephemeral: true
-    }).catch(() => {});
-  });
+  const embed = new EmbedBuilder()
+    .setColor(0x57F287)
+    .setDescription("チケット操作に戻りました");
 
-  return;
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("ticket_close")
+      .setLabel("チケットを消去")
+      .setStyle(ButtonStyle.Danger),
+
+    new ButtonBuilder()
+      .setCustomId("ticket_resolved")
+      .setLabel("解決済み")
+      .setStyle(ButtonStyle.Success)
+  );
+
+  return interaction.update({
+    embeds: [embed],
+    components: [row],
+    content: ""
+  });
 }
 
       else if (interaction.customId === "ticket_resolved") {
