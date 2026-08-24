@@ -201,7 +201,7 @@ module.exports = (client) => {
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         // =========================
-        // ★追加（ここだけ）
+        // ★ここだけ追加（要求部分）
         // =========================
         const createdEmbed = new EmbedBuilder()
           .setTitle("チケットが作成されました")
@@ -267,7 +267,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // メンション選択（黄色反映）
+      // メンション選択（黄色）
       // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
