@@ -356,13 +356,13 @@ else if (interaction.customId === "ticket_close_confirm") {
 
 else if (interaction.customId === "ticket_close_cancel") {
 
-  // ephemeralの「確認メッセージ」を安全に閉じる
-  if (interaction.message) {
-    await interaction.message.delete().catch(() => {});
-  }
-
-  // すでに返答済みでもエラー出さない
-  return;
+  // ephemeralは削除できないので「update」で空にする
+  return interaction.update({
+    embeds: [],
+    components: [],
+    content: "キャンセルしました",
+    ephemeral: true
+  }).catch(() => {});
 }
 
 }
