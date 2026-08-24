@@ -307,13 +307,17 @@ if (existsChannel) {
         });
       }
 
+// =========================
+// チケット削除確認（UI表示）
+// =========================
 else if (interaction.customId === "ticket_close") {
 
   const embed = new EmbedBuilder()
-    .setColor(0xFF4D4D)
+    .setColor(0xFF4D4D) // 赤
     .setDescription("このチケットを消去しますか？");
 
   const row = new ActionRowBuilder().addComponents(
+
     new ButtonBuilder()
       .setCustomId("ticket_close_confirm")
       .setLabel("OK")
@@ -323,54 +327,46 @@ else if (interaction.customId === "ticket_close") {
       .setCustomId("ticket_close_cancel")
       .setLabel("キャンセル")
       .setStyle(ButtonStyle.Secondary)
+
   );
 
-  // ❗reply禁止（これが原因）
-  return interaction.update({
+  return interaction.reply({
     embeds: [embed],
     components: [row],
-    content: ""
+    ephemeral: true
   });
 }
 
+
+// =========================
+// OK → チャンネル削除
+// =========================
 else if (interaction.customId === "ticket_close_confirm") {
 
-  // UIだけ消す
-  await interaction.update({
-    content: "削除中...",
-    embeds: [],
-    components: []
+  await interaction.reply({
+    content: "チケットを削除しています...",
+    ephemeral: true
   });
 
   setTimeout(() => {
     interaction.channel.delete().catch(() => {});
-  }, 800);
+  }, 1000);
 }
 
+
+// =========================
+// キャンセル → メッセージ削除
+// =========================
 else if (interaction.customId === "ticket_close_cancel") {
 
-  // 「何もない状態に戻す」
-  const originalEmbed = new EmbedBuilder()
-    .setColor(0x57F287)
-    .setDescription("チケット操作画面に戻りました");
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("ticket_close")
-      .setLabel("チケットを消去")
-      .setStyle(ButtonStyle.Danger),
-
-    new ButtonBuilder()
-      .setCustomId("ticket_resolved")
-      .setLabel("解決済み")
-      .setStyle(ButtonStyle.Success)
-  );
-
-  return interaction.update({
-    embeds: [originalEmbed],
-    components: [row],
-    content: ""
+  await interaction.message.delete().catch(() => {
+    interaction.reply({
+      content: "メッセージを削除できませんでした",
+      ephemeral: true
+    }).catch(() => {});
   });
+
+  return;
 }
 
       else if (interaction.customId === "ticket_resolved") {
