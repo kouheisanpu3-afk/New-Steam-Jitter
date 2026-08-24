@@ -181,16 +181,21 @@ module.exports = (client) => {
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         // =========================
-        // ユーザーだけ通知（修正ポイント）
+        // 🔧 修正部分（ここだけ変更）
         // =========================
+        const notifyEmbed = new EmbedBuilder()
+          .setColor(0xFF6B6B) // ←薄い赤（左の線＋背景）
+          .setTitle("チケットが作成されました")
+          .setDescription(`チャンネル: ${channel.toString()}`);
+
         return interaction.reply({
-          content: `チケットが作成されました\nチャンネル: ${channel.toString()}`,
+          embeds: [notifyEmbed],
           ephemeral: true
         });
       }
 
       // =========================
-      // カテゴリ選択
+      // 以下そのまま（変更なし）
       // =========================
       else if (interaction.customId === "ticket_category") {
 
