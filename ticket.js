@@ -94,8 +94,14 @@ const existsChannel = interaction.guild.channels.cache.find(
 );
 
 if (existsChannel) {
+  const embed = new EmbedBuilder()
+    .setColor(0x4aa3ff) // ← 水色（左のライン）
+    .setDescription(
+      "すでにチケットが存在します。\n既存のチケットを使用してください。"
+    );
+
   return interaction.reply({
-    content: "すでにチケットが存在します。既存のチケットを使用してください。",
+    embeds: [embed],
     ephemeral: true
   });
 }
