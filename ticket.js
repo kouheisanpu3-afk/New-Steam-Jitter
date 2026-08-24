@@ -1,21 +1,12 @@
 const {
-
   Events,
-
   EmbedBuilder,
-
   ActionRowBuilder,
-
   ButtonBuilder,
-
   ButtonStyle,
-
   PermissionsBitField,
-
   ChannelType,
-
   StringSelectMenuBuilder
-
 } = require("discord.js");
 
 const TICKET_CHANNEL_ID = "1541001019880640573";
@@ -32,9 +23,7 @@ module.exports = (client) => {
   client.once(Events.ClientReady, async () => {
 
     try {
-
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
-
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
       const embed = new EmbedBuilder()
@@ -81,18 +70,12 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成（完全防止版）
+      // チケット作成
       // =========================
       if (interaction.customId === "ticket_create") {
 
-        if (creatingUsers.has(interaction.user.id)) {
-          return interaction.reply({
-            content: "処理中です。少し待ってください。",
-            ephemeral: true
-          }).catch(() => {});
-        }
+        // ❌「処理中です」削除済み
 
-        // 既にチケットありチェック
         if (activeTickets.has(interaction.user.id)) {
           return interaction.reply({
             content: "すでにチケットが存在します。",
@@ -100,7 +83,6 @@ module.exports = (client) => {
           }).catch(() => {});
         }
 
-        // 既存チャンネルチェック（完全防止）
         const existsChannel = interaction.guild.channels.cache.find(
           c => c.parentId === CATEGORY_ID && c.topic === interaction.user.id
         );
@@ -127,7 +109,7 @@ module.exports = (client) => {
             name: `ticket-${user.username}`,
             type: ChannelType.GuildText,
             parent: CATEGORY_ID,
-            topic: userId, // ★追加（重複防止キー）
+            topic: userId,
             permissionOverwrites: [
               { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
               {
@@ -216,19 +198,18 @@ module.exports = (client) => {
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         } finally {
-          setTimeout(() => creatingUsers.delete(userId), 3000);
+          setTimeout(() => creatingUsers.delete(interaction.user.id), 3000);
         }
       }
 
       // =========================
-      // カテゴリ選択（青に変更）
+      // カテゴリ選択
       // =========================
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
 
         let label = "不明";
-
         if (value === "steam_jitter") label = "Steamジッターマクロ";
         if (value === "rewasd") label = "reWASD";
         if (value === "other") label = "その他";
@@ -236,7 +217,7 @@ module.exports = (client) => {
         ticketState.set(interaction.channel.id, { value, label });
 
         const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff) // ★水色固定
+          .setColor(0x4aa3ff)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
@@ -251,32 +232,24 @@ module.exports = (client) => {
           .addOptions([
             {
               label: "🔔対応時にメンションを要する",
-              value: "ping_yes",
-              description: "管理者が対応開始時にメンションします。"
+              value: "ping_yes"
             },
             {
               label: "🔕対応時にメンションを要しない",
-              value: "ping_no",
-              description: "メンションは行いません。"
+              value: "ping_no"
             }
           ]);
 
-        const backButton = new ButtonBuilder()
-          .setCustomId("ticket_back")
-          .setLabel("戻る")
-          .setStyle(ButtonStyle.Secondary);
-
         const row = new ActionRowBuilder().addComponents(followSelect);
-        const row2 = new ActionRowBuilder().addComponents(backButton);
 
         return interaction.update({
           embeds: [embed],
-          components: [row, row2]
+          components: [row]
         });
       }
 
       // =========================
-      // メンション選択（青維持）
+      // メンション選択（ここ変更）
       // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
@@ -284,7 +257,7 @@ module.exports = (client) => {
         const isYes = interaction.values[0] === "ping_yes";
 
         const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
+          .setColor(isYes ? 0xFFD700 : 0x4aa3ff) // ★黄色 or 青
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
@@ -294,12 +267,12 @@ module.exports = (client) => {
 以下にご質問・お問い合わせをご記入ください。`
           );
 
-        const changeButton = new ButtonBuilder()
-          .setCustomId("ticket_back")
-          .setLabel("ご質問・お問い合わせ内容を変更")
-          .setStyle(ButtonStyle.Secondary);
-
-        const row = new ActionRowBuilder().addComponents(changeButton);
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("ticket_back")
+            .setLabel("ご質問・お問い合わせ内容を変更")
+            .setStyle(ButtonStyle.Secondary)
+        );
 
         return interaction.update({
           embeds: [embed],
@@ -308,19 +281,41 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 削除
+      // チケット削除ボタン（追加）
       // =========================
+      else if (interaction.customId === "ticket_close") {
+
+        const confirmEmbed = new EmbedBuilder()
+          .setColor(0xff0000)
+          .setDescription("本当にこのチケットを削除しますか？");
+
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("ticket_close_confirm")
+            .setLabel("削除する")
+            .setStyle(ButtonStyle.Danger)
+        );
+
+        return interaction.reply({
+          embeds: [confirmEmbed],
+          components: [row],
+          ephemeral: true
+        });
+      }
+
       else if (interaction.customId === "ticket_close_confirm") {
+
+        await interaction.update({
+          content: "チケットを削除します...",
+          embeds: [],
+          components: []
+        });
 
         setTimeout(() => {
           interaction.channel.delete().catch(() => {});
         }, 1000);
-
       }
 
-      // =========================
-      // その他そのまま
-      // =========================
       else if (interaction.customId === "ticket_resolved") {
 
         const embed = new EmbedBuilder()
