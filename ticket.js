@@ -58,10 +58,9 @@ module.exports = (client) => {
 
       const messages = await channel.messages.fetch({ limit: 10 });
 
-      const exists = messages.some(
-        m =>
-          m.author.id === client.user.id &&
-          m.components.length > 0
+      const exists = messages.some(m =>
+        m.author.id === client.user.id &&
+        m.components.length > 0
       );
 
       if (exists) return console.log("既にチケットパネルあり");
@@ -89,22 +88,6 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 既存チケットチェック
-        const existsChannel = interaction.guild.channels.cache.find(
-          c => c.parentId === CATEGORY_ID && c.topic === user.id
-        );
-
-        // ★修正：二重作成完全防止
-        if (activeTickets.has(user.id) || existsChannel) {
-          return interaction.reply({
-            content: "既に作成されたチケットが存在します。既存のチャンネルを使用してください。",
-            ephemeral: true
-          }).catch(() => {});
-        }
-
-        // ★修正：作成前にロック（連打対策）
-        activeTickets.add(user.id);
-
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
@@ -129,6 +112,8 @@ module.exports = (client) => {
             }
           ]
         });
+
+        activeTickets.add(user.id);
 
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
@@ -195,8 +180,18 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
+        // =========================
+        // ★ここだけ修正（背景＋左ラインを水色のEmbed通知）
+        // =========================
+        const createdEmbed = new EmbedBuilder()
+          .setColor(0x4aa3ff) // 水色（左のライン）
+          .setDescription(
+`チケットが作成されました  
+チャンネル: ${channel}`
+          );
+
         return interaction.reply({
-          content: `チケットが作成されました\nチャンネル: ${channel.toString()}`,
+          embeds: [createdEmbed],
           ephemeral: true
         });
       }
