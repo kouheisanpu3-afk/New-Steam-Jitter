@@ -88,6 +88,20 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // =========================
+        // ★追加：既存チケットチェック
+        // =========================
+        const existsChannel = interaction.guild.channels.cache.find(
+          c => c.parentId === CATEGORY_ID && c.topic === user.id
+        );
+
+        if (existsChannel) {
+          return interaction.reply({
+            content: "すでにチケットが存在します。",
+            ephemeral: true
+          }).catch(() => {});
+        }
+
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
@@ -180,18 +194,8 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        // =========================
-        // ★ここだけ修正（背景＋左ラインを水色のEmbed通知）
-        // =========================
-        const createdEmbed = new EmbedBuilder()
-          .setColor(0x4aa3ff) // 水色（左のライン）
-          .setDescription(
-`チケットが作成されました  
-チャンネル: ${channel}`
-          );
-
         return interaction.reply({
-          embeds: [createdEmbed],
+          content: `チケットが作成されました\nチャンネル: ${channel.toString()}`,
           ephemeral: true
         });
       }
