@@ -307,36 +307,66 @@ if (existsChannel) {
         });
       }
 
+// =========================
+// チケット削除確認（UI表示）
+// =========================
 else if (interaction.customId === "ticket_close") {
 
   const embed = new EmbedBuilder()
-    .setColor(0xFF4D4D) // 赤（左ライン＋背景）
+    .setColor(0xFF4D4D) // 赤
     .setDescription("このチケットを消去しますか？");
 
   const row = new ActionRowBuilder().addComponents(
+
     new ButtonBuilder()
       .setCustomId("ticket_close_confirm")
       .setLabel("OK")
-      .setStyle(ButtonStyle.Success), // 緑
+      .setStyle(ButtonStyle.Success),
 
     new ButtonBuilder()
       .setCustomId("ticket_close_cancel")
       .setLabel("キャンセル")
-      .setStyle(ButtonStyle.Secondary) // グレー
+      .setStyle(ButtonStyle.Secondary)
+
   );
 
-  await interaction.reply({
+  return interaction.reply({
     embeds: [embed],
     components: [row],
     ephemeral: true
   });
 }
 
-  else if (interaction.customId === "ticket_close_cancel") {
-  return interaction.reply({
-    content: "キャンセルしました。",
+
+// =========================
+// OK → チャンネル削除
+// =========================
+else if (interaction.customId === "ticket_close_confirm") {
+
+  await interaction.reply({
+    content: "チケットを削除しています...",
     ephemeral: true
   });
+
+  setTimeout(() => {
+    interaction.channel.delete().catch(() => {});
+  }, 1000);
+}
+
+
+// =========================
+// キャンセル → メッセージ削除
+// =========================
+else if (interaction.customId === "ticket_close_cancel") {
+
+  await interaction.message.delete().catch(() => {
+    interaction.reply({
+      content: "メッセージを削除できませんでした",
+      ephemeral: true
+    }).catch(() => {});
+  });
+
+  return;
 }
 
       else if (interaction.customId === "ticket_resolved") {
