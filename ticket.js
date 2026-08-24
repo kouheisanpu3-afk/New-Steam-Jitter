@@ -354,12 +354,16 @@ else if (interaction.customId === "ticket_close_confirm") {
 }
 
 
+// =========================
+// キャンセル → 元に戻す（メッセージ更新）
+// =========================
 else if (interaction.customId === "ticket_close_cancel") {
 
   const embed = new EmbedBuilder()
-    .setColor(0x57F287)
-    .setDescription("チケット操作に戻りました");
+    .setColor(0x4aa3ff)
+    .setDescription("キャンセルしました");
 
+  // ボタンを初期状態（作成済みチケット状態）に戻す
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("ticket_close")
@@ -368,14 +372,14 @@ else if (interaction.customId === "ticket_close_cancel") {
 
     new ButtonBuilder()
       .setCustomId("ticket_resolved")
-      .setLabel("解決済み")
+      .setLabel("このチケットを解決済みとしてマーク")
       .setStyle(ButtonStyle.Success)
   );
 
+  // これが重要（interaction.message を更新）
   return interaction.update({
     embeds: [embed],
-    components: [row],
-    content: ""
+    components: [row]
   });
 }
 
