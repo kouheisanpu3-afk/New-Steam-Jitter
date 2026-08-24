@@ -20,15 +20,14 @@ module.exports = (client) => {
   const activeTickets = new Set();
 
   client.once(Events.ClientReady, async () => {
-
     try {
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
-      if (!channel) return console.log("チケットチャンネル取得失敗");
+      if (!channel) return;
 
       const embed = new EmbedBuilder()
         .setTitle("ご質問・お問い合わせチケット")
         .setDescription(
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。`
         )
         .setColor(0x4aa3ff);
 
@@ -45,23 +44,17 @@ module.exports = (client) => {
       );
 
       const messages = await channel.messages.fetch({ limit: 10 });
-
-      const exists = messages.some(m =>
-        m.author.id === client.user.id &&
-        m.components.length > 0
-      );
-
-      if (exists) return console.log("既にチケットパネルあり");
+      const exists = messages.some(m => m.author.id === client.user.id && m.components.length > 0);
+      if (exists) return;
 
       await channel.send({ embeds: [embed], components: [row] });
 
     } catch (err) {
-      console.error("パネル設置エラー:", err);
+      console.error(err);
     }
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
-
     try {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
@@ -75,11 +68,11 @@ module.exports = (client) => {
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
-                .setColor(0xff9999) // 薄い赤
+                .setColor(0xff9999)
                 .setDescription("既に作成されたチケットが存在します\n既存のチャンネルを使用してください。")
             ],
             ephemeral: true
-          }).catch(() => {});
+          });
         }
 
         const existsChannel = interaction.guild.channels.cache.find(
@@ -95,23 +88,20 @@ module.exports = (client) => {
                 .setDescription("既に作成されたチケットが存在します\n既存のチャンネルを使用してください。")
             ],
             ephemeral: true
-          }).catch(() => {});
+          });
         }
 
-        await interaction.deferUpdate().catch(() => {});
+        await interaction.deferUpdate();
 
-        const guild = interaction.guild;
-        const user = interaction.user;
-
-        const channel = await guild.channels.create({
-          name: `ticket-${user.username}`,
+        const channel = await interaction.guild.channels.create({
+          name: `ticket-${interaction.user.username}`,
           type: ChannelType.GuildText,
           parent: CATEGORY_ID,
-          topic: user.id,
+          topic: interaction.user.id,
           permissionOverwrites: [
-            { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
+            { id: interaction.guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
             {
-              id: user.id,
+              id: interaction.user.id,
               allow: [
                 PermissionsBitField.Flags.ViewChannel,
                 PermissionsBitField.Flags.SendMessages,
@@ -128,9 +118,8 @@ module.exports = (client) => {
           ]
         });
 
-        activeTickets.add(user.id);
+        activeTickets.add(interaction.user.id);
 
-        // ★作成通知（削除可能にする）
         await interaction.followUp({
           embeds: [
             new EmbedBuilder()
@@ -140,35 +129,6 @@ module.exports = (client) => {
           ephemeral: true
         });
 
-        const now = new Date().toLocaleString("ja-JP", {
-          timeZone: "Asia/Tokyo"
-        });
-
-        const embed = new EmbedBuilder()
-          .setAuthor({
-            name: user.username,
-            iconURL: user.displayAvatarURL()
-          })
-          .setDescription(
-`チケットが作成されました
-
-作成者: <@${user.id}>
-作成日時: ${now}`
-          )
-          .setColor(0x57F287);
-
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("ticket_close")
-            .setLabel("チケットを消去")
-            .setStyle(ButtonStyle.Danger),
-
-          new ButtonBuilder()
-            .setCustomId("ticket_resolved")
-            .setLabel("このチケットを解決済みとしてマーク")
-            .setStyle(ButtonStyle.Success)
-        );
-
         const selectMenu = new StringSelectMenuBuilder()
           .setCustomId("ticket_category")
           .setPlaceholder("お問い合わせ内容を選択")
@@ -176,70 +136,40 @@ module.exports = (client) => {
             {
               label: "reWASD",
               value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ",
-              emoji: { id: "1541059202737512508", name: "reWASD" }
+              description: "reWASDに関するご質問・お問い合わせ"
             },
             {
               label: "Steamジッターマクロ",
               value: "steam_jitter",
-              description: "Steamジッターマクロに関するご質問・お問い合わせ",
-              emoji: { id: "1541060018567254076", name: "pngwingcom" }
+              description: "Steamジッターマクロに関するご質問・お問い合わせ"
             },
             {
               label: "その他",
               value: "other",
-              description: "上記に当てはまらないご質問・お問い合わせ",
-              emoji: { id: "1541062193863327744", name: "chat" }
+              description: "その他の内容"
             }
           ]);
 
-        await channel.send({ embeds: [embed], components: [row] });
         await channel.send({
           embeds: [
             new EmbedBuilder()
               .setColor(0x4aa3ff)
-              .setDescription("**ご質問・お問い合わせ内容の選択**\n下のボックスからご質問・お問い合わせ内容を選択してください。")
+              .setDescription("お問い合わせ内容を選択してください")
           ],
           components: [new ActionRowBuilder().addComponents(selectMenu)]
         });
       }
 
       // =========================
-      // 戻る（完全維持）
+      // セレクトメニュー（復活）
       // =========================
-      else if (interaction.customId === "ticket_back") {
+      else if (interaction.customId === "ticket_category") {
 
-        const selectMenu = new StringSelectMenuBuilder()
-          .setCustomId("ticket_category")
-          .setPlaceholder("お問い合わせ内容を選択")
-          .addOptions([
-            {
-              label: "reWASD",
-              value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ",
-              emoji: { id: "1541059202737512508", name: "reWASD" }
-            },
-            {
-              label: "Steamジッターマクロ",
-              value: "steam_jitter",
-              description: "Steamジッターマクロに関するご質問・お問い合わせ",
-              emoji: { id: "1541060018567254076", name: "pngwingcom" }
-            },
-            {
-              label: "その他",
-              value: "other",
-              description: "上記に当てはまらないご質問・お問い合わせ",
-              emoji: { id: "1541062193863327744", name: "chat" }
-            }
-          ]);
+        const value = interaction.values[0];
 
-        return interaction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0x4aa3ff)
-              .setDescription("**ご質問・お問い合わせ内容の選択**\n下のボックスからご質問・お問い合わせ内容を選択してください。")
-          ],
-          components: [new ActionRowBuilder().addComponents(selectMenu)]
+        return interaction.reply({
+          content: `選択されました：${value}`,
+          ephemeral: true
         });
       }
 
@@ -251,7 +181,7 @@ module.exports = (client) => {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
-              .setColor(0xff4d4d) // 少し濃い赤
+              .setColor(0xff4d4d)
               .setDescription("このチケットを消去しますか？")
           ],
           components: [
@@ -270,13 +200,15 @@ module.exports = (client) => {
         });
       }
 
+      // OK（無言削除）
       else if (interaction.customId === "ticket_close_confirm") {
-        await interaction.update({ embeds: [], components: [] });
-        setTimeout(() => interaction.channel.delete().catch(() => {}), 1000);
+        await interaction.deferUpdate();
+        setTimeout(() => interaction.channel.delete().catch(() => {}), 500);
       }
 
+      // キャンセル（無言閉じ）
       else if (interaction.customId === "ticket_close_cancel") {
-        return interaction.update({ embeds: [], components: [] });
+        await interaction.deferUpdate();
       }
 
     } catch (err) {
