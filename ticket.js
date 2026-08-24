@@ -67,7 +67,7 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // セレクトメニュー追加（ここが抜けてた）
+      // セレクトメニュー
       // =========================
       if (interaction.isStringSelectMenu() && interaction.customId === "ticket_category") {
 
@@ -89,27 +89,15 @@ module.exports = (client) => {
       }
 
       // =========================
-      // チケット作成
+      // チケット作成（ここ修正）
       // =========================
       if (interaction.customId === "ticket_create") {
-
-        if (activeTickets.has(interaction.user.id)) {
-          return interaction.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor(0xff9999)
-                .setDescription("既に作成されたチケットが存在します\n既存のチャンネルを使用してください。")
-            ],
-            ephemeral: true
-          }).catch(() => {});
-        }
 
         const existsChannel = interaction.guild.channels.cache.find(
           c => c.parentId === CATEGORY_ID && c.topic === interaction.user.id
         );
 
         if (existsChannel) {
-          activeTickets.add(interaction.user.id);
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
@@ -150,17 +138,6 @@ module.exports = (client) => {
           ]
         });
 
-        activeTickets.add(user.id);
-
-        await interaction.followUp({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0x4aa3ff)
-              .setDescription(`チケットが作成されました\n\nチャンネル：${channel}`)
-          ],
-          ephemeral: true
-        });
-
         const now = new Date().toLocaleString("ja-JP", {
           timeZone: "Asia/Tokyo"
         });
@@ -171,9 +148,9 @@ module.exports = (client) => {
             iconURL: user.displayAvatarURL()
           })
           .setDescription(
-`チケットが作成されました  
+`チケットが作成されました   
 
-作成者: <@${user.id}>  
+作成者: <@${user.id}>   
 作成日時: ${now}`
           )
           .setColor(0x57F287);
@@ -222,6 +199,15 @@ module.exports = (client) => {
               .setDescription("**ご質問・お問い合わせ内容の選択**\n下のボックスからご質問・お問い合わせ内容を選択してください。")
           ],
           components: [new ActionRowBuilder().addComponents(selectMenu)]
+        });
+
+        return interaction.followUp({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0x4aa3ff)
+              .setDescription(`チケットが作成されました\n\nチャンネル：${channel}`)
+          ],
+          ephemeral: true
         });
       }
 
@@ -291,20 +277,12 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // OK（修正：interaction失敗防止）
-      // =========================
       else if (interaction.customId === "ticket_close_confirm") {
-
         await interaction.deferUpdate().catch(() => {});
         setTimeout(() => interaction.channel.delete().catch(() => {}), 500);
       }
 
-      // =========================
-      // キャンセル（修正：interaction失敗防止）
-      // =========================
       else if (interaction.customId === "ticket_close_cancel") {
-
         return interaction.deferUpdate().catch(() => {});
       }
 
