@@ -199,6 +199,16 @@ module.exports = (client) => {
 
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
+
+        // =========================
+        // ★追加（ここだけ）
+        // =========================
+        const createdEmbed = new EmbedBuilder()
+          .setTitle("チケットが作成されました")
+          .setDescription(`チャンネル: ${channel}`)
+          .setColor(0x4aa3ff);
+
+        await channel.send({ embeds: [createdEmbed] });
       }
 
       // =========================
@@ -289,7 +299,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // チケット削除（追加）
+      // チケット削除
       // =========================
       else if (interaction.customId === "ticket_close") {
 
@@ -308,7 +318,6 @@ module.exports = (client) => {
       }
 
       else if (interaction.customId === "ticket_close_confirm") {
-
         setTimeout(() => {
           interaction.channel.delete().catch(() => {});
         }, 1000);
