@@ -332,16 +332,26 @@ else if (interaction.customId === "ticket_close") {
   });
 }
 
-  else if (interaction.customId === "ticket_close_confirm") {
+else if (interaction.customId === "ticket_close_confirm") {
 
-  await interaction.reply({
+  await interaction.update({
     content: "チケットを削除しています...",
-    ephemeral: true
+    embeds: [],
+    components: []
   });
 
   setTimeout(() => {
     interaction.channel.delete().catch(() => {});
   }, 1000);
+}
+
+  else if (interaction.customId === "ticket_close_cancel") {
+
+  return interaction.update({
+    content: "キャンセルしました",
+    embeds: [],
+    components: []
+  });
 }
 
     else if (interaction.customId === "ticket_close_cancel") {
