@@ -325,7 +325,7 @@ else if (interaction.customId === "ticket_close") {
       .setStyle(ButtonStyle.Secondary)
   );
 
-  // ❗reply禁止 → updateで統一
+  // ❗reply禁止（これが原因）
   return interaction.update({
     embeds: [embed],
     components: [row],
@@ -335,11 +335,11 @@ else if (interaction.customId === "ticket_close") {
 
 else if (interaction.customId === "ticket_close_confirm") {
 
-  // まずUIだけ消す
+  // UIだけ消す
   await interaction.update({
+    content: "削除中...",
     embeds: [],
-    components: [],
-    content: "チケットを削除しています..."
+    components: []
   });
 
   setTimeout(() => {
@@ -349,11 +349,27 @@ else if (interaction.customId === "ticket_close_confirm") {
 
 else if (interaction.customId === "ticket_close_cancel") {
 
-  // 元のチケット状態に戻す（空じゃなく復元）
+  // 「何もない状態に戻す」
+  const originalEmbed = new EmbedBuilder()
+    .setColor(0x57F287)
+    .setDescription("チケット操作画面に戻りました");
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("ticket_close")
+      .setLabel("チケットを消去")
+      .setStyle(ButtonStyle.Danger),
+
+    new ButtonBuilder()
+      .setCustomId("ticket_resolved")
+      .setLabel("解決済み")
+      .setStyle(ButtonStyle.Success)
+  );
+
   return interaction.update({
-    content: "",
-    embeds: [],
-    components: []
+    embeds: [originalEmbed],
+    components: [row],
+    content: ""
   });
 }
 
