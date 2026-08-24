@@ -95,7 +95,7 @@ const existsChannel = interaction.guild.channels.cache.find(
 
 if (existsChannel) {
   const embed = new EmbedBuilder()
-    .setColor(0xFF6B6B)
+    .setColor(0xFF4D4D)
     .setDescription(
       "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。"
     );
