@@ -106,13 +106,12 @@ module.exports = (client) => {
 
         const guild = interaction.guild;
         const user = interaction.user;
-        const userId = user.id;
 
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
           parent: CATEGORY_ID,
-          topic: userId,
+          topic: user.id,
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
             {
@@ -201,14 +200,16 @@ module.exports = (client) => {
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         // =========================
-        // ★ここだけ追加（要求部分）
+        // ★ここだけ追加（指定：パネルチャンネルに表示）
         // =========================
+        const notifyChannel = await client.channels.fetch(TICKET_CHANNEL_ID);
+
         const createdEmbed = new EmbedBuilder()
           .setTitle("チケットが作成されました")
           .setDescription(`チャンネル: ${channel}`)
           .setColor(0x4aa3ff);
 
-        await channel.send({ embeds: [createdEmbed] });
+        await notifyChannel.send({ embeds: [createdEmbed] });
       }
 
       // =========================
@@ -267,7 +268,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // メンション選択（黄色）
+      // メンション選択
       // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
