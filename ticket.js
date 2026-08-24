@@ -88,6 +88,18 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 既存チケットチェック
+const existsChannel = interaction.guild.channels.cache.find(
+  c => c.parentId === CATEGORY_ID && c.topic === user.id
+);
+
+if (existsChannel) {
+  return interaction.reply({
+    content: "すでにチケットが存在します。既存のチケットを使用してください。",
+    ephemeral: true
+  });
+}
+
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
