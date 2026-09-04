@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log("Web server started on port", PORT);
 });
 
@@ -41,10 +41,9 @@ const client = new Client({
 });
 
 // =======================
-// モジュール読み込み（安全版）
+// モジュール読み込み
 // =======================
 
-// チケット
 try {
   require("./ticket.js")(client);
   console.log("ticket.js loaded");
@@ -52,7 +51,6 @@ try {
   console.error("ticket.js error:", e);
 }
 
-// 認証
 try {
   require("./auth.js")(client);
   console.log("auth.js loaded");
@@ -60,7 +58,6 @@ try {
   console.log("auth.jsなし（スキップ）");
 }
 
-// キック
 try {
   require("./kick.js")(client);
   console.log("kick.js loaded");
@@ -72,12 +69,24 @@ try {
 // 起動ログ
 // =======================
 
+console.log("🚀 BEFORE LOGIN");
+
+// ★ここ追加（重要）
+setTimeout(() => {
+  console.log("🚀 CALLING client.login()");
+  client.login(process.env.TOKEN);
+}, 1000);
+
+// =======================
+// ready
+// =======================
+
 client.once("ready", () => {
   console.log(`ログイン: ${client.user.tag}`);
 });
 
 // =======================
-// エラーハンドリング（重要）
+// エラーハンドリング
 // =======================
 
 process.on("unhandledRejection", (err) => {
@@ -86,12 +95,4 @@ process.on("unhandledRejection", (err) => {
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
-});
-
-// =======================
-// ログイン
-// =======================
-
-client.login(process.env.TOKEN).catch((err) => {
-  console.error("ログイン失敗:", err);
 });
