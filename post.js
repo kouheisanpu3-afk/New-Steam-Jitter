@@ -51,7 +51,7 @@ try { require("./joinLog.js")(client); } catch (e) {}
 try { require("./roleLog.js")(client); } catch (e) {}   
   
 // =======================   
-// ★ !post2（拡張版）   
+// ★ !post2（日本語対応版）   
 // =======================   
 client.on("messageCreate", async (message) => {   
   if (message.author.bot) return;   
@@ -69,7 +69,7 @@ client.on("messageCreate", async (message) => {
   const text = args.slice(4).join(" ");   
  
   if (!channelInput || !mode || !text) {   
-    return message.reply("使い方: !post2 #channel on/off color メッセージ");   
+    return message.reply("使い方: !post2 #channel on/off 色 メッセージ");   
   }   
  
   const channel =   
@@ -81,26 +81,59 @@ client.on("messageCreate", async (message) => {
   }   
  
   // =======================   
-  // 色設定（できるだけ多く）   
+  // 色（日本語＋英語対応）   
   // =======================   
-  let color = 0x5f6f82; // デフォルト
+  let color = 0x5f6f82; // デフォルト色
  
   const colors = {
+    // 赤
     red: 0xff0000,
+    赤: 0xff0000,
+
+    // 青
     blue: 0x0099ff,
+    青: 0x0099ff,
+
+    // 緑
     green: 0x00ff00,
+    緑: 0x00ff00,
+
+    // 黄
     yellow: 0xffff00,
+    黄色: 0xffff00,
+
+    // 紫
     purple: 0x9b59b6,
+    紫: 0x9b59b6,
+
+    // ピンク
     pink: 0xff69b4,
+    ピンク: 0xff69b4,
+
+    // オレンジ
     orange: 0xffa500,
+    オレンジ: 0xffa500,
+
+    // 水色
     cyan: 0x00ffff,
+    水色: 0x00ffff,
+
+    // 黒
     black: 0x000000,
+    黒: 0x000000,
+
+    // 白
     white: 0xffffff,
+    白: 0xffffff,
+
+    // グレー
     gray: 0x808080,
     grey: 0x808080,
-    lime: 0x32cd32,
+    灰色: 0x808080,
+
+    // 金
     gold: 0xffd700,
-    navy: 0x000080
+    金: 0xffd700
   };
  
   if (colors[colorInput]) {
@@ -108,10 +141,10 @@ client.on("messageCreate", async (message) => {
   }
  
   // =======================   
-  // Embed ON / OFF 切り替え   
+  // Embed / 通常メッセージ切り替え   
   // =======================   
  
-  // OFF → 普通メッセージ（背景なし風）
+  // OFF → 普通メッセージ（背景なし）
   if (mode === "off") {
     return channel.send(text);
   }
