@@ -68,6 +68,14 @@ try {
   console.log("kick.jsなし（スキップ）"); 
 } 
  
+// ★ post（追加）
+try { 
+  require("./post.js")(client); 
+  console.log("post.js loaded"); 
+} catch (e) { 
+  console.log("post.jsなし（スキップ）"); 
+} 
+ 
 // ======================= 
 // 起動ログ 
 // ======================= 
@@ -94,4 +102,4 @@ process.on("uncaughtException", (err) => {
  
 client.login(process.env.TOKEN).catch((err) => { 
   console.error("ログイン失敗:", err); 
-});　index.js
+});
