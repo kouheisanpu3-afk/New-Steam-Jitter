@@ -83,55 +83,43 @@ client.on("messageCreate", async (message) => {
   // =======================   
   // 色（日本語＋英語対応）   
   // =======================   
-  let color = 0x5f6f82; // デフォルト色
+  let color = 0x5f6f82;
  
   const colors = {
-    // 赤
     red: 0xff0000,
     赤: 0xff0000,
 
-    // 青
     blue: 0x0099ff,
     青: 0x0099ff,
 
-    // 緑
     green: 0x00ff00,
     緑: 0x00ff00,
 
-    // 黄
     yellow: 0xffff00,
     黄色: 0xffff00,
 
-    // 紫
     purple: 0x9b59b6,
     紫: 0x9b59b6,
 
-    // ピンク
     pink: 0xff69b4,
     ピンク: 0xff69b4,
 
-    // オレンジ
     orange: 0xffa500,
     オレンジ: 0xffa500,
 
-    // 水色
     cyan: 0x00ffff,
     水色: 0x00ffff,
 
-    // 黒
     black: 0x000000,
     黒: 0x000000,
 
-    // 白
     white: 0xffffff,
     白: 0xffffff,
 
-    // グレー
     gray: 0x808080,
     grey: 0x808080,
     灰色: 0x808080,
 
-    // 金
     gold: 0xffd700,
     金: 0xffd700
   };
@@ -144,16 +132,15 @@ client.on("messageCreate", async (message) => {
   // Embed / 通常メッセージ切り替え   
   // =======================   
  
-  // OFF → 普通メッセージ（背景なし）
+  // OFF
   if (mode === "off") {
     return channel.send(text);
   }
  
-  // ON → Embed投稿
+  // ON
   const embed = new EmbedBuilder()   
     .setColor(color)   
-    .setDescription(text)   
-    .setFooter({ text: `Posted by ${message.author.tag}` });   
+    .setDescription(text);
  
   await channel.send({ embeds: [embed] });   
  
