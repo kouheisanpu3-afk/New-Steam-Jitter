@@ -18,7 +18,7 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-  const processingInteractions = new Set(); // 🔥追加（重複実行防止）
+  const processingInteractions = new Set();
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -81,6 +81,20 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        await guild.channels.fetch();
+
+        // 🔥追加：チャンネルが存在するか毎回チェックして同期
+        const stillExists = guild.channels.cache.find(
+          c =>
+            c.type === ChannelType.GuildText &&
+            c.parentId === CATEGORY_ID &&
+            c.topic === user.id
+        );
+
+        if (!stillExists) {
+          activeTickets.delete(user.id);
+        }
+
         if (creatingUsers.has(user.id) || activeTickets.has(user.id)) {
           return interaction.reply({
             embeds: [
@@ -96,14 +110,7 @@ module.exports = (client) => {
 
         try {
 
-          await guild.channels.fetch();
-
-          const existsChannel = guild.channels.cache.find(
-            c =>
-              c.type === ChannelType.GuildText &&
-              c.parentId === CATEGORY_ID &&
-              c.topic === user.id
-          );
+          const existsChannel = stillExists;
 
           if (existsChannel) {
             activeTickets.add(user.id);
@@ -222,12 +229,12 @@ module.exports = (client) => {
         }
       }
 
-      else if (interaction.customId === "ticket_category") {
+      // ↓↓↓以下そのまま↓↓↓
 
+      else if (interaction.customId === "ticket_category") {
         const value = interaction.values[0];
 
         let label = "不明";
-
         if (value === "steam_jitter") label = "Steamジッターマクロ";
         if (value === "rewasd") label = "reWASD";
         if (value === "other") label = "その他";
@@ -275,7 +282,6 @@ module.exports = (client) => {
       }
 
       else if (interaction.customId === "ticket_ping_choice") {
-
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
@@ -352,7 +358,7 @@ module.exports = (client) => {
           new ButtonBuilder()
             .setCustomId("ticket_close_confirm")
             .setLabel("OK")
-            .setStyle(ButtonStyle.Danger), // ←ここだけ変更
+            .setStyle(ButtonStyle.Danger),
 
           new ButtonBuilder()
             .setCustomId("ticket_close_cancel")
