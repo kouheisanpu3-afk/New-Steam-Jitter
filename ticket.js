@@ -63,11 +63,6 @@ module.exports = (client) => {
 
   client.on(Events.InteractionCreate, async (interaction) => {
 
-    // =========================
-    // 🔴 ここで完全停止（全機能無効化）
-    // =========================
-    return;
-
     try {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
