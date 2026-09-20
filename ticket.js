@@ -19,7 +19,6 @@ module.exports = (client) => {
   const ticketState = new Map();
   const activeTickets = new Set();
 
-  // 🔥 追加（同時実行防止ロック）
   const creatingLock = new Set();
 
   client.once(Events.ClientReady, async () => {
@@ -80,7 +79,6 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 追加（完全二重防止）
         if (creatingLock.has(user.id)) {
           return interaction.reply({
             content: "チケット作成中です。少し待ってください。",
@@ -219,7 +217,7 @@ module.exports = (client) => {
         const successEmbed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`チケットが作成されました    
+`チケットが作成されました     
 チャンネル： ${channel}`
           );
 
