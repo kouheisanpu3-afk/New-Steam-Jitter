@@ -1,21 +1,12 @@
 const {
-
   Events,
-
   EmbedBuilder,
-
   ActionRowBuilder,
-
   ButtonBuilder,
-
   ButtonStyle,
-
   PermissionsBitField,
-
   ChannelType,
-
   StringSelectMenuBuilder
-
 } = require("discord.js");
 
 const TICKET_CHANNEL_ID = "1551134186021322853";
@@ -30,11 +21,9 @@ module.exports = (client) => {
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
-
     try {
 
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
-
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
       const embed = new EmbedBuilder()
@@ -75,7 +64,6 @@ module.exports = (client) => {
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
-
     try {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
@@ -88,35 +76,33 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 連打・同時作成防止
-if (creatingUsers.has(user.id)) {
-  return interaction.reply({
-    content: "チケット作成中です。少し待ってください。",
-    ephemeral: true
-  });
-}
+        if (creatingUsers.has(user.id)) {
+          return interaction.reply({
+            content: "チケット作成中です。少し待ってください。",
+            ephemeral: true
+          });
+        }
 
-creatingUsers.add(user.id);
+        creatingUsers.add(user.id);
 
-        // 既存チケットチェック
-const existsChannel = interaction.guild.channels.cache.find(
-  c => c.parentId === CATEGORY_ID && c.topic === user.id
-);
+        const existsChannel = interaction.guild.channels.cache.find(
+          c => c.parentId === CATEGORY_ID && c.topic === user.id
+        );
 
-        creatingUsers.delete(user.id);
+        if (existsChannel) {
+          creatingUsers.delete(user.id);
 
-if (existsChannel) {
-  const embed = new EmbedBuilder()
-    .setColor(0xFF4D4D)
-    .setDescription(
-      "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。"
-    );
+          const embed = new EmbedBuilder()
+            .setColor(0xFF4D4D)
+            .setDescription(
+              "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。"
+            );
 
-  return interaction.reply({
-    embeds: [embed],
-    ephemeral: true
-  });
-}
+          return interaction.reply({
+            embeds: [embed],
+            ephemeral: true
+          });
+        }
 
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
@@ -142,6 +128,8 @@ if (existsChannel) {
             }
           ]
         });
+
+        creatingUsers.delete(user.id);
 
         activeTickets.add(user.id);
 
@@ -210,11 +198,8 @@ if (existsChannel) {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        // =========================
-        // ★ここだけ修正（背景＋左ラインを水色のEmbed通知）
-        // =========================
         const createdEmbed = new EmbedBuilder()
-          .setColor(0x4aa3ff) // 水色（左のライン）
+          .setColor(0x4aa3ff)
           .setDescription(
 `チケットが作成されました  
 チャンネル： ${channel}`
@@ -307,65 +292,53 @@ if (existsChannel) {
         });
       }
 
-// =========================
-// チケット削除確認（UI表示）
-// =========================
-else if (interaction.customId === "ticket_close") {
+      else if (interaction.customId === "ticket_close") {
 
-  const embed = new EmbedBuilder()
-    .setColor(0xFF4D4D) // 赤
-    .setDescription("このチケットを消去しますか？");
+        const embed = new EmbedBuilder()
+          .setColor(0xFF4D4D)
+          .setDescription("このチケットを消去しますか？");
 
-  const row = new ActionRowBuilder().addComponents(
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("ticket_close_confirm")
+            .setLabel("OK")
+            .setStyle(ButtonStyle.Success),
 
-    new ButtonBuilder()
-      .setCustomId("ticket_close_confirm")
-      .setLabel("OK")
-      .setStyle(ButtonStyle.Success),
+          new ButtonBuilder()
+            .setCustomId("ticket_close_cancel")
+            .setLabel("キャンセル")
+            .setStyle(ButtonStyle.Secondary)
+        );
 
-    new ButtonBuilder()
-      .setCustomId("ticket_close_cancel")
-      .setLabel("キャンセル")
-      .setStyle(ButtonStyle.Secondary)
+        return interaction.reply({
+          embeds: [embed],
+          components: [row],
+          ephemeral: true
+        });
+      }
 
-  );
+      else if (interaction.customId === "ticket_close_confirm") {
 
-  return interaction.reply({
-    embeds: [embed],
-    components: [row],
-    ephemeral: true
-  });
-}
+        await interaction.reply({
+          content: "チケットを削除しています...",
+          ephemeral: true
+        });
 
+        setTimeout(() => {
+          interaction.channel.delete().catch(() => {});
+        }, 1000);
+      }
 
-// =========================
-// OK → チャンネル削除
-// =========================
-else if (interaction.customId === "ticket_close_confirm") {
+      else if (interaction.customId === "ticket_close_cancel") {
 
-  await interaction.reply({
-    content: "チケットを削除しています...",
-    ephemeral: true
-  });
+        return interaction.update({
+          embeds: [],
+          components: [],
+          content: "キャンセルしました",
+          ephemeral: true
+        }).catch(() => {});
+      }
 
-  setTimeout(() => {
-    interaction.channel.delete().catch(() => {});
-  }, 1000);
-}
-
-
-else if (interaction.customId === "ticket_close_cancel") {
-
-  // ephemeralは削除できないので「update」で空にする
-  return interaction.update({
-    embeds: [],
-    components: [],
-    content: "キャンセルしました",
-    ephemeral: true
-  }).catch(() => {});
-}
-
-}
       else if (interaction.customId === "ticket_resolved") {
 
         const embed = new EmbedBuilder()
