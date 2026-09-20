@@ -10,7 +10,7 @@ const {
 } = require("discord.js");
 
 const TICKET_CHANNEL_ID = "1551134186021322853";
-const CATEGORY_ID = "1541000895167201300";
+const CATEGORY_ID = "1551169064787775668";
 const TERMS_CHANNEL_ID = "1535174145661341786";
 
 module.exports = (client) => {
@@ -74,7 +74,6 @@ module.exports = (client) => {
 
         const user = interaction.user;
 
-        // ★安全化
         const guild = interaction.guild ?? await client.guilds.fetch(interaction.guildId);
 
         if (!guild) {
@@ -110,13 +109,10 @@ module.exports = (client) => {
           });
         }
 
-        // ★重要修正：カテゴリをfetch
-        const category = await guild.channels.fetch(CATEGORY_ID).catch(() => null);
-
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
-          parent: category ? category.id : CATEGORY_ID,
+          parent: CATEGORY_ID,
           topic: user.id,
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -212,7 +208,6 @@ module.exports = (client) => {
         });
       }
 
-      // 以下そのまま
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
