@@ -13,6 +13,9 @@ const TICKET_CHANNEL_ID = "1551230131421454447";
 const CATEGORY_ID = "1541000895167201300";
 const TERMS_CHANNEL_ID = "1517448679013744773";
 
+// 🔥追加（EN専用チケット作成チャンネル）
+const EN_TICKET_CHANNEL_ID = "1551230131421454447";
+
 module.exports = (client) => {
 
   const creatingUsers = new Set();
@@ -75,6 +78,15 @@ module.exports = (client) => {
       if (processingInteractions.has(interaction.id)) return;
       processingInteractions.add(interaction.id);
       setTimeout(() => processingInteractions.delete(interaction.id), 5000);
+
+      // =========================
+      // 🔥追加（ここが重要）
+      // ENチャンネル以外ではENチケット動かさない
+      // =========================
+      if (
+        interaction.customId === "ticket_create" &&
+        interaction.channelId !== EN_TICKET_CHANNEL_ID
+      ) return;
 
       if (interaction.customId === "ticket_create") {
 
@@ -233,8 +245,9 @@ Please select the category of your inquiry from the menu below.`
         }
       }
 
-      else if (interaction.customId === "ticket_category") {
+      // ↓↓↓以下そのまま↓↓↓
 
+      else if (interaction.customId === "ticket_category") {
         const value = interaction.values[0];
 
         let label = "Unknown";
