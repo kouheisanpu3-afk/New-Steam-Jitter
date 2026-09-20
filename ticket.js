@@ -71,6 +71,9 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+      // =========================
+      // チケット作成
+      // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
@@ -192,7 +195,6 @@ module.exports = (client) => {
 
         const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-        // ★ここ（パネル位置）を元の並びに固定
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
@@ -206,6 +208,9 @@ module.exports = (client) => {
         });
       }
 
+      // =========================
+      // カテゴリー選択
+      // =========================
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
@@ -258,6 +263,9 @@ module.exports = (client) => {
         });
       }
 
+      // =========================
+      // メンション選択
+      // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
@@ -285,45 +293,69 @@ module.exports = (client) => {
         });
       }
 
-      else if (interaction.customId === "ticket_back") {
-
-        ticketState.delete(interaction.channel.id);
+      // =========================
+      // チケット削除確認（UI表示）
+      // =========================
+      else if (interaction.customId === "ticket_close") {
 
         const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
-          .setDescription(
-`**ご質問・お問い合わせ内容の選択**
-下のボックスからご質問・お問い合わせ内容を選択してください。`
-          );
+          .setColor(0xFF4D4D)
+          .setDescription("このチケットを消去しますか？");
 
-        const selectMenu = new StringSelectMenuBuilder()
-          .setCustomId("ticket_category")
-          .setPlaceholder("お問い合わせ内容を選択")
-          .addOptions([
-            {
-              label: "reWASD",
-              value: "rewasd",
-              description: "reWASDに関するご質問・お問い合わせ",
-              emoji: { id: "1550853538618417272", name: "reWASD" }
-            },
-            {
-              label: "Steamジッターマクロ",
-              value: "steam_jitter",
-              description: "Steamジッターマクロに関するご質問・お問い合わせ",
-              emoji: { id: "1550853288919048282", name: "pngwingcom" }
-            },
-            {
-              label: "その他",
-              value: "other",
-              description: "上記に当てはまらないご質問・お問い合わせ",
-              emoji: { id: "1550853719061565460", name: "chat" }
-            }
-          ]);
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("ticket_close_confirm")
+            .setLabel("OK")
+            .setStyle(ButtonStyle.Success),
+
+          new ButtonBuilder()
+            .setCustomId("ticket_close_cancel")
+            .setLabel("キャンセル")
+            .setStyle(ButtonStyle.Secondary)
+        );
+
+        return interaction.reply({
+          embeds: [embed],
+          components: [row],
+          ephemeral: true
+        });
+      }
+
+      // =========================
+      // OK → チャンネル削除
+      // =========================
+      else if (interaction.customId === "ticket_close_confirm") {
+
+        await interaction.reply({
+          content: "チケットを削除しています...",
+          ephemeral: true
+        });
+
+        setTimeout(() => {
+          interaction.channel.delete().catch(() => {});
+        }, 1000);
+      }
+
+      else if (interaction.customId === "ticket_close_cancel") {
 
         return interaction.update({
-          embeds: [embed],
-          components: [new ActionRowBuilder().addComponents(selectMenu)]
-        });
+          embeds: [],
+          components: [],
+          content: "キャンセルしました"
+        }).catch(() => {});
+      }
+
+      // =========================
+      // チケット解決済み
+      // =========================
+      else if (interaction.customId === "ticket_resolved") {
+
+        const embed = new EmbedBuilder()
+          .setTitle("このチケットを解決済みとしてマーク")
+          .setDescription("このチケットは解決済みとしてマークされました")
+          .setColor(0x57F287);
+
+        await interaction.channel.send({ embeds: [embed] });
       }
 
     } catch (err) {
