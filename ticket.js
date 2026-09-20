@@ -24,6 +24,7 @@ module.exports = (client) => {
     try {
 
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
+
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
       const embed = new EmbedBuilder()
@@ -64,13 +65,11 @@ module.exports = (client) => {
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
+
     try {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // =========================
-      // チケット作成
-      // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
@@ -107,7 +106,8 @@ module.exports = (client) => {
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
-          parent: CATEGORY_ID,
+          // 👇ここだけ変更（カテゴリ外にする）
+          // parent: CATEGORY_ID,
           topic: user.id,
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
