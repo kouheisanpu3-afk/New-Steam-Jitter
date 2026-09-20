@@ -18,10 +18,7 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-
-  // 🔥超重要：ユーザー単位＋ボタン単位ロック
-  const interactionLock = new Set();
-
+  const processingInteractions = new Set(); // 🔥追加（重複実行防止）
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -75,24 +72,26 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // 🔥完全二重防止（これが重要）
-      const lockKey = `${interaction.user.id}:${interaction.customId}`;
-
-      if (interactionLock.has(lockKey)) return;
-      interactionLock.add(lockKey);
-      setTimeout(() => interactionLock.delete(lockKey), 4000);
+      // 🔥追加：完全重複防止（Discord二重送信対策）
+      if (processingInteractions.has(interaction.id)) return;
+      processingInteractions.add(interaction.id);
+      setTimeout(() => processingInteractions.delete(interaction.id), 5000);
 
       // =========================
-      // チケット作成
+      // チケット作成（ここだけ超強化）
       // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
         const user = interaction.user;
 
-        if (creatingUsers.has(user.id)) {
+        if (creatingUsers.has(user.id) || activeTickets.has(user.id)) {
           return interaction.reply({
-            content: "チケット作成中です。少し待ってください。",
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xFF4D4D)
+                .setDescription("すでにチケットが存在します。\n既存のチケットをご利用ください。")
+            ],
             ephemeral: true
           });
         }
@@ -228,13 +227,15 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 以下そのまま（変更なし）
+      // 以下完全そのまま
       // =========================
 
       else if (interaction.customId === "ticket_category") {
+
         const value = interaction.values[0];
 
         let label = "不明";
+
         if (value === "steam_jitter") label = "Steamジッターマクロ";
         if (value === "rewasd") label = "reWASD";
         if (value === "other") label = "その他";
