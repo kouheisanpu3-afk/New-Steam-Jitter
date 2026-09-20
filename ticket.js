@@ -19,15 +19,8 @@ module.exports = (client) => {
   const ticketState = new Map();
   const activeTickets = new Set();
 
-  // ✅ 追加（重要：Ready二重実行防止）
-  let readyExecuted = false;
-
   client.once(Events.ClientReady, async () => {
     try {
-
-      // ❗二重実行防止
-      if (readyExecuted) return;
-      readyExecuted = true;
 
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
       if (!channel) return console.log("チケットチャンネル取得失敗");
@@ -51,19 +44,20 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      // 🔥 重要修正：チャンネル内パネルを全部削除してから1個だけ作る
+      // 🔥 完全重複防止チェック
       const messages = await channel.messages.fetch({ limit: 20 });
 
-      const panels = messages.filter(m =>
+      const exists = messages.some(m =>
         m.author.id === client.user.id &&
-        m.components.length > 0
+        m.components?.length > 0 &&
+        m.embeds?.length > 0
       );
 
-      for (const msg of panels.values()) {
-        await msg.delete().catch(() => {});
+      if (exists) {
+        console.log("既にチケットパネルあり（送信スキップ）");
+        return;
       }
 
-      // ✔ 必ず1個だけ作成
       await channel.send({ embeds: [embed], components: [row] });
 
       console.log("チケットパネル設置完了");
