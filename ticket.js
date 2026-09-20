@@ -72,7 +72,7 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成（変更なし）
+      // チケット作成（完全修正版：二重防止）
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -90,19 +90,19 @@ module.exports = (client) => {
 
         try {
 
-          await guild.channels.fetch();
+          await guild.channels.fetch(); // 強制同期
 
-          const existsChannel = guild.channels.cache.find(
-            c =>
-              c.type === ChannelType.GuildText &&
-              c.parentId === CATEGORY_ID &&
-              c.topic === user.id
+          // 🔥 超強化チェック（これで2個作成防止）
+          const existsChannel = guild.channels.cache.find(c =>
+            c.type === ChannelType.GuildText &&
+            c.parentId === CATEGORY_ID &&
+            (
+              c.topic === user.id ||
+              c.name.includes(user.username)
+            )
           );
 
           if (existsChannel) {
-            activeTickets.add(user.id);
-
-            // 🔥ここだけ変更（表示修正）
             return interaction.reply({
               embeds: [
                 new EmbedBuilder()
@@ -220,7 +220,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 以下そのまま
+      // 以下そのまま（変更なし）
       // =========================
 
       else if (interaction.customId === "ticket_category") {
