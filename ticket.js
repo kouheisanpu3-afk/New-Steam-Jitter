@@ -18,7 +18,7 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-  const resolvedLock = new Set(); // ← ★追加（これだけ）
+  const resolvedLock = new Set();
 
   let ticketNumber = 1;
 
@@ -74,7 +74,7 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成
+      // チケット作成（★強化済み）
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -90,13 +90,16 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
+        // ★追加：activeTicketsでも完全ブロック
         const existsChannel = interaction.guild.channels.cache.find(
           c => c.parentId === CATEGORY_ID && c.topic === user.id
         );
 
+        const isActive = activeTickets.has(user.id);
+
         creatingUsers.delete(user.id);
 
-        if (existsChannel) {
+        if (existsChannel || isActive) {
           const embed = new EmbedBuilder()
             .setColor(0xFF4D4D)
             .setDescription(
@@ -211,8 +214,9 @@ module.exports = (client) => {
       }
 
       // =========================
-      // カテゴリー選択
+      // 以下変更なし
       // =========================
+
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
@@ -265,9 +269,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // メンション選択
-      // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
@@ -295,9 +296,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // 戻る
-      // =========================
       else if (interaction.customId === "ticket_back") {
 
         ticketState.delete(interaction.channel.id);
@@ -339,9 +337,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // チケット削除確認
-      // =========================
       else if (interaction.customId === "ticket_close") {
 
         const embed = new EmbedBuilder()
@@ -367,9 +362,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // OK → チャンネル削除（赤ボタン変更なし）
-      // =========================
       else if (interaction.customId === "ticket_close_confirm") {
 
         await interaction.reply({
@@ -391,9 +383,6 @@ module.exports = (client) => {
         }).catch(() => {});
       }
 
-      // =========================
-      // ★修正：二重投稿防止
-      // =========================
       else if (interaction.customId === "ticket_resolved") {
 
         if (resolvedLock.has(interaction.channel.id)) return;
