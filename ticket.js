@@ -294,7 +294,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 追加：戻る（2段階戻る）
+      // 戻る（2段階）
       // =========================
       else if (interaction.customId === "ticket_back") {
 
@@ -338,7 +338,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // チケット削除確認（UI表示）
+      // チケット削除確認
       // =========================
       else if (interaction.customId === "ticket_close") {
 
@@ -350,7 +350,7 @@ module.exports = (client) => {
           new ButtonBuilder()
             .setCustomId("ticket_close_confirm")
             .setLabel("OK")
-            .setStyle(ButtonStyle.Success),
+            .setStyle(ButtonStyle.Danger),
 
           new ButtonBuilder()
             .setCustomId("ticket_close_cancel")
@@ -366,7 +366,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // OK → チャンネル削除
+      // OK → 削除
       // =========================
       else if (interaction.customId === "ticket_close_confirm") {
 
@@ -390,9 +390,13 @@ module.exports = (client) => {
       }
 
       // =========================
-      // チケット解決済み
+      // 解決済み（二重投稿防止追加）
       // =========================
       else if (interaction.customId === "ticket_resolved") {
+
+        if (activeTickets.has(interaction.channel.id)) return;
+
+        activeTickets.add(interaction.channel.id);
 
         const embed = new EmbedBuilder()
           .setTitle("このチケットを解決済みとしてマーク")
