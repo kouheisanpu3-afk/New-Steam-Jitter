@@ -19,13 +19,11 @@ module.exports = (client) => {
   const ticketState = new Map();
   const activeTickets = new Set();
 
-  // 🔥 重複防止フラグ（追加）
   let panelSent = false;
 
   client.once(Events.ClientReady, async () => {
     try {
 
-      // 🔥 二重起動対策（超重要）
       if (panelSent) return;
       panelSent = true;
 
@@ -51,7 +49,6 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      // 🔥 完全重複削除（パネルだけ消す）
       const messages = await channel.messages.fetch({ limit: 50 });
 
       const oldPanels = messages.filter(m =>
@@ -79,12 +76,14 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+      // =========================
+      // チケット作成
+      // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
         const user = interaction.user;
 
-        // 🔥 二重クリック完全防止
         if (creatingUsers.has(user.id)) {
           return interaction.reply({
             content: "チケット作成中です。少し待ってください。",
@@ -94,7 +93,6 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
-        // 🔥 完全一致チェック（安定版）
         const existsChannel = interaction.guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
@@ -209,16 +207,74 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        const successEmbed = new EmbedBuilder()
+        return interaction.reply({
+          content: `チケットが作成されました     
+チャンネル： ${channel}`,
+          ephemeral: true
+        });
+      }
+
+      // =========================
+      // 🔥 追加：セレクトメニュー処理（これが無いとタイムアウトする）
+      // =========================
+      if (interaction.customId === "ticket_category") {
+
+        const value = interaction.values[0];
+
+        let label = "不明";
+        if (value === "steam_jitter") label = "Steamジッターマクロ";
+        if (value === "rewasd") label = "reWASD";
+        if (value === "other") label = "その他";
+
+        ticketState.set(interaction.channel.id, { value, label });
+
+        const embed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`チケットが作成されました   
-チャンネル： ${channel}`
+`**ご質問・お問い合わせ内容の選択**
+
+選択内容：${label}
+
+続けてメンションの要否を選択してください。`
           );
 
-        return interaction.reply({
-          embeds: [successEmbed],
-          ephemeral: true
+        const select = new StringSelectMenuBuilder()
+          .setCustomId("ticket_ping_choice")
+          .setPlaceholder("メンションの要否")
+          .addOptions([
+            {
+              label: "🔔メンションする",
+              value: "ping_yes"
+            },
+            {
+              label: "🔕メンションしない",
+              value: "ping_no"
+            }
+          ]);
+
+        return interaction.update({
+          embeds: [embed],
+          components: [new ActionRowBuilder().addComponents(select)]
+        });
+      }
+
+      if (interaction.customId === "ticket_ping_choice") {
+
+        const state = ticketState.get(interaction.channel.id);
+        const isYes = interaction.values[0] === "ping_yes";
+
+        const embed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`選択：${state?.label ?? "不明"}
+メンション：${isYes ? "する" : "しない"}
+
+このまま送信してください。`
+          );
+
+        return interaction.update({
+          embeds: [embed],
+          components: []
         });
       }
 
