@@ -83,7 +83,19 @@ module.exports = (client) => {
 
         await guild.channels.fetch();
 
-        // ✅ FIX：ロック判定を確実化（キャッシュ完全依存を排除）
+        // 🔥追加：チケットが0件ならロック解除（ここが今回の修正）
+        const remainingTickets = guild.channels.cache.filter(
+          c =>
+            c.type === ChannelType.GuildText &&
+            c.parentId === CATEGORY_ID &&
+            c.topic
+        );
+
+        if (remainingTickets.size === 0) {
+          activeTickets.clear(); // ← 全削除されたらリセット
+        }
+
+        // 既存チケット検索（通常ロック）
         const existingChannel = guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
