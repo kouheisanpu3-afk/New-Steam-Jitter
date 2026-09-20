@@ -82,7 +82,7 @@ module.exports = (client) => {
 
         await guild.channels.fetch();
 
-        // 既存チケット検索（これだけで制御）
+        // ⭐ここが本質：ユーザーのチケットが存在するかだけ見る
         const existingChannel = guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
@@ -122,6 +122,7 @@ module.exports = (client) => {
             name: `ticket-${user.username}`,
             type: ChannelType.GuildText,
             topic: user.id,
+            parent: CATEGORY_ID, // ←安全のため明示（重要）
             permissionOverwrites: [
               { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
               {
