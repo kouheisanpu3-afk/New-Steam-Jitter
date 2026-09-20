@@ -18,9 +18,9 @@ const {
 
 } = require("discord.js");
 
-const TICKET_CHANNEL_ID = "1541001019880640573";
+const TICKET_CHANNEL_ID = "1551134186021322853";
 const CATEGORY_ID = "1541000895167201300";
-const TERMS_CHANNEL_ID = "1540626614982025327";
+const TERMS_CHANNEL_ID = "1535174145661341786";
 
 module.exports = (client) => {
 
@@ -189,19 +189,19 @@ if (existsChannel) {
               label: "reWASD",
               value: "rewasd",
               description: "reWASDに関するご質問・お問い合わせ",
-              emoji: { id: "1541059202737512508", name: "reWASD" }
+              emoji: { id: "1550853538618417272", name: "reWASD" }
             },
             {
               label: "Steamジッターマクロ",
               value: "steam_jitter",
               description: "Steamジッターマクロに関するご質問・お問い合わせ",
-              emoji: { id: "1541060018567254076", name: "pngwingcom" }
+              emoji: { id: "1550853288919048282", name: "pngwingcom" }
             },
             {
               label: "その他",
               value: "other",
               description: "上記に当てはまらないご質問・お問い合わせ",
-              emoji: { id: "1541062193863327744", name: "chat" }
+              emoji: { id: "1550853719061565460", name: "chat" }
             }
           ]);
 
