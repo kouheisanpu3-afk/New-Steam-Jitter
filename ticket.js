@@ -9,7 +9,7 @@ const {
   StringSelectMenuBuilder
 } = require("discord.js");
 
-const TICKET_CHANNEL_ID = "1550844864097165312";
+const TICKET_CHANNEL_ID = "1551134186021322853";
 const CATEGORY_ID = "1541000895167201300";
 const TERMS_CHANNEL_ID = "1535174145661341786";
 
