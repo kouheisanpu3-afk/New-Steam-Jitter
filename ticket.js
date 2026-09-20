@@ -11,7 +11,7 @@ const {
 
 const TICKET_CHANNEL_ID = "1551134186021322853";
 const CATEGORY_ID = "1541000895167201300";
-const TERMS_CHANNEL_ID = "1535174145661341786";
+const TERMS_CHANNEL_ID = "1535174181341786";
 
 module.exports = (client) => {
 
@@ -71,9 +71,6 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // =========================
-      // チケット作成
-      // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
@@ -195,6 +192,7 @@ module.exports = (client) => {
 
         const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
+        // ★ここ（パネル位置）を元の並びに固定
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
@@ -208,9 +206,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // カテゴリー選択
-      // =========================
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
@@ -263,9 +258,6 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // メンション選択
-      // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
@@ -293,12 +285,8 @@ module.exports = (client) => {
         });
       }
 
-      // =========================
-      // 🔥ここが変更ポイント（2段階戻る）
-      // =========================
       else if (interaction.customId === "ticket_back") {
 
-        // 状態リセット（これで2つ前に戻る）
         ticketState.delete(interaction.channel.id);
 
         const embed = new EmbedBuilder()
