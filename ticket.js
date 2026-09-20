@@ -98,11 +98,11 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
+        // 🔥 修正ここ（topicだけで判定）
         const existsChannel = interaction.guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
-            c.topic === user.id &&
-            c.name.startsWith("ticket-")
+            c.topic === user.id
         );
 
         if (existsChannel) {
