@@ -18,14 +18,10 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-
-  let panelSent = false;
+  let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
     try {
-
-      if (panelSent) return;
-      panelSent = true;
 
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
       if (!channel) return console.log("チケットチャンネル取得失敗");
@@ -49,16 +45,16 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      const messages = await channel.messages.fetch({ limit: 50 });
+      const messages = await channel.messages.fetch({ limit: 20 });
 
-      const oldPanels = messages.filter(m =>
+      const oldPanel = messages.find(m =>
         m.author.id === client.user.id &&
-        m.embeds?.length > 0 &&
-        m.components?.length > 0
+        m.components.length > 0 &&
+        m.embeds.length > 0
       );
 
-      for (const msg of oldPanels.values()) {
-        await msg.delete().catch(() => {});
+      if (oldPanel) {
+        await oldPanel.delete().catch(() => {});
       }
 
       await channel.send({ embeds: [embed], components: [row] });
@@ -100,57 +96,41 @@ module.exports = (client) => {
         if (existsChannel) {
           creatingUsers.delete(user.id);
 
+          const embed = new EmbedBuilder()
+            .setColor(0xFF4D4D)
+            .setDescription(
+              "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。"
+            );
+
           return interaction.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor(0xFF4D4D)
-                .setDescription(
-                  "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。"
-                )
-            ],
+            embeds: [embed],
             ephemeral: true
           });
         }
 
-        // 🔥 ここだけ修正（安定版チャンネル作成）
-        let channel;
-        try {
-          channel = await guild.channels.create({
-            name: `ticket-${user.username}`,
-            type: ChannelType.GuildText,
-            parent: null, // ←重要：カテゴリ不安定回避
-            topic: user.id,
-            permissionOverwrites: [
-              {
-                id: guild.id,
-                deny: [PermissionsBitField.Flags.ViewChannel]
-              },
-              {
-                id: user.id,
-                allow: [
-                  PermissionsBitField.Flags.ViewChannel,
-                  PermissionsBitField.Flags.SendMessages,
-                  PermissionsBitField.Flags.ReadMessageHistory
-                ]
-              },
-              {
-                id: client.user.id,
-                allow: [
-                  PermissionsBitField.Flags.ViewChannel,
-                  PermissionsBitField.Flags.SendMessages
-                ]
-              }
-            ]
-          });
-        } catch (err) {
-          console.error("チャンネル作成失敗:", err);
-          creatingUsers.delete(user.id);
-
-          return interaction.reply({
-            content: "チケットチャンネルの作成に失敗しました（権限不足の可能性）",
-            ephemeral: true
-          });
-        }
+        const channel = await guild.channels.create({
+          name: `ticket-${user.username}`,
+          type: ChannelType.GuildText,
+          topic: user.id,
+          permissionOverwrites: [
+            { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
+            {
+              id: user.id,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+                PermissionsBitField.Flags.ReadMessageHistory
+              ]
+            },
+            {
+              id: client.user.id,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages
+              ]
+            }
+          ]
+        });
 
         creatingUsers.delete(user.id);
         activeTickets.add(user.id);
@@ -220,15 +200,16 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0x4aa3ff)
-              .setDescription(
+        // 🔥 ここだけ変更（Embed化）
+        const successEmbed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
 `チケットが作成されました   
 チャンネル： ${channel}`
-              )
-          ],
+          );
+
+        return interaction.reply({
+          embeds: [successEmbed],
           ephemeral: true
         });
       }
