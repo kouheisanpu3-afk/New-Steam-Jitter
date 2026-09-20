@@ -63,14 +63,13 @@ module.exports = (client) => {
 
   client.on(Events.InteractionCreate, async (interaction) => {
 
-    // =========================
-    // 🔴 ここで完全停止（削除済み）
-    // =========================
-
     try {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+      // =========================
+      // 🎫 チケット作成
+      // =========================
       if (interaction.customId === "ticket_create") {
 
         if (creatingUsers.has(interaction.user.id)) {
@@ -186,13 +185,77 @@ module.exports = (client) => {
         }
       }
 
-      else if (interaction.customId === "ticket_category") {}
-      else if (interaction.customId === "ticket_back") {}
-      else if (interaction.customId === "ticket_ping_choice") {}
-      else if (interaction.customId === "ticket_close") {}
-      else if (interaction.customId === "ticket_close_cancel") {}
-      else if (interaction.customId === "ticket_close_confirm") {}
-      else if (interaction.customId === "ticket_resolved") {}
+      // =========================
+      // 📌 カテゴリ選択
+      // =========================
+      else if (interaction.customId === "ticket_category") {
+
+        const value = interaction.values[0];
+        ticketState.set(interaction.channel.id, value);
+
+        let msg = "";
+        if (value === "rewasd") msg = "reWASDに関するご質問・お問い合わせ";
+        if (value === "steam_jitter") msg = "Steamジッターマクロに関するご質問・お問い合わせ";
+        if (value === "other") msg = "その他のご質問・お問い合わせ";
+
+        await interaction.reply({
+          content: msg,
+          ephemeral: true
+        });
+      }
+
+      // =========================
+      // 🗑 チケット削除
+      // =========================
+      else if (interaction.customId === "ticket_close") {
+
+        await interaction.reply({
+          content: "チケットを削除しています",
+          ephemeral: true
+        });
+
+        setTimeout(() => {
+          interaction.channel?.delete().catch(() => {});
+        }, 1500);
+      }
+
+      // =========================
+      // ✅ 解決済み
+      // =========================
+      else if (interaction.customId === "ticket_resolved") {
+
+        await interaction.reply({
+          content: "このチケットを解決済みとしてマークしました",
+          ephemeral: true
+        });
+
+        await interaction.channel.send({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0xF1C40F)
+              .setDescription("✅ このチケットは解決済みです")
+          ]
+        });
+      }
+
+      // =========================
+      // （未使用だけど反応させる）
+      // =========================
+      else if (interaction.customId === "ticket_back") {
+        await interaction.reply({ content: "戻りました", ephemeral: true });
+      }
+
+      else if (interaction.customId === "ticket_ping_choice") {
+        await interaction.reply({ content: "選択しました", ephemeral: true });
+      }
+
+      else if (interaction.customId === "ticket_close_cancel") {
+        await interaction.reply({ content: "キャンセルしました", ephemeral: true });
+      }
+
+      else if (interaction.customId === "ticket_close_confirm") {
+        await interaction.reply({ content: "確認しました", ephemeral: true });
+      }
 
     } catch (err) {
       console.error("Interaction Error:", err);
