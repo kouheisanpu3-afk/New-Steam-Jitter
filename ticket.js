@@ -76,9 +76,6 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // =========================
-      // チケット作成
-      // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
@@ -171,9 +168,6 @@ module.exports = (client) => {
             .setStyle(ButtonStyle.Success)
         );
 
-        // =========================
-        // 🔥 UI復元（ここが重要）
-        // =========================
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
@@ -210,13 +204,10 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        // =========================
-        // 🔥 ここが「背景付き成功表示」
-        // =========================
         const successEmbed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`チケットが作成されました  
+`チケットが作成されました    
 チャンネル： ${channel}`
           );
 
@@ -227,49 +218,8 @@ module.exports = (client) => {
       }
 
       // =========================
-      // セレクト
+      // 🔥 修正：メンション要否（文言を元に戻す）
       // =========================
-      if (interaction.customId === "ticket_category") {
-
-        const value = interaction.values[0];
-
-        let label = "不明";
-        if (value === "steam_jitter") label = "Steamジッターマクロ";
-        if (value === "rewasd") label = "reWASD";
-        if (value === "other") label = "その他";
-
-        ticketState.set(interaction.channel.id, { value, label });
-
-        const embed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
-          .setDescription(
-`**ご質問・お問い合わせ内容の選択**
-
-選択内容：${label}
-
-続けてメンションの要否を選択してください。`
-          );
-
-        const select = new StringSelectMenuBuilder()
-          .setCustomId("ticket_ping_choice")
-          .setPlaceholder("メンションの要否")
-          .addOptions([
-            {
-              label: "🔔メンションする",
-              value: "ping_yes"
-            },
-            {
-              label: "🔕メンションしない",
-              value: "ping_no"
-            }
-          ]);
-
-        return interaction.update({
-          embeds: [embed],
-          components: [new ActionRowBuilder().addComponents(select)]
-        });
-      }
-
       if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
@@ -278,10 +228,10 @@ module.exports = (client) => {
         const embed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`選択：${state?.label ?? "不明"}
-メンション：${isYes ? "する" : "しない"}
+`**メンション設定**
 
-このまま送信してください。`
+選択：${state?.label ?? "不明"}
+メンション：${isYes ? "する" : "しない"}`
           );
 
         return interaction.update({
