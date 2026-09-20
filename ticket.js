@@ -19,6 +19,9 @@ module.exports = (client) => {
   const ticketState = new Map();
   const activeTickets = new Set();
 
+  // 🔥 追加（同時実行防止ロック）
+  const creatingLock = new Set();
+
   client.once(Events.ClientReady, async () => {
     try {
 
@@ -44,7 +47,6 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      // 🔥 完全重複防止チェック
       const messages = await channel.messages.fetch({ limit: 20 });
 
       const exists = messages.some(m =>
@@ -78,7 +80,18 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 🔥 追加（完全二重防止）
+        if (creatingLock.has(user.id)) {
+          return interaction.reply({
+            content: "チケット作成中です。少し待ってください。",
+            ephemeral: true
+          });
+        }
+
+        creatingLock.add(user.id);
+
         if (creatingUsers.has(user.id)) {
+          creatingLock.delete(user.id);
           return interaction.reply({
             content: "チケット作成中です。少し待ってください。",
             ephemeral: true
@@ -96,6 +109,7 @@ module.exports = (client) => {
 
         if (existsChannel) {
           creatingUsers.delete(user.id);
+          creatingLock.delete(user.id);
 
           const embed = new EmbedBuilder()
             .setColor(0xFF4D4D)
@@ -134,6 +148,7 @@ module.exports = (client) => {
         });
 
         creatingUsers.delete(user.id);
+        creatingLock.delete(user.id);
         activeTickets.add(user.id);
 
         const now = new Date().toLocaleString("ja-JP", {
@@ -204,7 +219,7 @@ module.exports = (client) => {
         const successEmbed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`チケットが作成されました   
+`チケットが作成されました    
 チャンネル： ${channel}`
           );
 
