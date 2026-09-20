@@ -18,10 +18,6 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-
-  // 🔥追加：完全二重実行防止ロック
-  const globalCreateLock = new Set();
-
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -75,15 +71,8 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // 🔥追加：完全二重防止（同一ユーザー同一ボタンは1回のみ通す）
-      const lockKey = `${interaction.user.id}:${interaction.customId}`;
-      if (globalCreateLock.has(lockKey)) return;
-
-      globalCreateLock.add(lockKey);
-      setTimeout(() => globalCreateLock.delete(lockKey), 4000);
-
       // =========================
-      // チケット作成（ここだけ重要）
+      // チケット作成（完全修正版：二重防止）
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -101,24 +90,27 @@ module.exports = (client) => {
 
         try {
 
-          await guild.channels.fetch();
+          await guild.channels.fetch(); // 強制同期
 
-          const existsChannel = guild.channels.cache.find(
-            c =>
-              c.type === ChannelType.GuildText &&
-              c.parentId === CATEGORY_ID &&
-              c.topic === user.id
+          // 🔥 超強化チェック（これで2個作成防止）
+          const existsChannel = guild.channels.cache.find(c =>
+            c.type === ChannelType.GuildText &&
+            c.parentId === CATEGORY_ID &&
+            (
+              c.topic === user.id ||
+              c.name.includes(user.username)
+            )
           );
 
           if (existsChannel) {
-            activeTickets.add(user.id);
-
             return interaction.reply({
               embeds: [
                 new EmbedBuilder()
                   .setColor(0xFF4D4D)
                   .setTitle("チケット作成エラー")
-                  .setDescription("すでにチケットが存在します。\n既存のチケットチャンネルをご利用ください。")
+                  .setDescription(
+                    "すでにチケットが存在します。\n既存のチケットチャンネルをご利用ください。"
+                  )
               ],
               ephemeral: true
             });
@@ -227,7 +219,9 @@ module.exports = (client) => {
         }
       }
 
-      // ↓↓↓ここから下は一切変更なし↓↓↓
+      // =========================
+      // 以下そのまま（変更なし）
+      // =========================
 
       else if (interaction.customId === "ticket_category") {
         const value = interaction.values[0];
@@ -280,6 +274,7 @@ module.exports = (client) => {
       }
 
       else if (interaction.customId === "ticket_ping_choice") {
+
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
