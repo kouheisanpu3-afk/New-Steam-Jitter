@@ -19,11 +19,15 @@ module.exports = (client) => {
   const ticketState = new Map();
   const activeTickets = new Set();
 
-  // ✅ 追加：パネルメッセージ固定管理
-  let panelMessageId = null;
+  // ✅ 追加（重要：Ready二重実行防止）
+  let readyExecuted = false;
 
   client.once(Events.ClientReady, async () => {
     try {
+
+      // ❗二重実行防止
+      if (readyExecuted) return;
+      readyExecuted = true;
 
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
       if (!channel) return console.log("チケットチャンネル取得失敗");
@@ -47,15 +51,20 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      // ✅ 修正：完全に1個だけ管理
-      if (panelMessageId) {
-        const old = await channel.messages.fetch(panelMessageId).catch(() => null);
-        if (old) await old.delete().catch(() => {});
+      // 🔥 重要修正：チャンネル内パネルを全部削除してから1個だけ作る
+      const messages = await channel.messages.fetch({ limit: 20 });
+
+      const panels = messages.filter(m =>
+        m.author.id === client.user.id &&
+        m.components.length > 0
+      );
+
+      for (const msg of panels.values()) {
+        await msg.delete().catch(() => {});
       }
 
-      const msg = await channel.send({ embeds: [embed], components: [row] });
-
-      panelMessageId = msg.id; // ⭐保存（これが重要）
+      // ✔ 必ず1個だけ作成
+      await channel.send({ embeds: [embed], components: [row] });
 
       console.log("チケットパネル設置完了");
 
