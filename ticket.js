@@ -19,8 +19,8 @@ module.exports = (client) => {
   const ticketState = new Map();
   const activeTickets = new Set();
 
-  // 🔥超重要：ユーザー単位＋ボタン単位ロック
-  const interactionLock = new Set();
+  // 🔥追加：完全二重実行防止ロック
+  const globalCreateLock = new Set();
 
   let ticketNumber = 1;
 
@@ -75,15 +75,15 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // 🔥完全二重防止（これが重要）
+      // 🔥追加：完全二重防止（同一ユーザー同一ボタンは1回のみ通す）
       const lockKey = `${interaction.user.id}:${interaction.customId}`;
+      if (globalCreateLock.has(lockKey)) return;
 
-      if (interactionLock.has(lockKey)) return;
-      interactionLock.add(lockKey);
-      setTimeout(() => interactionLock.delete(lockKey), 4000);
+      globalCreateLock.add(lockKey);
+      setTimeout(() => globalCreateLock.delete(lockKey), 4000);
 
       // =========================
-      // チケット作成
+      // チケット作成（ここだけ重要）
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -227,9 +227,7 @@ module.exports = (client) => {
         }
       }
 
-      // =========================
-      // 以下そのまま（変更なし）
-      // =========================
+      // ↓↓↓ここから下は一切変更なし↓↓↓
 
       else if (interaction.customId === "ticket_category") {
         const value = interaction.values[0];
@@ -282,7 +280,6 @@ module.exports = (client) => {
       }
 
       else if (interaction.customId === "ticket_ping_choice") {
-
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
