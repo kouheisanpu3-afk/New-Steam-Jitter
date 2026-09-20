@@ -3,28 +3,37 @@ const {
   GatewayIntentBits,  
   Partials  
 } = require("discord.js"); 
- 
+
 const express = require("express"); 
 const app = express(); 
- 
+
 // ======================= 
 // Webサーバー（Render用） 
 // ======================= 
- 
+
 app.get("/", (req, res) => { 
   res.send("Bot is alive!"); 
 }); 
- 
+
 const PORT = process.env.PORT || 3000; 
- 
+
 app.listen(PORT, () => { 
   console.log("Web server started on port", PORT); 
 }); 
- 
+
+// ======================= 
+// 🔥 超重要：二重起動防止（追加）
+// =======================
+if (global.__bot_started__) {
+  console.log("⚠ Bot already started. Preventing duplicate instance.");
+  process.exit(0);
+}
+global.__bot_started__ = true;
+
 // ======================= 
 // Discord Bot 
 // ======================= 
- 
+
 const client = new Client({ 
   intents: [ 
     GatewayIntentBits.Guilds, 
@@ -39,67 +48,63 @@ const client = new Client({
     Partials.Reaction 
   ] 
 }); 
- 
+
 // ======================= 
 // モジュール読み込み（安全版） 
 // ======================= 
- 
-// チケット 
+
 try { 
   require("./ticket.js")(client); 
   console.log("ticket.js loaded"); 
 } catch (e) { 
   console.error("ticket.js error:", e); 
 } 
- 
-// 認証 
+
 try { 
   require("./auth.js")(client); 
   console.log("auth.js loaded"); 
 } catch (e) { 
   console.log("auth.jsなし（スキップ）"); 
 } 
- 
-// キック 
+
 try { 
   require("./kick.js")(client); 
   console.log("kick.js loaded"); 
 } catch (e) { 
   console.log("kick.jsなし（スキップ）"); 
 } 
- 
-// ★ post（追加）
+
 try { 
   require("./post.js")(client); 
   console.log("post.js loaded"); 
 } catch (e) { 
   console.log("post.jsなし（スキップ）"); 
 } 
- 
+
 // ======================= 
 // 起動ログ 
 // ======================= 
- 
-client.once("ready", () => { 
+
+client.once("clientReady", () => { 
   console.log(`ログイン: ${client.user.tag}`); 
 }); 
- 
+
 // ======================= 
-// エラーハンドリング（重要） 
+// エラーハンドリング 
 // ======================= 
- 
+
 process.on("unhandledRejection", (err) => { 
   console.error("Unhandled Promise Rejection:", err); 
 }); 
- 
+
 process.on("uncaughtException", (err) => { 
   console.error("Uncaught Exception:", err); 
 }); 
- 
+
 // ======================= 
 // ログイン 
 // ======================= 
- 
+
 client.login(process.env.TOKEN).catch((err) => { 
   console.error("ログイン失敗:", err); 
-});
+}); 
