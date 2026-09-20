@@ -107,7 +107,6 @@ module.exports = (client) => {
           });
         }
 
-        // ⭐ここだけ変更：parent削除（カテゴリー外作成）
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
@@ -199,21 +198,21 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        const createdEmbed = new EmbedBuilder()
-          .setColor(0x4aa3ff)
-          .setDescription(
-`チケットが作成されました
-チャンネル： ${channel}`
-          );
-
         return interaction.reply({
-          embeds: [createdEmbed],
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0x4aa3ff)
+              .setDescription(`チケットが作成されました\nチャンネル： ${channel}`)
+          ],
           ephemeral: true
         });
       }
 
-      // ↓↓↓以下全部そのまま（変更なし）
+      // =========================
+      // カテゴリー選択
+      // =========================
       else if (interaction.customId === "ticket_category") {
+
         const value = interaction.values[0];
 
         let label = "不明";
@@ -264,6 +263,9 @@ module.exports = (client) => {
         });
       }
 
+      // =========================
+      // メンション選択
+      // =========================
       else if (interaction.customId === "ticket_ping_choice") {
 
         const state = ticketState.get(interaction.channel.id);
@@ -288,6 +290,51 @@ module.exports = (client) => {
         return interaction.update({
           embeds: [embed],
           components: [new ActionRowBuilder().addComponents(changeButton)]
+        });
+      }
+
+      // =========================
+      // 🔥ここが変更ポイント（2段階戻る）
+      // =========================
+      else if (interaction.customId === "ticket_back") {
+
+        // 状態リセット（これで2つ前に戻る）
+        ticketState.delete(interaction.channel.id);
+
+        const embed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。`
+          );
+
+        const selectMenu = new StringSelectMenuBuilder()
+          .setCustomId("ticket_category")
+          .setPlaceholder("お問い合わせ内容を選択")
+          .addOptions([
+            {
+              label: "reWASD",
+              value: "rewasd",
+              description: "reWASDに関するご質問・お問い合わせ",
+              emoji: { id: "1550853538618417272", name: "reWASD" }
+            },
+            {
+              label: "Steamジッターマクロ",
+              value: "steam_jitter",
+              description: "Steamジッターマクロに関するご質問・お問い合わせ",
+              emoji: { id: "1550853288919048282", name: "pngwingcom" }
+            },
+            {
+              label: "その他",
+              value: "other",
+              description: "上記に当てはまらないご質問・お問い合わせ",
+              emoji: { id: "1550853719061565460", name: "chat" }
+            }
+          ]);
+
+        return interaction.update({
+          embeds: [embed],
+          components: [new ActionRowBuilder().addComponents(selectMenu)]
         });
       }
 
