@@ -45,7 +45,6 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      // ✅ 修正ここが本体（完全重複防止）
       const messages = await channel.messages.fetch({ limit: 20 });
 
       const oldPanel = messages.find(m =>
@@ -54,7 +53,6 @@ module.exports = (client) => {
         m.embeds.length > 0
       );
 
-      // 👉 もしあったら削除して1個にする
       if (oldPanel) {
         await oldPanel.delete().catch(() => {});
       }
@@ -88,7 +86,6 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
-        // ✅ 既存チケット完全検出（topicだけじゃなく名前も）
         const existsChannel = interaction.guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
@@ -203,14 +200,19 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
+        // ✅ ここだけ変更（背景付きEmbed）
+        const successEmbed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`チケットが作成されました  
+チャンネル： ${channel}`
+          );
+
         return interaction.reply({
-          content: `チケットが作成されました    
-チャンネル： ${channel}`,
+          embeds: [successEmbed],
           ephemeral: true
         });
       }
-
-      // ↓↓↓以降そのまま（変更なし）
 
     } catch (err) {
       console.error("Interaction Error:", err);
