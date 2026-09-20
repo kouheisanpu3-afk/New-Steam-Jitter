@@ -72,7 +72,7 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成（修正済み：完全1件化）
+      // チケット作成（完全重複防止版）
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -86,9 +86,20 @@ module.exports = (client) => {
           });
         }
 
+        // ★重要：即ロック
+        if (activeTickets.has(user.id)) {
+          return interaction.reply({
+            content: "すでにチケットが存在します。",
+            ephemeral: true
+          });
+        }
+
         creatingUsers.add(user.id);
 
         try {
+
+          // ★重要：キャッシュ強制更新
+          await guild.channels.fetch();
 
           const existsChannel = guild.channels.cache.find(
             c =>
@@ -98,6 +109,7 @@ module.exports = (client) => {
           );
 
           if (existsChannel) {
+            activeTickets.add(user.id);
             return interaction.reply({
               embeds: [
                 new EmbedBuilder()
@@ -132,6 +144,7 @@ module.exports = (client) => {
             ]
           });
 
+          // ★成功したらロック
           activeTickets.add(user.id);
 
           const now = new Date().toLocaleString("ja-JP", {
@@ -212,7 +225,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 以下完全そのまま
+      // 以下は完全そのまま
       // =========================
 
       else if (interaction.customId === "ticket_category") {
