@@ -18,7 +18,7 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-  const ticketPanelSent = new Set(); // ✅追加（これが重要）
+  let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
     try {
@@ -26,15 +26,10 @@ module.exports = (client) => {
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
-      // ✅ 完全に1回だけ送信（最重要修正）
-      if (ticketPanelSent.has(channel.id)) {
-        return console.log("パネルは既にこのセッションで送信済み");
-      }
-
       const embed = new EmbedBuilder()
         .setTitle("ご質問・お問い合わせチケット")
         .setDescription(
-`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。`
+`下のボタンをクリックすると、ご質問・お問い合わせチケットが作成されます。チケットを作成すると [利用規約](https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}) に同意したものとみなされます。どんな些細なご質問・お問い合わせでも、管理者が丁寧に対応させていただきます。ご気軽にご利用ください。`
         )
         .setColor(0x4aa3ff);
 
@@ -50,9 +45,21 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      await channel.send({ embeds: [embed], components: [row] });
+      // ✅ 修正ここが本体（完全重複防止）
+      const messages = await channel.messages.fetch({ limit: 20 });
 
-      ticketPanelSent.add(channel.id); // ✅送信済み記録
+      const oldPanel = messages.find(m =>
+        m.author.id === client.user.id &&
+        m.components.length > 0 &&
+        m.embeds.length > 0
+      );
+
+      // 👉 もしあったら削除して1個にする
+      if (oldPanel) {
+        await oldPanel.delete().catch(() => {});
+      }
+
+      await channel.send({ embeds: [embed], components: [row] });
 
       console.log("チケットパネル設置完了");
 
@@ -81,7 +88,7 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
-        // ✅ 強化：絶対に重複させない
+        // ✅ 既存チケット完全検出（topicだけじゃなく名前も）
         const existsChannel = interaction.guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
@@ -92,12 +99,14 @@ module.exports = (client) => {
         if (existsChannel) {
           creatingUsers.delete(user.id);
 
+          const embed = new EmbedBuilder()
+            .setColor(0xFF4D4D)
+            .setDescription(
+              "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。"
+            );
+
           return interaction.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor(0xFF4D4D)
-                .setDescription("既にチケットがあります")
-            ],
+            embeds: [embed],
             ephemeral: true
           });
         }
@@ -154,36 +163,58 @@ module.exports = (client) => {
 
           new ButtonBuilder()
             .setCustomId("ticket_resolved")
-            .setLabel("解決済み")
+            .setLabel("このチケットを解決済みとしてマーク")
             .setStyle(ButtonStyle.Success)
         );
 
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
-          .setDescription("お問い合わせ内容を選択してください");
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。`
+          );
 
         const selectMenu = new StringSelectMenuBuilder()
           .setCustomId("ticket_category")
-          .setPlaceholder("選択してください")
+          .setPlaceholder("お問い合わせ内容を選択")
           .addOptions([
-            { label: "reWASD", value: "rewasd" },
-            { label: "Steamジッター", value: "steam_jitter" },
-            { label: "その他", value: "other" }
+            {
+              label: "reWASD",
+              value: "rewasd",
+              description: "reWASDに関するご質問・お問い合わせ",
+              emoji: { id: "1550853538618417272", name: "reWASD" }
+            },
+            {
+              label: "Steamジッターマクロ",
+              value: "steam_jitter",
+              description: "Steamジッターマクロに関するご質問・お問い合わせ",
+              emoji: { id: "1550853288919048282", name: "pngwingcom" }
+            },
+            {
+              label: "その他",
+              value: "other",
+              description: "上記に当てはまらないご質問・お問い合わせ",
+              emoji: { id: "1550853719061565460", name: "chat" }
+            }
           ]);
 
+        const selectRow = new ActionRowBuilder().addComponents(selectMenu);
+
         await channel.send({ embeds: [embed], components: [row] });
-        await channel.send({ embeds: [selectInfo], components: [new ActionRowBuilder().addComponents(selectMenu)] });
+        await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
         return interaction.reply({
-          content: `作成しました: ${channel}`,
+          content: `チケットが作成されました    
+チャンネル： ${channel}`,
           ephemeral: true
         });
       }
 
-      // ↓↓↓ここから下は一切変更なし（省略せずそのまま残す想定）
+      // ↓↓↓以降そのまま（変更なし）
 
     } catch (err) {
       console.error("Interaction Error:", err);
+
       if (interaction.replied || interaction.deferred) return;
 
       interaction.reply({
