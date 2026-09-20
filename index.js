@@ -51,29 +51,27 @@ const client = new Client({
 });
 
 // =======================
-// 🌍 言語設定（ここで切替）
-// =======================
-
-const LANGUAGE = process.env.LANG || "ja"; 
-// "ja" or "en"
-
-// =======================
-// モジュール読み込み（言語対応）
+// 🎫 チケットモジュール（両方同時起動）
 // =======================
 
 try {
-  if (LANGUAGE === "en") {
-    require("./ticket-en.js")(client);
-    console.log("ticket-en.js loaded");
-  } else {
-    require("./ticket-ja.js")(client);
-    console.log("ticket-ja.js loaded");
-  }
+  require("./ticket-ja.js")(client);
+  console.log("ticket-ja.js loaded");
 } catch (e) {
-  console.error("ticket module error:", e);
+  console.error("ticket-ja.js error:", e);
 }
 
-// 共通モジュール（そのまま）
+try {
+  require("./ticket-en.js")(client);
+  console.log("ticket-en.js loaded");
+} catch (e) {
+  console.error("ticket-en.js error:", e);
+}
+
+// =======================
+// その他モジュール
+// =======================
+
 try {
   require("./auth.js")(client);
   console.log("auth.js loaded");
