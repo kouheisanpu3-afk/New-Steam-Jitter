@@ -19,8 +19,11 @@ module.exports = (client) => {
   const ticketState = new Map();
   const activeTickets = new Set();
 
-  // 🔥追加：完全二重実行防止ロック
+  // 🔥追加：完全二重実行防止ロック（ユーザー単位）
   const globalCreateLock = new Set();
+
+  // 🔥🔥追加：Interaction二重実行防止（今回の本体修正）
+  const processedInteractions = new Set();
 
   let ticketNumber = 1;
 
@@ -75,7 +78,15 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // 🔥追加：完全二重防止（同一ユーザー同一ボタンは1回のみ通す）
+      // 🔥🔥🔥ここが本体修正（超重要）
+      if (processedInteractions.has(interaction.id)) return;
+      processedInteractions.add(interaction.id);
+
+      setTimeout(() => {
+        processedInteractions.delete(interaction.id);
+      }, 10000);
+
+      // 🔥追加：完全二重防止（同一ユーザー同一ボタン）
       const lockKey = `${interaction.user.id}:${interaction.customId}`;
       if (globalCreateLock.has(lockKey)) return;
 
@@ -83,7 +94,7 @@ module.exports = (client) => {
       setTimeout(() => globalCreateLock.delete(lockKey), 4000);
 
       // =========================
-      // チケット作成（ここだけ重要）
+      // チケット作成
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -227,7 +238,7 @@ module.exports = (client) => {
         }
       }
 
-      // ↓↓↓ここから下は一切変更なし↓↓↓
+      // ↓↓↓以下一切変更なし↓↓↓
 
       else if (interaction.customId === "ticket_category") {
         const value = interaction.values[0];
