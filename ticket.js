@@ -72,7 +72,7 @@ module.exports = (client) => {
         if (creatingUsers.has(interaction.user.id)) {
           return interaction.reply({
             content: "処理中です。少し待ってください。",
-            ephemeral: true
+            flags: 64
           });
         }
 
@@ -172,17 +172,19 @@ module.exports = (client) => {
           await channel.send({ embeds: [embed], components: [row] });
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-          await interaction.reply({
-            content: "チケットを作成しました",
-            ephemeral: true
-          });
+          // ★ここが重要：二重返信防止
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+              content: "チケットを作成しました",
+              flags: 64
+            });
+          }
 
         } finally {
           setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
         }
       }
 
-      // 以下全部そのまま（到達しない）
       else if (interaction.customId === "ticket_category") {}
       else if (interaction.customId === "ticket_back") {}
       else if (interaction.customId === "ticket_ping_choice") {}
@@ -198,7 +200,7 @@ module.exports = (client) => {
 
       interaction.reply({
         content: "エラーが発生しました",
-        ephemeral: true
+        flags: 64
       }).catch(() => {});
     }
   });
