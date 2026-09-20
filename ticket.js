@@ -294,6 +294,50 @@ module.exports = (client) => {
       }
 
       // =========================
+      // 追加：戻る（2段階戻る）
+      // =========================
+      else if (interaction.customId === "ticket_back") {
+
+        ticketState.delete(interaction.channel.id);
+
+        const embed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。`
+          );
+
+        const selectMenu = new StringSelectMenuBuilder()
+          .setCustomId("ticket_category")
+          .setPlaceholder("お問い合わせ内容を選択")
+          .addOptions([
+            {
+              label: "reWASD",
+              value: "rewasd",
+              description: "reWASDに関するご質問・お問い合わせ",
+              emoji: { id: "1550853538618417272", name: "reWASD" }
+            },
+            {
+              label: "Steamジッターマクロ",
+              value: "steam_jitter",
+              description: "Steamジッターマクロに関するご質問・お問い合わせ",
+              emoji: { id: "1550853288919048282", name: "pngwingcom" }
+            },
+            {
+              label: "その他",
+              value: "other",
+              description: "上記に当てはまらないご質問・お問い合わせ",
+              emoji: { id: "1550853719061565460", name: "chat" }
+            }
+          ]);
+
+        return interaction.update({
+          embeds: [embed],
+          components: [new ActionRowBuilder().addComponents(selectMenu)]
+        });
+      }
+
+      // =========================
       // チケット削除確認（UI表示）
       // =========================
       else if (interaction.customId === "ticket_close") {
