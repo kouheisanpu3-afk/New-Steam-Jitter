@@ -10,7 +10,7 @@ const {
 } = require("discord.js");
 
 const TICKET_CHANNEL_ID = "1551134186021322853";
-const CATEGORY_ID = "1551169064787775668";
+const CATEGORY_ID = "1541000895167201300";
 const TERMS_CHANNEL_ID = "1535174145661341786";
 
 module.exports = (client) => {
@@ -21,8 +21,11 @@ module.exports = (client) => {
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
+
     try {
+
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
+
       if (!channel) return console.log("チケットチャンネル取得失敗");
 
       const embed = new EmbedBuilder()
@@ -65,6 +68,7 @@ module.exports = (client) => {
   client.on(Events.InteractionCreate, async (interaction) => {
 
     try {
+
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
@@ -72,16 +76,8 @@ module.exports = (client) => {
       // =========================
       if (interaction.customId === "ticket_create") {
 
+        const guild = interaction.guild;
         const user = interaction.user;
-
-        const guild = interaction.guild ?? await client.guilds.fetch(interaction.guildId);
-
-        if (!guild) {
-          return interaction.reply({
-            content: "サーバー情報の取得に失敗しました",
-            ephemeral: true
-          });
-        }
 
         if (creatingUsers.has(user.id)) {
           return interaction.reply({
@@ -92,27 +88,29 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
-        const existsChannel = guild.channels.cache.find(
+        const existsChannel = interaction.guild.channels.cache.find(
           c => c.parentId === CATEGORY_ID && c.topic === user.id
         );
 
         creatingUsers.delete(user.id);
 
         if (existsChannel) {
+          const embed = new EmbedBuilder()
+            .setColor(0xFF4D4D)
+            .setDescription(
+              "既に作成されたチケットが存在します\n既存のチャンネルを使用してください。"
+            );
+
           return interaction.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor(0xFF4D4D)
-                .setDescription("既に作成されたチケットが存在します\n既存のチャンネルを使用してください。")
-            ],
+            embeds: [embed],
             ephemeral: true
           });
         }
 
+        // 🔥 ここだけ変更（カテゴリに入れない）
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
-          parent: CATEGORY_ID,
           topic: user.id,
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -167,7 +165,10 @@ module.exports = (client) => {
 
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
-          .setDescription("**ご質問・お問い合わせ内容の選択**\n下のボックスからご質問・お問い合わせ内容を選択してください。");
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。`
+          );
 
         const selectMenu = new StringSelectMenuBuilder()
           .setCustomId("ticket_category")
@@ -208,11 +209,13 @@ module.exports = (client) => {
         });
       }
 
+      // 以降そのまま（変更なし）
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
 
         let label = "不明";
+
         if (value === "steam_jitter") label = "Steamジッターマクロ";
         if (value === "rewasd") label = "reWASD";
         if (value === "other") label = "その他";
@@ -237,8 +240,8 @@ module.exports = (client) => {
                 .setCustomId("ticket_ping_choice")
                 .setPlaceholder("メンションの要否")
                 .addOptions([
-                  { label: "🔔対応時にメンション", value: "ping_yes" },
-                  { label: "🔕メンションなし", value: "ping_no" }
+                  { label: "🔔対応時にメンションを要する", value: "ping_yes" },
+                  { label: "🔕対応時にメンションを要しない", value: "ping_no" }
                 ])
             )
           ]
@@ -273,12 +276,12 @@ module.exports = (client) => {
     } catch (err) {
       console.error("Interaction Error:", err);
 
-      if (!interaction.replied) {
-        interaction.reply({
-          content: "エラーが発生しました",
-          ephemeral: true
-        }).catch(() => {});
-      }
+      if (interaction.replied || interaction.deferred) return;
+
+      interaction.reply({
+        content: "エラーが発生しました",
+        ephemeral: true
+      }).catch(() => {});
     }
   });
 };
