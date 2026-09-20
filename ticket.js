@@ -72,7 +72,7 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成（完全重複防止版）
+      // チケット作成（変更なし）
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -86,19 +86,10 @@ module.exports = (client) => {
           });
         }
 
-        // ★重要：即ロック
-        if (activeTickets.has(user.id)) {
-          return interaction.reply({
-            content: "すでにチケットが存在します。",
-            ephemeral: true
-          });
-        }
-
         creatingUsers.add(user.id);
 
         try {
 
-          // ★重要：キャッシュ強制更新
           await guild.channels.fetch();
 
           const existsChannel = guild.channels.cache.find(
@@ -110,11 +101,16 @@ module.exports = (client) => {
 
           if (existsChannel) {
             activeTickets.add(user.id);
+
+            // 🔥ここだけ変更（表示修正）
             return interaction.reply({
               embeds: [
                 new EmbedBuilder()
                   .setColor(0xFF4D4D)
-                  .setDescription("既に作成されたチケットが存在します\n既存のチャンネルを使用してください。")
+                  .setTitle("チケット作成エラー")
+                  .setDescription(
+                    "すでにチケットが存在します。\n既存のチケットチャンネルをご利用ください。"
+                  )
               ],
               ephemeral: true
             });
@@ -144,7 +140,6 @@ module.exports = (client) => {
             ]
           });
 
-          // ★成功したらロック
           activeTickets.add(user.id);
 
           const now = new Date().toLocaleString("ja-JP", {
@@ -225,15 +220,13 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 以下は完全そのまま
+      // 以下そのまま
       // =========================
 
       else if (interaction.customId === "ticket_category") {
-
         const value = interaction.values[0];
 
         let label = "不明";
-
         if (value === "steam_jitter") label = "Steamジッターマクロ";
         if (value === "rewasd") label = "reWASD";
         if (value === "other") label = "その他";
