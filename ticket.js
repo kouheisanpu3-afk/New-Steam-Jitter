@@ -18,8 +18,6 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-  const resolvedLock = new Set();
-
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -73,9 +71,6 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // =========================
-      // チケット作成（★強化済み）
-      // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
@@ -90,16 +85,13 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
-        // ★追加：activeTicketsでも完全ブロック
         const existsChannel = interaction.guild.channels.cache.find(
           c => c.parentId === CATEGORY_ID && c.topic === user.id
         );
 
-        const isActive = activeTickets.has(user.id);
-
         creatingUsers.delete(user.id);
 
-        if (existsChannel || isActive) {
+        if (existsChannel) {
           const embed = new EmbedBuilder()
             .setColor(0xFF4D4D)
             .setDescription(
@@ -212,10 +204,6 @@ module.exports = (client) => {
           ephemeral: true
         });
       }
-
-      // =========================
-      // 以下変更なし
-      // =========================
 
       else if (interaction.customId === "ticket_category") {
 
@@ -337,6 +325,7 @@ module.exports = (client) => {
         });
       }
 
+      // ===== ここだけ変更 =====
       else if (interaction.customId === "ticket_close") {
 
         const embed = new EmbedBuilder()
@@ -347,7 +336,7 @@ module.exports = (client) => {
           new ButtonBuilder()
             .setCustomId("ticket_close_confirm")
             .setLabel("OK")
-            .setStyle(ButtonStyle.Success),
+            .setStyle(ButtonStyle.Danger),
 
           new ButtonBuilder()
             .setCustomId("ticket_close_cancel")
@@ -384,9 +373,6 @@ module.exports = (client) => {
       }
 
       else if (interaction.customId === "ticket_resolved") {
-
-        if (resolvedLock.has(interaction.channel.id)) return;
-        resolvedLock.add(interaction.channel.id);
 
         const embed = new EmbedBuilder()
           .setTitle("このチケットを解決済みとしてマーク")
