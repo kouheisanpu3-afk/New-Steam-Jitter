@@ -199,15 +199,7 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0x4aa3ff)
-              .setDescription(`チケットが作成されました\nチャンネル： ${channel}`)
-          ],
-          ephemeral: true
-        });
-      }
+        // ========================= // ★ここだけ修正（背景＋左ラインを水色のEmbed通知） // ========================= const createdEmbed = new EmbedBuilder() .setColor(0x4aa3ff) // 水色（左のライン） .setDescription( チケットが作成されました チャンネル： ${channel} );
 
       // 以降そのまま（変更なし）
       else if (interaction.customId === "ticket_category") {
@@ -240,8 +232,8 @@ module.exports = (client) => {
                 .setCustomId("ticket_ping_choice")
                 .setPlaceholder("メンションの要否")
                 .addOptions([
-                  { label: "🔔対応時にメンションを要する", value: "ping_yes" },
-                  { label: "🔕対応時にメンションを要しない", value: "ping_no" }
+                  { label: "🔔対応時にメンションを要する", value: "ping_yes", description: "管理者が対応開始時にメンションします。" },
+                  { label: "🔕対応時にメンションを要しない", value: "ping_no", description: "メンションは行いません。" }
                 ])
             )
           ]
