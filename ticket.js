@@ -11,7 +11,7 @@ const {
 
 const TICKET_CHANNEL_ID = "1551134186021322853";
 const CATEGORY_ID = "1541000895167201300";
-const TERMS_CHANNEL_ID = "1535174145661341786";
+const TERMS_CHANNEL_ID = "1535174181341786";
 
 module.exports = (client) => {
 
@@ -72,14 +72,10 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // 🔥追加：完全重複防止（Discord二重送信対策）
       if (processingInteractions.has(interaction.id)) return;
       processingInteractions.add(interaction.id);
       setTimeout(() => processingInteractions.delete(interaction.id), 5000);
 
-      // =========================
-      // チケット作成（ここだけ超強化）
-      // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
@@ -226,10 +222,6 @@ module.exports = (client) => {
         }
       }
 
-      // =========================
-      // 以下完全そのまま
-      // =========================
-
       else if (interaction.customId === "ticket_category") {
 
         const value = interaction.values[0];
@@ -360,7 +352,7 @@ module.exports = (client) => {
           new ButtonBuilder()
             .setCustomId("ticket_close_confirm")
             .setLabel("OK")
-            .setStyle(ButtonStyle.Success),
+            .setStyle(ButtonStyle.Danger), // ←ここだけ変更
 
           new ButtonBuilder()
             .setCustomId("ticket_close_cancel")
