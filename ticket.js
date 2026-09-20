@@ -74,7 +74,7 @@ module.exports = (client) => {
 
         const user = interaction.user;
 
-        // ★追加（ここ重要）
+        // ★安全化
         const guild = interaction.guild ?? await client.guilds.fetch(interaction.guildId);
 
         if (!guild) {
@@ -100,20 +100,23 @@ module.exports = (client) => {
         creatingUsers.delete(user.id);
 
         if (existsChannel) {
-          const embed = new EmbedBuilder()
-            .setColor(0xFF4D4D)
-            .setDescription("既に作成されたチケットが存在します\n既存のチャンネルを使用してください。");
-
           return interaction.reply({
-            embeds: [embed],
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xFF4D4D)
+                .setDescription("既に作成されたチケットが存在します\n既存のチャンネルを使用してください。")
+            ],
             ephemeral: true
           });
         }
 
+        // ★重要修正：カテゴリをfetch
+        const category = await guild.channels.fetch(CATEGORY_ID).catch(() => null);
+
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
-          parent: CATEGORY_ID,
+          parent: category ? category.id : CATEGORY_ID,
           topic: user.id,
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -209,8 +212,9 @@ module.exports = (client) => {
         });
       }
 
-      // ここから下はそのまま（省略せず保持）
+      // 以下そのまま
       else if (interaction.customId === "ticket_category") {
+
         const value = interaction.values[0];
 
         let label = "不明";
@@ -247,6 +251,7 @@ module.exports = (client) => {
       }
 
       else if (interaction.customId === "ticket_ping_choice") {
+
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
