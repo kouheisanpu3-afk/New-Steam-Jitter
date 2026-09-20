@@ -106,8 +106,6 @@ module.exports = (client) => {
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
-          // 👇ここだけ変更（カテゴリ外にする）
-          // parent: CATEGORY_ID,
           topic: user.id,
           permissionOverwrites: [
             { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -130,7 +128,6 @@ module.exports = (client) => {
         });
 
         creatingUsers.delete(user.id);
-
         activeTickets.add(user.id);
 
         const now = new Date().toLocaleString("ja-JP", {
@@ -201,7 +198,7 @@ module.exports = (client) => {
         const createdEmbed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`チケットが作成されました  
+`チケットが作成されました   
 チャンネル： ${channel}`
           );
 
@@ -289,6 +286,48 @@ module.exports = (client) => {
         return interaction.update({
           embeds: [embed],
           components: [row]
+        });
+      }
+
+      // 👇ここ追加（2個前＝カテゴリ選択に戻す）
+      else if (interaction.customId === "ticket_back") {
+
+        const selectInfo = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+下のボックスからご質問・お問い合わせ内容を選択してください。`
+          );
+
+        const selectMenu = new StringSelectMenuBuilder()
+          .setCustomId("ticket_category")
+          .setPlaceholder("お問い合わせ内容を選択")
+          .addOptions([
+            {
+              label: "reWASD",
+              value: "rewasd",
+              description: "reWASDに関するご質問・お問い合わせ",
+              emoji: { id: "1550853538618417272", name: "reWASD" }
+            },
+            {
+              label: "Steamジッターマクロ",
+              value: "steam_jitter",
+              description: "Steamジッターマクロに関するご質問・お問い合わせ",
+              emoji: { id: "1550853288919048282", name: "pngwingcom" }
+            },
+            {
+              label: "その他",
+              value: "other",
+              description: "上記に当てはまらないご質問・お問い合わせ",
+              emoji: { id: "1550853719061565460", name: "chat" }
+            }
+          ]);
+
+        const selectRow = new ActionRowBuilder().addComponents(selectMenu);
+
+        return interaction.update({
+          embeds: [selectInfo],
+          components: [selectRow]
         });
       }
 
