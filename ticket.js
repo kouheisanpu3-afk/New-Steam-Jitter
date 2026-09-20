@@ -107,7 +107,7 @@ module.exports = (client) => {
           });
         }
 
-        // 🔥 ここだけ変更（カテゴリに入れない）
+        // ⭐ここだけ変更：parent削除（カテゴリー外作成）
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
           type: ChannelType.GuildText,
@@ -199,11 +199,21 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        // ========================= // ★ここだけ修正（背景＋左ラインを水色のEmbed通知） // ========================= const createdEmbed = new EmbedBuilder() .setColor(0x4aa3ff) // 水色（左のライン） .setDescription( チケットが作成されました チャンネル： ${channel} );
+        const createdEmbed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`チケットが作成されました
+チャンネル： ${channel}`
+          );
 
-      // 以降そのまま（変更なし）
+        return interaction.reply({
+          embeds: [createdEmbed],
+          ephemeral: true
+        });
+      }
+
+      // ↓↓↓以下全部そのまま（変更なし）
       else if (interaction.customId === "ticket_category") {
-
         const value = interaction.values[0];
 
         let label = "不明";
@@ -214,28 +224,42 @@ module.exports = (client) => {
 
         ticketState.set(interaction.channel.id, { value, label });
 
-        return interaction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0x4aa3ff)
-              .setDescription(
+        const embed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
 `**ご質問・お問い合わせ内容の選択**
 
 選択内容：${label}
 
 続けて下のボックスからメンションの要否を選択してください。`
-              )
-          ],
+          );
+
+        const followSelect = new StringSelectMenuBuilder()
+          .setCustomId("ticket_ping_choice")
+          .setPlaceholder("メンションの要否")
+          .addOptions([
+            {
+              label: "🔔対応時にメンションを要する",
+              value: "ping_yes",
+              description: "管理者が対応開始時にメンションします。"
+            },
+            {
+              label: "🔕対応時にメンションを要しない",
+              value: "ping_no",
+              description: "メンションは行いません。"
+            }
+          ]);
+
+        const backButton = new ButtonBuilder()
+          .setCustomId("ticket_back")
+          .setLabel("戻る")
+          .setStyle(ButtonStyle.Secondary);
+
+        return interaction.update({
+          embeds: [embed],
           components: [
-            new ActionRowBuilder().addComponents(
-              new StringSelectMenuBuilder()
-                .setCustomId("ticket_ping_choice")
-                .setPlaceholder("メンションの要否")
-                .addOptions([
-                  { label: "🔔対応時にメンションを要する", value: "ping_yes", description: "管理者が対応開始時にメンションします。" },
-                  { label: "🔕対応時にメンションを要しない", value: "ping_no", description: "メンションは行いません。" }
-                ])
-            )
+            new ActionRowBuilder().addComponents(followSelect),
+            new ActionRowBuilder().addComponents(backButton)
           ]
         });
       }
@@ -245,35 +269,37 @@ module.exports = (client) => {
         const state = ticketState.get(interaction.channel.id);
         const isYes = interaction.values[0] === "ping_yes";
 
+        const embed = new EmbedBuilder()
+          .setColor(isYes ? 0xFFFF00 : 0x4aa3ff)
+          .setDescription(
+`**ご質問・お問い合わせ内容の選択**
+
+選択内容：${state?.label ?? "不明"}
+メンション：${isYes ? "要する" : "要しない"}
+
+以下にご質問・お問い合わせをご記入ください。`
+          );
+
+        const changeButton = new ButtonBuilder()
+          .setCustomId("ticket_back")
+          .setLabel("ご質問・お問い合わせ内容を変更")
+          .setStyle(ButtonStyle.Secondary);
+
         return interaction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(isYes ? 0xFFFF00 : 0x4aa3ff)
-              .setDescription(
-`選択内容：${state?.label ?? "不明"}
-メンション：${isYes ? "要する" : "要しない"}`
-              )
-          ],
-          components: [
-            new ActionRowBuilder().addComponents(
-              new ButtonBuilder()
-                .setCustomId("ticket_close")
-                .setLabel("チケットを閉じる")
-                .setStyle(ButtonStyle.Danger)
-            )
-          ]
+          embeds: [embed],
+          components: [new ActionRowBuilder().addComponents(changeButton)]
         });
       }
 
     } catch (err) {
       console.error("Interaction Error:", err);
 
-      if (interaction.replied || interaction.deferred) return;
-
-      interaction.reply({
-        content: "エラーが発生しました",
-        ephemeral: true
-      }).catch(() => {});
+      if (!interaction.replied) {
+        interaction.reply({
+          content: "エラーが発生しました",
+          ephemeral: true
+        }).catch(() => {});
+      }
     }
   });
 };
