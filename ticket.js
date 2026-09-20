@@ -67,6 +67,9 @@ module.exports = (client) => {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+      // =========================
+      // 🎫 チケット作成
+      // =========================
       if (interaction.customId === "ticket_create") {
 
         if (creatingUsers.has(interaction.user.id)) {
@@ -172,7 +175,6 @@ module.exports = (client) => {
           await channel.send({ embeds: [embed], components: [row] });
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-          // ★ここが重要：二重返信防止
           if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({
               content: "チケットを作成しました",
@@ -185,13 +187,63 @@ module.exports = (client) => {
         }
       }
 
-      else if (interaction.customId === "ticket_category") {}
+      // =========================
+      // 🎫 カテゴリ選択
+      // =========================
+      else if (interaction.customId === "ticket_category") {
+
+        const channel = interaction.channel;
+        if (!channel) return;
+
+        ticketState.set(channel.id, interaction.values[0]);
+
+        let text = "";
+        if (interaction.values[0] === "rewasd") text = "reWASDを選択しました";
+        if (interaction.values[0] === "steam_jitter") text = "Steamジッターマクロを選択しました";
+        if (interaction.values[0] === "other") text = "その他を選択しました";
+
+        await interaction.reply({
+          content: text,
+          flags: 64
+        });
+      }
+
+      // =========================
+      // 🗑 チケット削除
+      // =========================
+      else if (interaction.customId === "ticket_close") {
+
+        await interaction.reply({
+          content: "チケットを削除しています...",
+          flags: 64
+        });
+
+        setTimeout(() => {
+          interaction.channel?.delete().catch(() => {});
+        }, 1500);
+      }
+
+      // =========================
+      // ✅ 解決済み
+      // =========================
+      else if (interaction.customId === "ticket_resolved") {
+
+        await interaction.reply({
+          content: "このチケットは解決済みにマークされました",
+          flags: 64
+        });
+
+        const resolvedEmbed = new EmbedBuilder()
+          .setColor(0xF1C40F)
+          .setDescription("✅ このチケットは解決済みとしてマークされています");
+
+        await interaction.channel.send({ embeds: [resolvedEmbed] });
+      }
+
       else if (interaction.customId === "ticket_back") {}
       else if (interaction.customId === "ticket_ping_choice") {}
-      else if (interaction.customId === "ticket_close") {}
       else if (interaction.customId === "ticket_close_cancel") {}
       else if (interaction.customId === "ticket_close_confirm") {}
-      else if (interaction.customId === "ticket_resolved") {}
 
     } catch (err) {
       console.error("Interaction Error:", err);
