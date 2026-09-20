@@ -63,19 +63,20 @@ module.exports = (client) => {
 
   client.on(Events.InteractionCreate, async (interaction) => {
 
+    // =========================
+    // 🔴 ここで完全停止（削除済み）
+    // =========================
+
     try {
 
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-      // =========================
-      // 🎫 チケット作成
-      // =========================
       if (interaction.customId === "ticket_create") {
 
         if (creatingUsers.has(interaction.user.id)) {
           return interaction.reply({
             content: "処理中です。少し待ってください。",
-            flags: 64
+            ephemeral: true
           });
         }
 
@@ -175,75 +176,23 @@ module.exports = (client) => {
           await channel.send({ embeds: [embed], components: [row] });
           await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-          if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({
-              content: "チケットを作成しました",
-              flags: 64
-            });
-          }
+          await interaction.reply({
+            content: "チケットを作成しました",
+            ephemeral: true
+          });
 
         } finally {
           setTimeout(() => creatingUsers.delete(interaction.user.id), 2000);
         }
       }
 
-      // =========================
-      // 🎫 カテゴリ選択
-      // =========================
-      else if (interaction.customId === "ticket_category") {
-
-        const channel = interaction.channel;
-        if (!channel) return;
-
-        ticketState.set(channel.id, interaction.values[0]);
-
-        let text = "";
-        if (interaction.values[0] === "rewasd") text = "reWASDを選択しました";
-        if (interaction.values[0] === "steam_jitter") text = "Steamジッターマクロを選択しました";
-        if (interaction.values[0] === "other") text = "その他を選択しました";
-
-        await interaction.reply({
-          content: text,
-          flags: 64
-        });
-      }
-
-      // =========================
-      // 🗑 チケット削除
-      // =========================
-      else if (interaction.customId === "ticket_close") {
-
-        await interaction.reply({
-          content: "チケットを削除しています...",
-          flags: 64
-        });
-
-        setTimeout(() => {
-          interaction.channel?.delete().catch(() => {});
-        }, 1500);
-      }
-
-      // =========================
-      // ✅ 解決済み
-      // =========================
-      else if (interaction.customId === "ticket_resolved") {
-
-        await interaction.reply({
-          content: "このチケットは解決済みにマークされました",
-          flags: 64
-        });
-
-        const resolvedEmbed = new EmbedBuilder()
-          .setColor(0xF1C40F)
-          .setDescription("✅ このチケットは解決済みとしてマークされています");
-
-        await interaction.channel.send({ embeds: [resolvedEmbed] });
-      }
-
+      else if (interaction.customId === "ticket_category") {}
       else if (interaction.customId === "ticket_back") {}
       else if (interaction.customId === "ticket_ping_choice") {}
+      else if (interaction.customId === "ticket_close") {}
       else if (interaction.customId === "ticket_close_cancel") {}
       else if (interaction.customId === "ticket_close_confirm") {}
+      else if (interaction.customId === "ticket_resolved") {}
 
     } catch (err) {
       console.error("Interaction Error:", err);
@@ -252,7 +201,7 @@ module.exports = (client) => {
 
       interaction.reply({
         content: "エラーが発生しました",
-        flags: 64
+        ephemeral: true
       }).catch(() => {});
     }
   });
