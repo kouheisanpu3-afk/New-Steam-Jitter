@@ -83,16 +83,26 @@ module.exports = (client) => {
 
         await guild.channels.fetch();
 
-        // 🔥追加：チャンネルが存在するか毎回チェックして同期
-        const stillExists = guild.channels.cache.find(
+        // ✅ FIX：ロック判定を確実化（キャッシュ完全依存を排除）
+        const existingChannel = guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
             c.parentId === CATEGORY_ID &&
             c.topic === user.id
         );
 
-        if (!stillExists) {
-          activeTickets.delete(user.id);
+        if (existingChannel) {
+          activeTickets.add(user.id);
+
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xFF4D4D)
+                .setTitle("チケット作成エラー")
+                .setDescription("すでにチケットが存在します。\n既存のチケットチャンネルをご利用ください。")
+            ],
+            ephemeral: true
+          });
         }
 
         if (creatingUsers.has(user.id) || activeTickets.has(user.id)) {
@@ -109,22 +119,6 @@ module.exports = (client) => {
         creatingUsers.add(user.id);
 
         try {
-
-          const existsChannel = stillExists;
-
-          if (existsChannel) {
-            activeTickets.add(user.id);
-
-            return interaction.reply({
-              embeds: [
-                new EmbedBuilder()
-                  .setColor(0xFF4D4D)
-                  .setTitle("チケット作成エラー")
-                  .setDescription("すでにチケットが存在します。\n既存のチケットチャンネルをご利用ください。")
-              ],
-              ephemeral: true
-            });
-          }
 
           const channel = await guild.channels.create({
             name: `ticket-${user.username}`,
