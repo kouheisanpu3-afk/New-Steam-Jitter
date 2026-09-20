@@ -82,9 +82,12 @@ module.exports = (client) => {
 
         await guild.channels.fetch();
 
-        // ⭐ここが本質：ユーザーのチケットが存在するかだけ見る
-        const existingChannel = guild.channels.cache.find(
+        // ⭐ここだけ修正（キャッシュ禁止→最新取得）
+        const channels = await guild.channels.fetch();
+
+        const existingChannel = channels.find(
           c =>
+            c &&
             c.type === ChannelType.GuildText &&
             c.parentId === CATEGORY_ID &&
             c.topic === user.id
@@ -122,7 +125,7 @@ module.exports = (client) => {
             name: `ticket-${user.username}`,
             type: ChannelType.GuildText,
             topic: user.id,
-            parent: CATEGORY_ID, // ←安全のため明示（重要）
+            parent: CATEGORY_ID,
             permissionOverwrites: [
               { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
               {
@@ -236,10 +239,7 @@ module.exports = (client) => {
           .setColor(0x4aa3ff)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
-
-選択内容：${label}
-
-続けて下のボックスからメンションの要否を選択してください。`
+下のボックスからご質問・お問い合わせ内容を選択してください。`
           );
 
         const followSelect = new StringSelectMenuBuilder()
@@ -280,10 +280,8 @@ module.exports = (client) => {
           .setColor(isYes ? 0xFFFF00 : 0x4aa3ff)
           .setDescription(
 `**ご質問・お問い合わせ内容の選択**
-
 選択内容：${state?.label ?? "不明"}
 メンション：${isYes ? "要する" : "要しない"}
-
 以下にご質問・お問い合わせをご記入ください。`
           );
 
