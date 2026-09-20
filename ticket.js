@@ -18,6 +18,8 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
+  const resolvedLock = new Set(); // ← ★追加（これだけ）
+
   let ticketNumber = 1;
 
   client.once(Events.ClientReady, async () => {
@@ -294,7 +296,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 戻る（2段階）
+      // 戻る
       // =========================
       else if (interaction.customId === "ticket_back") {
 
@@ -350,7 +352,7 @@ module.exports = (client) => {
           new ButtonBuilder()
             .setCustomId("ticket_close_confirm")
             .setLabel("OK")
-            .setStyle(ButtonStyle.Danger),
+            .setStyle(ButtonStyle.Success),
 
           new ButtonBuilder()
             .setCustomId("ticket_close_cancel")
@@ -366,7 +368,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // OK → 削除
+      // OK → チャンネル削除（赤ボタン変更なし）
       // =========================
       else if (interaction.customId === "ticket_close_confirm") {
 
@@ -390,13 +392,12 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 解決済み（二重投稿完全防止）
+      // ★修正：二重投稿防止
       // =========================
       else if (interaction.customId === "ticket_resolved") {
 
-        // ★ここが二重投稿防止（超重要）
-        if (interaction.channel._resolvedSent) return;
-        interaction.channel._resolvedSent = true;
+        if (resolvedLock.has(interaction.channel.id)) return;
+        resolvedLock.add(interaction.channel.id);
 
         const embed = new EmbedBuilder()
           .setTitle("このチケットを解決済みとしてマーク")
