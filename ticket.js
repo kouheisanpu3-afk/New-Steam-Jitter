@@ -72,7 +72,7 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成（修正：二重作成完全防止）
+      // チケット作成（修正済み：完全1件化）
       // =========================
       if (interaction.customId === "ticket_create") {
 
@@ -90,7 +90,6 @@ module.exports = (client) => {
 
         try {
 
-          // 🔥 修正ポイント：確実にチャンネル検索（topic + parentId）
           const existsChannel = guild.channels.cache.find(
             c =>
               c.type === ChannelType.GuildText &&
@@ -213,7 +212,7 @@ module.exports = (client) => {
       }
 
       // =========================
-      // ここから下は一切変更なし（そのまま）
+      // 以下完全そのまま
       // =========================
 
       else if (interaction.customId === "ticket_category") {
