@@ -171,6 +171,9 @@ module.exports = (client) => {
             .setStyle(ButtonStyle.Success)
         );
 
+        // =========================
+        // 🔥 UI復元（ここが重要）
+        // =========================
         const selectInfo = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
@@ -207,15 +210,24 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
+        // =========================
+        // 🔥 ここが「背景付き成功表示」
+        // =========================
+        const successEmbed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`チケットが作成されました  
+チャンネル： ${channel}`
+          );
+
         return interaction.reply({
-          content: `チケットが作成されました     
-チャンネル： ${channel}`,
+          embeds: [successEmbed],
           ephemeral: true
         });
       }
 
       // =========================
-      // 🔥 追加：セレクトメニュー処理（これが無いとタイムアウトする）
+      // セレクト
       // =========================
       if (interaction.customId === "ticket_category") {
 
