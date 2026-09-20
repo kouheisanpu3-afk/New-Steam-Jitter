@@ -83,7 +83,6 @@ module.exports = (client) => {
 
         await guild.channels.fetch();
 
-        // 🔥 既存チケットチェック（1人1チケット）
         const existingChannel = guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
@@ -223,8 +222,9 @@ module.exports = (client) => {
         }
       }
 
-      // ↓↓↓以下そのまま↓↓↓
-
+      // =========================
+      // 🔥 ここだけ修正（削除ボタン）
+      // =========================
       else if (interaction.customId === "ticket_close_confirm") {
 
         await interaction.reply({
@@ -232,16 +232,19 @@ module.exports = (client) => {
           ephemeral: true
         });
 
-        // 🔥 追加：削除されたらロック解除
         const channel = interaction.channel;
 
+        // ロック解除
         if (channel?.topic) {
-          activeTickets.delete(channel.topic); // ←これが重要
+          activeTickets.delete(channel.topic);
         }
 
-        setTimeout(() => {
-          channel.delete().catch(() => {});
-        }, 1000);
+        // 安定削除（setTimeout廃止）
+        try {
+          await channel.delete();
+        } catch (err) {
+          console.error("チャンネル削除失敗:", err);
+        }
       }
 
       else if (interaction.customId === "ticket_close_cancel") {
@@ -263,7 +266,7 @@ module.exports = (client) => {
         await interaction.channel.send({ embeds: [embed] });
       }
 
-      // --- 以下は完全そのまま（省略なしではなく変更なし） ---
+      // 以下そのまま（変更なし）
 
       else if (interaction.customId === "ticket_category") {
         const value = interaction.values[0];
