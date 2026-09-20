@@ -18,10 +18,16 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-  let ticketNumber = 1;
+
+  // 🔥 重複防止フラグ（追加）
+  let panelSent = false;
 
   client.once(Events.ClientReady, async () => {
     try {
+
+      // 🔥 二重起動対策（超重要）
+      if (panelSent) return;
+      panelSent = true;
 
       const channel = await client.channels.fetch(TICKET_CHANNEL_ID);
       if (!channel) return console.log("チケットチャンネル取得失敗");
@@ -45,18 +51,17 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      // ✅ 修正ここが本体（完全重複防止）
-      const messages = await channel.messages.fetch({ limit: 20 });
+      // 🔥 完全重複削除（パネルだけ消す）
+      const messages = await channel.messages.fetch({ limit: 50 });
 
-      const oldPanel = messages.find(m =>
+      const oldPanels = messages.filter(m =>
         m.author.id === client.user.id &&
-        m.components.length > 0 &&
-        m.embeds.length > 0
+        m.embeds?.length > 0 &&
+        m.components?.length > 0
       );
 
-      // 👉 もしあったら削除して1個にする
-      if (oldPanel) {
-        await oldPanel.delete().catch(() => {});
+      for (const msg of oldPanels.values()) {
+        await msg.delete().catch(() => {});
       }
 
       await channel.send({ embeds: [embed], components: [row] });
@@ -79,6 +84,7 @@ module.exports = (client) => {
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 🔥 二重クリック完全防止
         if (creatingUsers.has(user.id)) {
           return interaction.reply({
             content: "チケット作成中です。少し待ってください。",
@@ -88,7 +94,7 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
-        // ✅ 既存チケット完全検出（topicだけじゃなく名前も）
+        // 🔥 完全一致チェック（安定版）
         const existsChannel = interaction.guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
@@ -203,14 +209,18 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
+        const successEmbed = new EmbedBuilder()
+          .setColor(0x4aa3ff)
+          .setDescription(
+`チケットが作成されました   
+チャンネル： ${channel}`
+          );
+
         return interaction.reply({
-          content: `チケットが作成されました    
-チャンネル： ${channel}`,
+          embeds: [successEmbed],
           ephemeral: true
         });
       }
-
-      // ↓↓↓以降そのまま（変更なし）
 
     } catch (err) {
       console.error("Interaction Error:", err);
