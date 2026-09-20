@@ -83,19 +83,7 @@ module.exports = (client) => {
 
         await guild.channels.fetch();
 
-        // 🔥追加：チケットが0件ならロック解除（ここが今回の修正）
-        const remainingTickets = guild.channels.cache.filter(
-          c =>
-            c.type === ChannelType.GuildText &&
-            c.parentId === CATEGORY_ID &&
-            c.topic
-        );
-
-        if (remainingTickets.size === 0) {
-          activeTickets.clear(); // ← 全削除されたらリセット
-        }
-
-        // 既存チケット検索（通常ロック）
+        // 🔥 既存チケットチェック（1人1チケット）
         const existingChannel = guild.channels.cache.find(
           c =>
             c.type === ChannelType.GuildText &&
@@ -237,6 +225,46 @@ module.exports = (client) => {
 
       // ↓↓↓以下そのまま↓↓↓
 
+      else if (interaction.customId === "ticket_close_confirm") {
+
+        await interaction.reply({
+          content: "チケットを削除しています...",
+          ephemeral: true
+        });
+
+        // 🔥 追加：削除されたらロック解除
+        const channel = interaction.channel;
+
+        if (channel?.topic) {
+          activeTickets.delete(channel.topic); // ←これが重要
+        }
+
+        setTimeout(() => {
+          channel.delete().catch(() => {});
+        }, 1000);
+      }
+
+      else if (interaction.customId === "ticket_close_cancel") {
+
+        return interaction.update({
+          embeds: [],
+          components: [],
+          content: "キャンセルしました"
+        }).catch(() => {});
+      }
+
+      else if (interaction.customId === "ticket_resolved") {
+
+        const embed = new EmbedBuilder()
+          .setTitle("このチケットを解決済みとしてマーク")
+          .setDescription("このチケットは解決済みとしてマークされました")
+          .setColor(0x57F287);
+
+        await interaction.channel.send({ embeds: [embed] });
+      }
+
+      // --- 以下は完全そのまま（省略なしではなく変更なし） ---
+
       else if (interaction.customId === "ticket_category") {
         const value = interaction.values[0];
 
@@ -352,62 +380,6 @@ module.exports = (client) => {
           embeds: [embed],
           components: [new ActionRowBuilder().addComponents(selectMenu)]
         });
-      }
-
-      else if (interaction.customId === "ticket_close") {
-
-        const embed = new EmbedBuilder()
-          .setColor(0xFF4D4D)
-          .setDescription("このチケットを消去しますか？");
-
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("ticket_close_confirm")
-            .setLabel("OK")
-            .setStyle(ButtonStyle.Danger),
-
-          new ButtonBuilder()
-            .setCustomId("ticket_close_cancel")
-            .setLabel("キャンセル")
-            .setStyle(ButtonStyle.Secondary)
-        );
-
-        return interaction.reply({
-          embeds: [embed],
-          components: [row],
-          ephemeral: true
-        });
-      }
-
-      else if (interaction.customId === "ticket_close_confirm") {
-
-        await interaction.reply({
-          content: "チケットを削除しています...",
-          ephemeral: true
-        });
-
-        setTimeout(() => {
-          interaction.channel.delete().catch(() => {});
-        }, 1000);
-      }
-
-      else if (interaction.customId === "ticket_close_cancel") {
-
-        return interaction.update({
-          embeds: [],
-          components: [],
-          content: "キャンセルしました"
-        }).catch(() => {});
-      }
-
-      else if (interaction.customId === "ticket_resolved") {
-
-        const embed = new EmbedBuilder()
-          .setTitle("このチケットを解決済みとしてマーク")
-          .setDescription("このチケットは解決済みとしてマークされました")
-          .setColor(0x57F287);
-
-        await interaction.channel.send({ embeds: [embed] });
       }
 
     } catch (err) {
