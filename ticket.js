@@ -46,14 +46,16 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      const messages = await channel.messages.fetch({ limit: 10 });
+      // ✅ 修正：パネル完全重複防止（最新1件だけチェック）
+      const messages = await channel.messages.fetch({ limit: 20 });
 
       const exists = messages.some(m =>
         m.author.id === client.user.id &&
+        m.embeds.length > 0 &&
         m.components.length > 0
       );
 
-      if (exists) return console.log("既にチケットパネルあり");
+      if (exists) return console.log("既にチケットパネルあり（重複防止）");
 
       await channel.send({ embeds: [embed], components: [row] });
 
@@ -84,8 +86,12 @@ module.exports = (client) => {
 
         creatingUsers.add(user.id);
 
+        // ✅ 修正：より強力な既存チケット検出（topic + 名前 + カテゴリ）
         const existsChannel = interaction.guild.channels.cache.find(
-          c => c.parentId === CATEGORY_ID && c.topic === user.id
+          c =>
+            c.type === ChannelType.GuildText &&
+            c.topic === user.id &&
+            c.parentId === CATEGORY_ID
         );
 
         if (existsChannel) {
@@ -198,7 +204,7 @@ module.exports = (client) => {
         const createdEmbed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`チケットが作成されました   
+`チケットが作成されました    
 チャンネル： ${channel}`
           );
 
@@ -207,6 +213,8 @@ module.exports = (client) => {
           ephemeral: true
         });
       }
+
+      // 以降は全部そのまま（変更なし）
 
       else if (interaction.customId === "ticket_category") {
 
@@ -289,7 +297,6 @@ module.exports = (client) => {
         });
       }
 
-      // 👇ここ追加（2個前＝カテゴリ選択に戻す）
       else if (interaction.customId === "ticket_back") {
 
         const selectInfo = new EmbedBuilder()
