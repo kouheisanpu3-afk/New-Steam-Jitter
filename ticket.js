@@ -72,13 +72,14 @@ module.exports = (client) => {
       if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
       // =========================
-      // チケット作成（完全修正版：二重防止）
+      // チケット作成（ここだけ修正）
       // =========================
       if (interaction.customId === "ticket_create") {
 
         const guild = interaction.guild;
         const user = interaction.user;
 
+        // 🔥① 連打防止
         if (creatingUsers.has(user.id)) {
           return interaction.reply({
             content: "チケット作成中です。少し待ってください。",
@@ -86,35 +87,31 @@ module.exports = (client) => {
           });
         }
 
+        // 🔥② 既存チケット即ブロック（ここが重要）
+        await guild.channels.fetch();
+
+        const existsChannel = guild.channels.cache.find(c =>
+          c.type === ChannelType.GuildText &&
+          c.parentId === CATEGORY_ID &&
+          c.topic === user.id
+        );
+
+        if (existsChannel || activeTickets.has(user.id)) {
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xFF4D4D)
+                .setTitle("チケット作成エラー")
+                .setDescription("すでにチケットが存在します。\n既存のチケットをご利用ください。")
+            ],
+            ephemeral: true
+          });
+        }
+
         creatingUsers.add(user.id);
+        activeTickets.add(user.id); // 🔥ここで先にロック（超重要）
 
         try {
-
-          await guild.channels.fetch(); // 強制同期
-
-          // 🔥 超強化チェック（これで2個作成防止）
-          const existsChannel = guild.channels.cache.find(c =>
-            c.type === ChannelType.GuildText &&
-            c.parentId === CATEGORY_ID &&
-            (
-              c.topic === user.id ||
-              c.name.includes(user.username)
-            )
-          );
-
-          if (existsChannel) {
-            return interaction.reply({
-              embeds: [
-                new EmbedBuilder()
-                  .setColor(0xFF4D4D)
-                  .setTitle("チケット作成エラー")
-                  .setDescription(
-                    "すでにチケットが存在します。\n既存のチケットチャンネルをご利用ください。"
-                  )
-              ],
-              ephemeral: true
-            });
-          }
 
           const channel = await guild.channels.create({
             name: `ticket-${user.username}`,
@@ -139,8 +136,6 @@ module.exports = (client) => {
               }
             ]
           });
-
-          activeTickets.add(user.id);
 
           const now = new Date().toLocaleString("ja-JP", {
             timeZone: "Asia/Tokyo"
@@ -216,6 +211,11 @@ module.exports = (client) => {
 
         } finally {
           creatingUsers.delete(user.id);
+
+          // 🔥少し遅らせてロック解除（これが2個防止の核心）
+          setTimeout(() => {
+            activeTickets.delete(user.id);
+          }, 3000);
         }
       }
 
