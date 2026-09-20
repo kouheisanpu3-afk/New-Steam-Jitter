@@ -18,7 +18,9 @@ module.exports = (client) => {
   const creatingUsers = new Set();
   const ticketState = new Map();
   const activeTickets = new Set();
-  let ticketNumber = 1;
+
+  // ✅ 追加：パネルメッセージ固定管理
+  let panelMessageId = null;
 
   client.once(Events.ClientReady, async () => {
     try {
@@ -45,19 +47,15 @@ module.exports = (client) => {
           .setURL(`https://discord.com/channels/${channel.guildId}/${TERMS_CHANNEL_ID}`)
       );
 
-      const messages = await channel.messages.fetch({ limit: 20 });
-
-      const oldPanel = messages.find(m =>
-        m.author.id === client.user.id &&
-        m.components.length > 0 &&
-        m.embeds.length > 0
-      );
-
-      if (oldPanel) {
-        await oldPanel.delete().catch(() => {});
+      // ✅ 修正：完全に1個だけ管理
+      if (panelMessageId) {
+        const old = await channel.messages.fetch(panelMessageId).catch(() => null);
+        if (old) await old.delete().catch(() => {});
       }
 
-      await channel.send({ embeds: [embed], components: [row] });
+      const msg = await channel.send({ embeds: [embed], components: [row] });
+
+      panelMessageId = msg.id; // ⭐保存（これが重要）
 
       console.log("チケットパネル設置完了");
 
@@ -200,11 +198,10 @@ module.exports = (client) => {
         await channel.send({ embeds: [embed], components: [row] });
         await channel.send({ embeds: [selectInfo], components: [selectRow] });
 
-        // ✅ ここだけ変更（背景付きEmbed）
         const successEmbed = new EmbedBuilder()
           .setColor(0x4aa3ff)
           .setDescription(
-`チケットが作成されました  
+`チケットが作成されました   
 チャンネル： ${channel}`
           );
 
