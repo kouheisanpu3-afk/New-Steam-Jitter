@@ -390,13 +390,13 @@ module.exports = (client) => {
       }
 
       // =========================
-      // 解決済み（二重投稿防止追加）
+      // 解決済み（二重投稿完全防止）
       // =========================
       else if (interaction.customId === "ticket_resolved") {
 
-        if (activeTickets.has(interaction.channel.id)) return;
-
-        activeTickets.add(interaction.channel.id);
+        // ★ここが二重投稿防止（超重要）
+        if (interaction.channel._resolvedSent) return;
+        interaction.channel._resolvedSent = true;
 
         const embed = new EmbedBuilder()
           .setTitle("このチケットを解決済みとしてマーク")
