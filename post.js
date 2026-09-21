@@ -22,10 +22,10 @@ client.on("messageCreate", async (message) => {
   const text = args.slice(3).join(" ");
 
   if (!channelInput || !mode || !text) {
-    return message.reply("使い方: !post2 #channel on/off 色 メッセージ");
+    return message.reply("使い方: !post2 チャンネルID on/off 色 投稿内容");
   }
 
-  // 🔥ここだけ修正
+  // 🔥ここだけ修正（安定版）
   const channel =
     message.mentions.channels.first() ||
     message.guild.channels.cache.get(channelInput) ||
