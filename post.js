@@ -6,7 +6,6 @@ client.on("messageCreate", async (message) => {
     return message.reply("❌ 権限がありません");
   }
 
-  // ★ここ修正（splitやめる）
   const raw = message.content.trim();
 
   const firstSpace = raw.indexOf(" ");
@@ -26,9 +25,11 @@ client.on("messageCreate", async (message) => {
     return message.reply("使い方: !post2 #channel on/off 色 メッセージ");
   }
 
+  // 🔥ここだけ修正
   const channel =
     message.mentions.channels.first() ||
-    message.guild.channels.cache.get(channelInput.replace("#", ""));
+    message.guild.channels.cache.get(channelInput) ||
+    message.guild.channels.cache.find(c => c.name === channelInput.replace("#", ""));
 
   if (!channel) {
     return message.reply("❌ チャンネルが見つかりません");
