@@ -54,13 +54,10 @@ const client = new Client({
 // 🎫 チケットモジュール（両方同時起動）
 // =======================
 
-try {
-  require("./ticket-ja.js")(client);
-  console.log("ticket-ja.js loaded");
-} catch (e) {
-  console.error("ticket-ja.js error:", e);
-}
+// ❌ ticket-ja.js 停止（読み込まない）
+console.log("ticket-ja.js skipped (disabled)");
 
+// ✅ ticket-en.jsのみ起動
 try {
   require("./ticket-en.js")(client);
   console.log("ticket-en.js loaded");
